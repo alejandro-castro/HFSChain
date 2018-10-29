@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/old/Model
+END
+JROHeader.py
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/old/Model/JROHeader.py
+END
+Correlation.py
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/old/Model/Correlation.py
+END
+JROData.py
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/old/Model/JROData.py
+END
+__init__.py
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/old/Model/__init__.py
+END
+Voltage.py
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/old/Model/Voltage.py
+END
+Spectra.py
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/old/Model/Spectra.py
+END

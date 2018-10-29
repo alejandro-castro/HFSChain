@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svn/jro_soft/schain/!svn/ver/1547/branches/schain_hf/schainroot/source/schainpy/model
+END
+__init__.py
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/model/__init__.py
+END
+cfunctions.pyx
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/model/cfunctions.pyx
+END
+setup.py
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/model/setup.py
+END

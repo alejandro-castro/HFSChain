@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/gui/viewer
+END
+ui_mainwindow.py
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/gui/viewer/ui_mainwindow.py
+END
+ui_unitprocess.py
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/gui/viewer/ui_unitprocess.py
+END
+__init__.py
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/gui/viewer/__init__.py
+END
+ui_initwindow.py
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/gui/viewer/ui_initwindow.py
+END
+ui_window.py
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/gui/viewer/ui_window.py
+END
+ui_workspace.py
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/gui/viewer/ui_workspace.py
+END

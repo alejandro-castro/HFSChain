@@ -1,0 +1,13 @@
+[Read0]
+id = 0
+type = VoltageReader
+setup = str,/Users/jro/Documents/RadarData/MST_ISR/MST,datetime,2009-01-01-0-0-1,datetime,2009-12-31-0-0-1,int,0,str,,str,None,int,0
+getData = None,None
+
+[Processing0]
+id = 1
+type = Spectra
+input = 0
+setup = int,16,None,None
+init = None,None
+plotData = float,None,float,None,float,None,float,None,str,Test Spectra Data,int,1

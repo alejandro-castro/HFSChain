@@ -1,0 +1,59 @@
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/jro_soft/schain/!svn/ver/1466/branches/schain_hf/schainroot/source/schainpy/model/proc
+END
+jroproc_spectra.py
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/model/proc/jroproc_spectra.py
+END
+jroproc_base.py
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/model/proc/jroproc_base.py
+END
+__init__.py
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/model/proc/__init__.py
+END
+jroproc_correlation.py
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/model/proc/jroproc_correlation.py
+END
+jroproc_heispectra.py
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/model/proc/jroproc_heispectra.py
+END
+jroproc_voltage.py
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/model/proc/jroproc_voltage.py
+END
+jroproc_parameters.py
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/model/proc/jroproc_parameters.py
+END
+jroprocessing.py
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/model/proc/jroprocessing.py
+END
+jroproc_amisr.py
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/model/proc/jroproc_amisr.py
+END

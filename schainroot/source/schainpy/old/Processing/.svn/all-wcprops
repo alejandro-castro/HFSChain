@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/old/Processing
+END
+VoltageProcessor.py
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/old/Processing/VoltageProcessor.py
+END
+JRONoise.py
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/old/Processing/JRONoise.py
+END
+__init__.py
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/old/Processing/__init__.py
+END
+CorrelationProcessor.py
+K 25
+svn:wc:ra_dav:version-url
+V 118
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/old/Processing/CorrelationProcessor.py
+END
+SpectraProcessor.py
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/old/Processing/SpectraProcessor.py
+END

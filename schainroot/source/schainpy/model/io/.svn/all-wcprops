@@ -1,0 +1,77 @@
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/jro_soft/schain/!svn/ver/1547/branches/schain_hf/schainroot/source/schainpy/model/io
+END
+jrodataIO.py
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/model/io/jrodataIO.py
+END
+jroIO_spectra.py
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/model/io/jroIO_spectra.py
+END
+jroIO_base_parallel.py
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/svn/jro_soft/schain/!svn/ver/1545/branches/schain_hf/schainroot/source/schainpy/model/io/jroIO_base_parallel.py
+END
+jroIO_base.py
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/svn/jro_soft/schain/!svn/ver/1062/branches/schain_hf/schainroot/source/schainpy/model/io/jroIO_base.py
+END
+__init__.py
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/model/io/__init__.py
+END
+jroIO_hf.py
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/svn/jro_soft/schain/!svn/ver/1547/branches/schain_hf/schainroot/source/schainpy/model/io/jroIO_hf.py
+END
+jroIO_heispectra.py
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/model/io/jroIO_heispectra.py
+END
+jroIO_base_temporal.py
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/svn/jro_soft/schain/!svn/ver/1546/branches/schain_hf/schainroot/source/schainpy/model/io/jroIO_base_temporal.py
+END
+jroIO_HDF5.py
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/model/io/jroIO_HDF5.py
+END
+jroIO_voltage.py
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/model/io/jroIO_voltage.py
+END
+jroIO_amisr.py
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/model/io/jroIO_amisr.py
+END
+jroIO_example.py
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/model/io/jroIO_example.py
+END

@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/old/IO
+END
+JRODataIO.py
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/old/IO/JRODataIO.py
+END
+VoltageIO.py
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/old/IO/VoltageIO.py
+END
+__init__.py
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/old/IO/__init__.py
+END
+SpectraIO.py
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/old/IO/SpectraIO.py
+END
+CorrelationIO.py
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/old/IO/CorrelationIO.py
+END

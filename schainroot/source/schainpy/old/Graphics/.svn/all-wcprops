@@ -1,0 +1,59 @@
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/old/Graphics
+END
+BaseGraph_mpl.py
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/old/Graphics/BaseGraph_mpl.py
+END
+schainPlotLib.py
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/old/Graphics/schainPlotLib.py
+END
+__init__.py
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/old/Graphics/__init__.py
+END
+schainPlot.py
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/old/Graphics/schainPlot.py
+END
+VoltagePlot.py
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/old/Graphics/VoltagePlot.py
+END
+BaseGraph.py
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/old/Graphics/BaseGraph.py
+END
+schainPlotTypes.py
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/old/Graphics/schainPlotTypes.py
+END
+SpectraPlot2.py
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/old/Graphics/SpectraPlot2.py
+END
+SpectraPlot.py
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/old/Graphics/SpectraPlot.py
+END

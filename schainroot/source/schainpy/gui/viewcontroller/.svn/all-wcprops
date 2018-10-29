@@ -1,0 +1,71 @@
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/gui/viewcontroller
+END
+xmlprint.py
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/gui/viewcontroller/xmlprint.py
+END
+workspace.py
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/gui/viewcontroller/workspace.py
+END
+initwindow.py
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/gui/viewcontroller/initwindow.py
+END
+__init__.py
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/gui/viewcontroller/__init__.py
+END
+timeconversions.py
+K 25
+svn:wc:ra_dav:version-url
+V 117
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/gui/viewcontroller/timeconversions.py
+END
+window.py
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/gui/viewcontroller/window.py
+END
+basicwindow.py
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/gui/viewcontroller/basicwindow.py
+END
+modelProperties.py
+K 25
+svn:wc:ra_dav:version-url
+V 117
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/gui/viewcontroller/modelProperties.py
+END
+unitprocess.py
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/gui/viewcontroller/unitprocess.py
+END
+scprocesscontroller.py
+K 25
+svn:wc:ra_dav:version-url
+V 121
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/gui/viewcontroller/scprocesscontroller.py
+END
+mainwindow.py
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/svn/jro_soft/schain/!svn/ver/976/branches/schain_hf/schainroot/source/schainpy/gui/viewcontroller/mainwindow.py
+END

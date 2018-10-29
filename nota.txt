@@ -1,0 +1,5 @@
+ESTE schainroot es el ultimo probado contiene la union de lo desarrollado para el procesamiento de signal chain en HF y la generacion de RTDI y OUT. Este programa esta instalado en la 
+PC de KUBUNTU y la version anterior a este esta en la PC UBUNTU 14.04.
+Saludos
+Atte
+Alexander Valdez
