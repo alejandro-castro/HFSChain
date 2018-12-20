@@ -447,11 +447,11 @@ class HFParamReader(ProcessingUnit):
 
         self.filename_online=filename
         epoc=fp['t'].value
-    ############ ON LINE #################
+        ############ ON LINE #################
         name_prof='pw0_C'+str(self.code)
         self.nProfiles= len((fp[name_prof]))
         #self.nProfiles= len((fp['pw0_C0']))
-    #######################################
+        #######################################
         self.hfFilePointer=fp
         fp.close()
         self.__t0=epoc
@@ -897,10 +897,10 @@ class HFReader(ProcessingUnit):
         if not (filename):
             return None,None,None,None,None
 
-	filenameList= fullpath+"/"+filename
-	############### ON LINE##################
-	self.sizeofHF_File = os.path.getsize(filenameList)
-	########################################
+        filenameList= fullpath+"/"+filename
+        ############### ON LINE##################
+        self.sizeofHF_File = os.path.getsize(filenameList)
+        ########################################
         self.dirnameList=[filename]
         self.filenameList=[filenameList]
         self.flag_nextfile=True
@@ -992,11 +992,11 @@ class HFReader(ProcessingUnit):
 
         self.filename_online=filename
         epoc=fp['t'].value
-	############ ON LINE #################
+        ############ ON LINE #################
         name_prof='pw0_C'+str(self.code)
         self.nProfiles= len((fp[name_prof]))
         #self.nProfiles= len((fp['pw0_C0']))
-	#######################################
+        #######################################
         self.hfFilePointer=fp
         fp.close()
         self.__t0=epoc
@@ -1182,9 +1182,9 @@ class HFReader(ProcessingUnit):
 
         self.dataOut.flagShiftFFT = False
 
-#        self.dataOut.ippSeconds = 1.0*self.__nSamples/self.__sample_rate*10  ######
+        self.dataOut.ippSeconds = 1.0*self.__nSamples/self.__sample_rate*10  ######
 
-	self.dataOut.ippSeconds= 0.1
+        self.dataOut.ippSeconds= 0.1
 
         #Time interval between profiles
         #self.dataOut.timeInterval =self.dataOut.ippSeconds * self.dataOut.nCohInt
@@ -1192,13 +1192,13 @@ class HFReader(ProcessingUnit):
 
         self.dataOut.frequency = self.__frequency
 
-	self.dataOut.nIncohInt = self.__inc_int
+        self.dataOut.nIncohInt = self.__inc_int
 
-	#print "QUE INTERESANTE",self.dataOut.nIncohInt,self.__inc_int
+        #print "QUE INTERESANTE",self.dataOut.nIncohInt,self.__inc_int
 
         self.dataOut.realtime = self.__online
 
-	self.dataOut.last_block = len(self.filenameList)
+        self.dataOut.last_block = len(self.filenameList)
 
     def __hasNotDataInBuffer(self):
 
@@ -1231,12 +1231,9 @@ class HFReader(ProcessingUnit):
 
         return 1
 
-
-
     def readBlock(self):
         try:
             fp=h5py.File(self.filename,'r')
-
         except:
             print "Error reading file %s"%self.filename
 
