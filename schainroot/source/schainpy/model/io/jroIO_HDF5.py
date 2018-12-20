@@ -224,8 +224,6 @@ class HDF5Reader(ProcessingUnit):
             return None, None
 
         print "%d file(s) was(were) found for the time range: %s - %s" %(len(filenameList), startTime, endTime)
-        print
-
         for i in range(len(filenameList)):
             print "%s -> [%s]" %(filenameList[i], datetimeList[i].ctime())
 
@@ -811,7 +809,7 @@ class HDF5Writer(Operation):
                 #Create the number of dataset required by the group
                 for j in range(int(nDatas[i])): # this put each channel or param"X"
                     tableName = strMode + str(j) #This is the name param0 param1 param2 viewed at hdf5 file or channel0 -channel1
-                    print  tableName
+
                     if nDims[i] == 3:
                         #ds0 = grp0.create_dataset(tableName, (1,1,1) , maxshape=(None,None,None), chunks=True,dtype="f")
                         ds0_aux = numpy.zeros((1,1,1),dtype="f")
@@ -943,7 +941,7 @@ class HDF5Writer(Operation):
                 #Create the number of dataset required by the group
                 for j in range(int(nDatas[i])): # this put each channel or param"X"
                     tableName = strMode + str(j) #This is the name param0 param1 param2 viewed at hdf5 file or channel0 -channel1
-                    print  tableName
+                    #print  tableName
                     if nDims[i] == 3:
                         ds0 = grp0.create_dataset(tableName, (self.data[k].shape[0],self.data[k].shape[1],self.data[k].shape[2]) , maxshape=(None,None,None), chunks=True,dtype="f")
                     else:

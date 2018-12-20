@@ -165,7 +165,9 @@ class ParametersProc(ProcessingUnit):
             #self.dataOut.CohPhase = numpy.arctan2(coherenceComplex.imag, coherenceComplex.real)*180/numpy.pi
 
     def GetRGBData(self):
-        print "Nada po ahora"
+        #TODO > any future operation do here
+        #self.dataOut.data_RGB = self.dataIn.Image
+        print "Getting RGB Data from Image dataset..."
     #-------------------    Get Moments    ----------------------------------
     def GetMoments(self, channelList = None):
         '''

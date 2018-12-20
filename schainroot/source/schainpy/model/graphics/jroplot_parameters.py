@@ -18,10 +18,10 @@ class MomentsPlot(Figure):
         self.isConfig = False
         self.__nsubplots = 1
 
-        self.WIDTH = 780
-        self.HEIGHT = 600
+        self.WIDTH = 380
+        self.HEIGHT = 380
         self.WIDTHPROF = 120
-        self.HEIGHTPROF = 0
+        self.HEIGHTPROF = 20
         self.counter_imagwr = 0
 
         self.PLOT_CODE = 1
@@ -165,16 +165,16 @@ class MomentsPlot(Figure):
                         ticksize=9, cblabel='')
                         #Mean Line
             radialvelocity = dataOut.data_param[i, 1, :]
-            axes.addpline(radialvelocity, y, idline=0, color="black", linestyle="solid", lw=2)
+            axes.addpline(radialvelocity, y, idline=0, color="black", linestyle="dashed", lw=1)
 
-            SpectralWidth = dataOut.data_param[i, 2, :]
-            axes.addpline(SpectralWidth+radialvelocity, y, idline=1, color="red", linestyle="solid", lw=1)
-            axes.addpline(radialvelocity-SpectralWidth, y, idline=2, color="red", linestyle="solid", lw=1)
+            #SpectralWidth = dataOut.data_param[i, 2, :]
+            #axes.addpline(SpectralWidth+radialvelocity, y, idline=1, color="red", linestyle="solid", lw=1)
+            #axes.addpline(radialvelocity-SpectralWidth, y, idline=2, color="red", linestyle="solid", lw=1)
 
-            fv = dataOut.data_param[i, 3, :] #first valid frequency
-            axes.addpline(fv, y, idline=3, color="cyan", linestyle="solid", lw=0.5)
-            lv = dataOut.data_param[i, 4, :] #last valid frequency
-            axes.addpline(lv, y, idline=4, color="cyan", linestyle="solid", lw=0.5)
+            #fv = dataOut.data_param[i, 3, :] #first valid frequency
+            #axes.addpline(fv, y, idline=3, color="cyan", linestyle="solid", lw=0.5)
+            #lv = dataOut.data_param[i, 4, :] #last valid frequency
+            #axes.addpline(lv, y, idline=4, color="cyan", linestyle="solid", lw=0.5)
             #axes.addpline(radialvelocity-SpectralWidth2, y, idline=4, color="green", linestyle="dashed", lw=1)
 
 
@@ -602,8 +602,8 @@ class ParametersPlot(Figure):
         self.__isConfig = False
         self.__nsubplots = 1
 
-        self.WIDTH = 800
-        self.HEIGHT = 450
+        self.WIDTH = 380
+        self.HEIGHT = 320
         self.WIDTHPROF = 120
         self.HEIGHTPROF = 0
         self.counter_imagwr = 0
@@ -709,7 +709,7 @@ class ParametersPlot(Figure):
             parameterIndex = 1
         x = dataOut.getTimeRange1()
         y = dataOut.heightList
-        print "parameterIndex:", parameterIndex
+        #print "parameterIndex:", parameterIndex
         z = data_param[channelIndexList,parameterIndex,:].copy()
         #print "z:",z
 
@@ -717,7 +717,7 @@ class ParametersPlot(Figure):
         nplots = z.shape[0]    #Number of wind dimensions estimated
 #        thisDatetime = dataOut.datatime
 
-        if dataOut.data_SNR != None:
+        if (dataOut.data_SNR != None).any():
             SNRarray = dataOut.data_SNR[channelIndexList,:] # This line extract snr from diferent channels
 
             SNRdB = 10*numpy.log10(SNRarray)
@@ -796,7 +796,7 @@ class ParametersPlot(Figure):
                 axes = self.axesList[j*self.__nsubplots]
 
                 z1 = z[i,:].reshape((1,-1))
-                print "z1:",z1
+                #print "z1:",z1
                 #raw_input("z1")
                 axes.pcolorbuffer(x, y, z1,
                             xmin=self.xmin, xmax=self.xmax, ymin=ymin, ymax=ymax, zmin=zmin, zmax=zmax,

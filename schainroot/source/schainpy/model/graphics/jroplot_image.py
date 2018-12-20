@@ -6,7 +6,7 @@ Created on Jul 9, 2014
 import os
 import datetime
 import numpy
-import plplot
+#import plplot
 import matplotlib.pyplot as plt
 from model.proc.jroproc_base import Operation
 #from figure import Figure, isRealtime, isTimeInHourRange

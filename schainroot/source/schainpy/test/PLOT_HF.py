@@ -107,12 +107,12 @@ print "set",set
 print "Location&orientation",lo
 print "REVISAR LA LINEA DE EJEMPLO EN EL ARCHIVO EN CASO PROBLEMAS DE EJECUCION"
 
-time.sleep(4)
+time.sleep(0.1)
 #-----------------------------------------------------------------------------------------------------#
 #-------------------------PATH-PDATA-------------------------------------
 #path='/media/igp-114/PROCDATA/'
 #-----------------------------PATH-graficos-----------------------------------#
-figpath='/media/igp-114/graphics_schain/sp'+str(code)+'1_f'+str(ngraph)+'/'
+figpath='/home/jm/Pictures/graphics_schain/sp'+str(code)+'1_f'+str(ngraph)+'/'
 print "figpath",figpath
 #---------------------------------------------------------------------------#
 readUnitConfObj = controllerObj.addReadUnit(datatype = 'HFReader',
@@ -142,24 +142,37 @@ procUnitConfObj1.addParameter(name='nFFTPoints', value=nFFT, format='int')
 procUnitConfObj1.addParameter(name='nProfiles', value=nProfiles, format='int')
 procUnitConfObj1.addParameter(name='pairsList', value='(0,1)', format='pairsList')
 
-opObj12 = procUnitConfObj1.addOperation(name='removeInterference')
+#opObj12 = procUnitConfObj1.addOperation(name='removeInterference')
+opObj12 = procUnitConfObj1.addOperation(name='removeDC')
+
 
 # opObj11 = procUnitConfObj1.addOperation(name='IncohInt', optype='other')
 # opObj11.addParameter(name='n', value='6', format='float')
 
-
-#opObj11 = procUnitConfObj1.addOperation(name='SpectraPlot', optype='other')
-#opObj11.addParameter(name='id', value='1000', format='int')
-#opObj11.addParameter(name='wintitle', value='HF_Jicamarca_Spc', format='str')
-##opObj11.addParameter(name='channelList', value='1', format='intlist')
-#opObj11.addParameter(name='xmin', value='-50', format='float')
-#opObj11.addParameter(name='xmax', value='50', format='float')
-####opObj11.addParameter(name='ymin', value='1485', format='float')
-####opObj11.addParameter(name='ymax', value='1500', format='float')
-#opObj11.addParameter(name='zmin', value='-145', format='float')
-#opObj11.addParameter(name='zmax', value='-105', format='float')#-105
-#opObj11.addParameter(name='save', value='1', format='int')
-##opObj11.addParameter(name='figpath', value=figpath, format='str')
+'''
+opObj11 = procUnitConfObj1.addOperation(name='SpectraPlot', optype='other')
+opObj11.addParameter(name='id', value='1000', format='int')
+opObj11.addParameter(name='wintitle', value='HF_Jicamarca_Spc_F0C0', format='str')
+opObj11.addParameter(name='show', value='0', format='bool')
+#opObj11.addParameter(name='channelList', value='1', format='intlist')
+opObj11.addParameter(name='xmin', value='-50', format='float')
+opObj11.addParameter(name='xmax', value='50', format='float')
+opObj11.addParameter(name='ymin', value='200', format='float')
+opObj11.addParameter(name='ymax', value='600', format='float')
+opObj11.addParameter(name='zmin', value='-140', format='float')#-115
+opObj11.addParameter(name='zmax', value='-85', format='float')#-105
+opObj11.addParameter(name='save_ftp', value='0', format='bool')
+opObj11.addParameter(name='figpath', value=figpath, format='str')
+opObj11.addParameter(name='data_time_save',value='1',format='bool')
+opObj11.addParameter(name='wr_period', value='10', format='int')
+opObj11.addParameter(name='ftp_wei', value='11', format='int')
+opObj11.addParameter(name='exp_code', value='444', format='int')
+opObj11.addParameter(name='sub_exp_code', value=number, format='int')
+opObj11.addParameter(name='plot_pos', value='1', format='int')
+opObj11.addParameter(name='ext', value='.jpeg', format='str')
+opObj11.addParameter(name='showprofile', value='1', format='int')
+opObj11.addParameter(name='save', value='0', format='bool')
+'''
 
 
 # # opObj11.addParameter(name='figfile', value=figfile_spectra_name, format='str')
@@ -233,7 +246,7 @@ opObj11.addParameter(name='ext', value='.jpeg', format='str')
 '''
 procUnitConfObj2 = controllerObj.addProcUnit(datatype='ParametersProc', inputId=procUnitConfObj1.getId())
 opObj20 = procUnitConfObj2.addOperation(name='GetMoments')
-
+'''
 opObj21 = procUnitConfObj2.addOperation(name='ParametersPlot', optype='other')
 opObj21.addParameter(name='id', value='4000', format='int')
 opObj21.addParameter(name='wintitle', value='Doppler-Radial Velocity Plot0', format='str')
@@ -331,6 +344,20 @@ opObj21.addParameter(name='exp_code', value='666', format='int')
 opObj21.addParameter(name='sub_exp_code', value=number, format='int')
 opObj21.addParameter(name='plot_pos', value='1', format='int')
 opObj21.addParameter(name='ext', value='.jpeg', format='str')
+'''
+opObj31 = procUnitConfObj2.addOperation(name='MomentsPlot', optype='other')
+opObj31.addParameter(name='id', value='3', format='int')
+opObj31.addParameter(name='showprofile', value='1', format='int')
+opObj31.addParameter(name='wintitle', value='Moments Plot', format='str')
+opObj31.addParameter(name='save', value='1', format='bool')
+opObj31.addParameter(name='figpath', value=figpath, format='str')
+opObj31.addParameter(name='zmin', value='-140', format='float')
+opObj31.addParameter(name='zmax', value='-85', format='float')
+opObj31.addParameter(name='xmin', value='-50', format='float')
+opObj31.addParameter(name='xmax', value='50', format='float')
+opObj31.addParameter(name='ymin', value='200', format='float')
+opObj31.addParameter(name='ymax', value='500', format='float')
+opObj31.addParameter(name='show', value='1', format='bool')
 
 print "Escribiendo el archivo XML"
 controllerObj.writeXml(filename)

@@ -187,6 +187,291 @@ def getlastFileFromPath(path, ext):
 
     return None
 
+class HFParamReader(ProcessingUnit):
+    '''
+    Reads HDF5 compress format files.
+    inputparameters :  path
+    startDate
+    endDate
+    startTime
+    endTime
+    '''
+    ext = ".hdf5"
+    optchar = "D"
+    timezone = None
+    startTime = None
+    endTime = None
+    fileIndex = None
+    utcList = None      #To select data in the utctime list
+    blockList = None    #List to blocks to be read from the file
+    blocksPerFile = None    #Number of blocks to be read
+    blockIndex = None
+    path = None
+    filenameList = None
+    datetimeList = None
+    listMetaname = None
+    listMeta = None
+    listDataname = None
+    listData = None
+    listShapes = None
+    fp = None
+    dataOut = None
+    isConfig = False
+    def __init__(self):
+        '''
+        Constructor
+        '''
+        ProcessingUnit.__init__(self)
+        self.isConfig =False
+        self.datablock = None
+        self.dataImage = None
+        self.filename_current=None
+        self.utc = 0
+        self.ext='.hdf5'
+        self.flagIsNewFile = 1
+        self.fileIndex=None
+        self.profileIndex_offset=None
+        self.filenameList=[]
+        self.hfFilePointer= None
+        self.filename_online = None
+        self.status=True
+        self.flagNoMoreFiles= False
+        self.__waitForNewFile = 45
+        self.__inc_int = 0
+        self.sizeofHF_File= None
+        self.campaign = 1
+        self.dataOut = Parameters() # En este caso parameters hereda de JROData
+
+    def setup(self,
+               path = None,
+               frequency=None,
+               campaign = None,
+               inc_int=None,
+               startDate = None,
+               code = 0,
+               endDate = None,
+               startTime = datetime.time(0,0,0),
+               endTime = datetime.time(23,59,59),
+               set = None,
+               expLabel = "",
+               ext = None,
+               all=0,
+               timezone=0,
+               online = False,
+               delay = 60,
+               walk = True):
+        '''
+        In this method we should set all initial parameters.
+
+        '''
+        if path==None:
+            raise ValueError,"The path is not valid"
+
+        if frequency==None:
+            raise ValueError,"The frequency is not valid"
+
+        if campaign == None:
+            raise ValueError,"The Campaign is not valid"
+
+        if inc_int== None:
+            raise ValueError, "The number of incoherent integration is not defined"
+
+        if ext==None:
+            ext = self.ext
+
+        self.code=code
+        self.frequency= frequency
+        self.campaign = campaign
+
+        try:
+            self.__inc_int= int(inc_int)
+        except:
+            print "The number of incoherent integration should be an integer"
+        if self.__inc_int>6:
+            raise ValueError, "The number of incoherent integration should be between 0 and 6"
+
+        self.timezone= timezone
+        self.online= online
+        self.all=all
+
+        if not(online):
+            print "Searching files in offline mode..."
+            self.__searchFilesOffline(path,frequency,startDate, endDate, ext, startTime, endTime, walk)
+        else: #Solo voy a dejar la base para que se haga de modo online...
+            print "Searching files in online mode..."
+            self.__searchFilesOnline(path,frequency,startDate,endDate,ext,walk,set)
+            if set==None:
+                pass
+            else:
+                self.set=set-10
+
+        if not(self.filenameList):
+            print "There  is no files into the folder: %s"%(path)
+            sys.exit(-1)
+
+        self.__getExpParameters()
+        self.fileIndex = -1
+
+        self.__readMetadata()
+
+        self.__setNextFile(online)
+
+        #self.__setLocalVariables()
+        #self.__setHeaderDO()
+        self.isConfig = True
+
+
+    def __getExpParameters(self):
+        if not(self.status):
+            return None
+
+    def __readMetadata(self):
+        '''
+        Reads Metadata
+        self.pathMeta
+        self.listShapes
+        self.listMetaname
+        self.listMeta
+        '''
+        filename = self.filenameList[0]
+
+        fp = h5py.File(filename,'r')
+
+        gp = fp['Metadata']
+
+        listMetaname = []
+        listMetadata = []
+        for item in list(gp.items()):
+            name = item[0]
+
+            if name=='array dimensions':
+                table = gp[name][:]
+                listShapes = {}
+                for shapes in table:
+                    listShapes[shapes[0]] = numpy.array([shapes[1],shapes[2],shapes[3],shapes[4],shapes[5]])
+            else:
+                data = gp[name].value
+                listMetaname.append(name)
+                listMetadata.append(data)
+
+            self.listShapes = listShapes
+            self.listMetaname = listMetaname
+            self.listMeta = listMetadata
+
+            fp.close()
+            return
+
+    def __setNextFile(self,online=False):
+        """
+        """
+        if not(online):
+            newFile = self.__setNextFileOffline()
+        else:
+            newFile = self.__setNextFileOnline()
+
+        if not(newFile):
+            return 0
+        return 1
+
+    def __setNextFileOffline(self): # TODO Arreglar par alos nuevos tipos de archivos comprimidos
+        """
+        """
+        idFile= self.fileIndex
+        while(True): #TODO 2018, xq dentro de un while?
+            idFile += 1
+            if not (idFile < len(self.filenameList)):
+                self.flagNoMoreFiles = 1
+                print "No more Files"
+                return 0
+
+            filename = self.filenameList[idFile]
+            hfFilePointer =h5py.File(filename,'r')
+            epoc=hfFilePointer['t'].value
+            name_prof='pw0_C'+str(self.code)
+            self.nProfiles= len((hfFilePointer[name_prof]))
+            break
+
+        self.flagIsNewFile = 1
+        self.fileIndex = idFile
+        self.filename = filename
+
+        self.hfFilePointer = hfFilePointer
+        hfFilePointer.close()
+        self.__t0=epoc
+        print "Setting the file: %s"%self.filename
+
+        return 1
+
+    def __setNextFileOnline(self):
+        """
+        """
+        #print "SOY NONE",self.set
+        if self.set==None:
+            pass
+        else:
+            self.set +=60
+
+        filename = self.filenameList[0]#fullfilename
+        a=0
+        if self.filename_online != None:
+                self.__selectDataForTimes(online=True)
+                filename = self.filenameList[0]
+                while self.filename_online == filename:
+                    print 'waiting %d seconds to get a new file...'%(self.__waitForNewFile)
+                    time.sleep(self.__waitForNewFile)
+                    #self.__findDataForDates(online=True)
+                    self.set=self.filename_next_set
+                    self.__selectDataForTimes(online=True)
+                    filename = self.filenameList[0]
+                    sizeoffile=os.path.getsize(filename)
+                    a+=1
+                    if a==10:
+                        break
+        if a==10:
+            self.flagNoMoreFiles= True
+
+        #print "filename",filename
+        sizeoffile=os.path.getsize(filename)
+        #print "sizeoffile",sizeoffile
+        if sizeoffile<self.sizeofHF_File:#1650368:#1622336
+            print "%s is not the rigth  size"%filename
+            delay=90
+            print 'waiting %d seconds for delay...'%(delay)
+            time.sleep(delay)
+
+        try:
+            fp= h5py.File(filename,'r')
+        except IOError:
+            traceback.print_exc()
+            raise IOError, "The file %s can't be opened" %(filename)
+
+        self.filename_online=filename
+        epoc=fp['t'].value
+    ############ ON LINE #################
+        name_prof='pw0_C'+str(self.code)
+        self.nProfiles= len((fp[name_prof]))
+        #self.nProfiles= len((fp['pw0_C0']))
+    #######################################
+        self.hfFilePointer=fp
+        fp.close()
+        self.__t0=epoc
+
+        self.flagIsNewFile = 1
+        self.filename = filename
+
+        print "Setting the file: %s"%self.filename
+        return 1
+
+    def run(self, **kwargs):
+        '''
+        This method will be called many times so here you should put all your code
+        '''
+        if not self.isConfig:
+            self.setup(**kwargs)
+            self.isConfig = True
+        self.getData()
+
+
 
 
 class HFReader(ProcessingUnit):
@@ -543,22 +828,18 @@ class HFReader(ProcessingUnit):
                             walk=True):
 
         self.__setParameters(path,frequency,startDate, endDate, startTime, endTime, walk)
-
         self.__checkPath()
-
         pathList,filenameList=self.__findDataForDates()
-
         return
 
     def __searchFilesOnline(self,
                             path,
-			    frequency,
-			    startDate,
+                            frequency,
+                            startDate,
                             endDate,
-			    ext,
+                            ext,
                             walk,
                             set):
-
 
         startDate = datetime.datetime.utcnow().date()
         endDate = datetime.datetime.utcnow().date()
@@ -566,9 +847,9 @@ class HFReader(ProcessingUnit):
         self.__setParameters(path,frequency,startDate,endDate,walk)
 
         self.__checkPath()
-	if not walk:
-	        fullpath=path
-	else:
+        if not walk:
+            fullpath=path
+        else:
             multi_path=self.path.split(',')
             for single_path in multi_path:
                 dirList=[]
@@ -585,8 +866,8 @@ class HFReader(ProcessingUnit):
                     return None, None,None
 
             tmp = dirList[-1]
-	    flag=False
-	    #print self.frequency,"HOLA AMIGO QUE TAL"
+            flag=False
+            #print self.frequency,"HOLA AMIGO QUE TAL"
             if self.frequency<3:
                 add_folder='sp'+str(self.code)+'1_f0'
                 flag=True
@@ -597,8 +878,8 @@ class HFReader(ProcessingUnit):
                 print "Please write 2.72 or 3.64"
                 return 0
 
-    	    fullpath = path+"/"+tmp+"/"+add_folder
-    	    self.path= fullpath
+            fullpath = path+"/"+tmp+"/"+add_folder
+            self.path= fullpath
 
         print "%s folder was found: " %(fullpath )
         #print "5ER PRINT",set
@@ -607,12 +888,12 @@ class HFReader(ProcessingUnit):
             filename =getlastFileFromPath(fullpath,ext)
             startDate= datetime.datetime.utcnow().date
             endDate= datetime.datetime.utcnow().date()
-#
+
         else:
             filename= getFileFromSet(fullpath,ext,set)
             startDate=None
             endDate=None
-#
+
         if not (filename):
             return None,None,None,None,None
 
@@ -641,23 +922,18 @@ class HFReader(ProcessingUnit):
         """
         """
         idFile= self.fileIndex
-        while(True):
+        while(True): #TODO 2018, xq dentro de un while?
             idFile += 1
             if not (idFile < len(self.filenameList)):
                 self.flagNoMoreFiles = 1
                 print "No more Files"
                 return 0
+
             filename = self.filenameList[idFile]
             hfFilePointer =h5py.File(filename,'r')
-
             epoc=hfFilePointer['t'].value
-            ###########################
-  	    ####### OFF LINE ##########
-	    ###########################
             name_prof='pw0_C'+str(self.code)
             self.nProfiles= len((hfFilePointer[name_prof]))
-	    #self.nProfiles= len((hfFilePointer['pw0_C0']))
-            #this_time=datetime.datetime(year,month,dom,hour,min,sec)
             break
 
         self.flagIsNewFile = 1
@@ -964,8 +1240,11 @@ class HFReader(ProcessingUnit):
         except:
             print "Error reading file %s"%self.filename
 
-        for i in range(4): #why ?
+        #TODO 2018: Si ya hay un try arriba, porque hay un for abajo?
+
+        for i in range(4): #TODO 2018 , no deberia ir hasta 4 si esta en offline mode
             sizeoffile=os.path.getsize(self.filename) #TODO: what happend when is in online mode?
+            #TODO 2018 > esto va ha fallar cuando sea online, xq el peso siempre sera igual al peso del archivo en ese instante.
             if sizeoffile<self.sizeofHF_File:#1650368:#1622336
                 delay=80#WTFP?
                 print 'sizeofile less than 9650368'
@@ -979,9 +1258,10 @@ class HFReader(ProcessingUnit):
         name0='pw0_C'+str(self.code)
         name1='pw1_C'+str(self.code)
         name2='cspec01_C'+str(self.code)
-
-        name3='image0_C'+str(self.code)
-        name4='image1_C'+str(self.code)
+        #name3='image0_C'+str(self.code)
+        #name4='image1_C'+str(self.code)
+        name3='image0_c'+str(self.code)
+        name4='image1_c'+str(self.code)
 
         ch0=(fp[name0]).value    #Primer canal (100,1000)--(perfiles,alturas)
         ch1=(fp[name1]).value    #Segundo canal (100,1000)--(perfiles,alturas)

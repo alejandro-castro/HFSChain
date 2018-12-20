@@ -19,36 +19,36 @@ import argparse
 parser = argparse.ArgumentParser()
 ########################## PATH- DATA  ###################################################################################################
 parser.add_argument('-path',action='store',dest='path_lectura',help='Directorio de Datos \
-					.Por defecto, se esta ingresando entre comillas /media/igp-114/PROCDATA/',default='/media/ci-81/062717d4-e7c7-4462-9365-08418e5483b2/')
+    .Por defecto, se esta ingresando entre comillas /media/igp-114/PROCDATA/',default='/media/ci-81/062717d4-e7c7-4462-9365-08418e5483b2/')
 ########################## FRECUENCIA ####################################################################################################
 parser.add_argument('-f',action='store',dest='f_freq',type=float,help='Frecuencia en Mhz 2.72 y 3.64. Por defecto, se esta ingresando 2.72 ',default=2.72)
 ########################## CAMPAIGN ### 600 o 100 perfiles ###############################################################################
 parser.add_argument('-C',action='store',dest='c_campaign',type=int,help='Campaign 1 (600 perfiles) y 0(100 perfiles). Por defecto, se esta ingresando 1',default=1)
 ########################## INCOHERENT INTEGRATION ### Entre 0 y 6  #######################################################################
 parser.add_argument('-ii',action='store',dest='i_integration',type=int,help='Data spectra tiene integraciones incoherentes entre \
-									0 y 6. Por defecto, se esta ingresando 0',default=0)
+    0 y 6. Por defecto, se esta ingresando 0',default=0)
 ########################## ONLINE OR OFFLINE   ###########################################################################################
 parser.add_argument('-online',action='store',dest='online',type=int,help='Operacion 0 Off-line 1 On-Line\
-									   .Por defecto, se esta ingresando 0(off Line) ',default=0)
+       .Por defecto, se esta ingresando 0(off Line) ',default=0)
 ########################## CODIGO - INPUT ################################################################################################
 parser.add_argument('-code',action='store',dest='code_seleccionado',type=int,help='Code de Tx para generar en estacion \
-										de Rx Spectro 0,1,2. Por defecto, se esta ingresando 0(Ancon)',default=0)
+    de Rx Spectro 0,1,2. Por defecto, se esta ingresando 0(Ancon)',default=0)
 ########################## DAY- SELECCION ################################################################################################
 yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
 daybefore= yesterday.strftime("%Y/%m/%d")
 today = datetime.datetime.now().strftime("%Y/%m/%d")
 parser.add_argument('-date',action='store',dest='date_seleccionado',help='Seleccionar fecha si es OFFLINE se ingresa \
-							la fecha con el dia deseado. Por defecto, considera el dia anterior',default=daybefore)
+    la fecha con el dia deseado. Por defecto, considera el dia anterior',default=daybefore)
 ######################### TIME- SELECCION ################################################################################################
 parser.add_argument('-startTime',action='store',dest='time_start',help='Ingresar tiempo de inicio, formato 15:00:00 entre comillas',default="00:00:00")
 parser.add_argument('-endTime',action='store',dest='time_end',help='Ingresar tiempo de fin, formato 23:59:59 entre comillas',default="23:59:59")
 
 ########################## LOCATION AND ORIENTATION ####################################################################################################
 parser.add_argument('-lo',action='store',dest='lo_seleccionado',type=int,help='Parametro para establecer la ubicacion de la estacion de Rx y su orientacion.\
-										Example: XA   ----- X: Es el primer valor determina la ubicacion de la estacion. A: Es \
-										  el segundo valor determina la orientacion N45O o N45E.  \
-										11: JRO-N450, 12: JRO-N45E \
-										        21: HYO-N45O, 22: HYO-N45E',default=11)
+    Example: XA   ----- X: Es el primer valor determina la ubicacion de la estacion. A: Es \
+      el segundo valor determina la orientacion N45O o N45E.  \
+    11: JRO-N450, 12: JRO-N45E \
+            21: HYO-N45O, 22: HYO-N45E',default=11)
 ###########################################################################################################################################
 results    = parser.parse_args()
 path       = str(results.path_lectura)
@@ -67,18 +67,18 @@ nFFT      = 100
 set       = 0
 
 if campaign == 1:
-	nProfiles=600
-   	nFFT     =600
-	inc_int= 0
+    nProfiles=600
+    nFFT     =600
+    inc_int= 0
 if online == 1:
-        date      = today
-	time_start= "00:00:00"
-	time_end  = "23:59:59"
-	set = None
+    date      = today
+    time_start= "00:00:00"
+    time_end  = "23:59:59"
+    set = None
 
 ngraph= 1
 if freq <3:
-	ngraph= 0
+    ngraph= 0
 
 setupF   = freq
 setradarF= freq*10**6
@@ -107,14 +107,15 @@ print "set",set
 print "Location&orientation",lo
 print "REVISAR LA LINEA DE EJEMPLO EN EL ARCHIVO EN CASO PROBLEMAS DE EJECUCION"
 
-time.sleep(4)
+time.sleep(1)
 #-----------------------------------------------------------------------------------------------------#
 #python PLOT_HF_test.py -online 0 -C 0 -ii 6 -f 2.64990234375 -code 0 -date "2018/01/08" -startTime "00:20:00" -endTime "23:59:59" -lo 11
 
 #-------------------------PATH-PDATA-------------------------------------
 #path='/media/igp-114/PROCDATA/'
 #-----------------------------PATH-graficos-----------------------------------#
-figpath='/home/ci-81/Documents/2018.HF/HFSW/testfigures/graphics_schain/sp'+str(code)+'1_f'+str(ngraph)+'/'
+
+figpath='/home/jm/Pictures/graphics_schain/sp'+str(code)+'1_f'+str(ngraph)+'/'
 print "figpath",figpath
 #---------------------------------------------------------------------------#
 readUnitConfObj = controllerObj.addReadUnit(datatype = 'HFReader',
@@ -122,9 +123,9 @@ readUnitConfObj = controllerObj.addReadUnit(datatype = 'HFReader',
                                             startDate= date,   #'2017/12/31',# 2017/11/14 date
                                             endDate  = date,   #'2017/12/31',#date 2017/11/14
                                             code     = code,
-     		                            frequency= setupF,
-				            campaign = campaign,
-					    inc_int  = inc_int,
+                                            frequency= setupF,
+                                            campaign = campaign,
+                                            inc_int  = inc_int,
                                             startTime= time_start,
                                             endTime  = time_end,
                                             online   = online,
@@ -153,12 +154,13 @@ opObj12 = procUnitConfObj1.addOperation(name='removeInterference')
 opObj11 = procUnitConfObj1.addOperation(name='SpectraPlot', optype='other')
 opObj11.addParameter(name='id', value='1000', format='int')
 opObj11.addParameter(name='wintitle', value='HF_Jicamarca_Spc_F0C0', format='str')
-opObj11.addParameter(name='show', value='1', format='bool')
+opObj11.addParameter(name='show', value='0', format='bool')
+opObj11.addParameter(name='save', value='1', format='bool')
 #opObj11.addParameter(name='channelList', value='1', format='intlist')
 opObj11.addParameter(name='xmin', value='-120', format='float')
 opObj11.addParameter(name='xmax', value='120', format='float')
-opObj11.addParameter(name='ymin', value='50', format='float')
-opObj11.addParameter(name='ymax', value='750', format='float')
+opObj11.addParameter(name='ymin', value='200', format='float')
+opObj11.addParameter(name='ymax', value='600', format='float')
 opObj11.addParameter(name='zmin', value='-140', format='float')#-115
 opObj11.addParameter(name='zmax', value='-85', format='float')#-105
 opObj11.addParameter(name='save_ftp', value='1', format='bool')
@@ -179,18 +181,18 @@ opObj11.addParameter(name='ext', value='.jpeg', format='str')
 # #opObj11.addParameter(name='sub_exp_code', value='0', format='int')
 # #opObj11.addParameter(name='plot_pos', value='0', format='int')
 
-opObj11 = procUnitConfObj1.addOperation(name='RTIPlot', optype='other')
-opObj11.addParameter(name='id', value='2000', format='int')
-opObj11.addParameter(name='wintitle', value='HF_Jicamarca', format='str')
-opObj11.addParameter(name='showprofile', value='0', format='int')
-opObj11.addParameter(name='show', value='0', format='bool')
+opObj21 = procUnitConfObj1.addOperation(name='RTIPlot', optype='other')
+opObj21.addParameter(name='id', value='2000', format='int')
+opObj21.addParameter(name='wintitle', value='HF_Jicamarca', format='str')
+opObj21.addParameter(name='showprofile', value='0', format='int')
+opObj21.addParameter(name='show', value='0', format='bool')
+opObj21.addParameter(name='zmin', value='-140', format='float')
+opObj21.addParameter(name='zmax', value='-85', format='float')
+opObj21.addParameter(name='save', value='0', format='bool')
+opObj21.addParameter(name='figpath', value=figpath, format='str')
 ##opObj11.addParameter(name='channelList', value='0', format='intlist')
 ##opObj11.addParameter(name='xmin', value='0', format='float')
 ##opObj11.addParameter(name='xmax', value='24', format='float')
-opObj11.addParameter(name='zmin', value='-140', format='float')
-opObj11.addParameter(name='zmax', value='-85', format='float')
-opObj11.addParameter(name='save', value='1', format='bool')
-opObj11.addParameter(name='figpath', value=figpath, format='str')
 ### # # # opObj11.addParameter(name='figfile', value=figfile_power_name, format='str')
 ##opObj11.addParameter(name='data_time_save',value='1',format='bool')
 ##opObj11.addParameter(name='wr_period', value='10', format='int')

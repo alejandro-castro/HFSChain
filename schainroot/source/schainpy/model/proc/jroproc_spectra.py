@@ -13,6 +13,7 @@ class SpectraProc(ProcessingUnit):
 
         self.buffer = None
         self.buffercspec= None
+        #TODO 2018 incluir en un futuro solo para las librerias de HF
         self.bufferImage = None
 
         self.firstdatatime = None
@@ -74,10 +75,7 @@ class SpectraProc(ProcessingUnit):
         cspc[0,:,:]=self.buffercspec
         fft_volt = fft_volt.astype(numpy.dtype('complex'))
         dc = fft_volt[:,0,:]
-#        dc = fft_volt[:,0,:]
-        #calculo de self-spectra
         fft_volt = numpy.fft.fftshift(fft_volt,axes=(1,))
-#        spc = fft_volt * numpy.conjugate(fft_volt)
         spc=fft_volt
         spc = spc.real
 
@@ -85,7 +83,7 @@ class SpectraProc(ProcessingUnit):
         blocksize += dc.size
         blocksize += spc.size
 
-        if cspc == None:
+        if (cspc == None).any():
             pairIndex = 0
             if self.dataOut.pairsList != None:
                 #calculo de cross-spectra
@@ -94,7 +92,6 @@ class SpectraProc(ProcessingUnit):
                     cspc[pairIndex,:,:] = fft_volt[pair[0],:,:] * numpy.conjugate(fft_volt[pair[1],:,:])
                     pairIndex += 1
                 blocksize += cspc.size
-
 
         self.dataOut.data_spc = spc
         self.dataOut.data_cspc = cspc
@@ -174,7 +171,7 @@ class SpectraProc(ProcessingUnit):
                                            nProfiles,
                                            self.dataIn.nHeights),
                                         dtype='complex')
-            #TODO : buffercspec and buffer image are not voltaje type, we should move to another class
+            #TODO 2018 : buffercspec and buffer image are not voltaje type, we should move to another class
             if str(self.buffercspec) == "None":
                 self.buffercspec = numpy.zeros((nProfiles,
                                            self.dataIn.nHeights),
@@ -258,13 +255,10 @@ class SpectraProc(ProcessingUnit):
                 print channelIndexList
                 raise ValueError, "The value %d in channelIndexList is not valid" %channelIndex
 
-#         nChannels = len(channelIndexList)
-
         data_spc = self.dataOut.data_spc[channelIndexList,:]
 
         self.dataOut.data_spc = data_spc
         self.dataOut.channelList = [self.dataOut.channelList[i] for i in channelIndexList]
-#        self.dataOut.nChannels = nChannels
 
         return 1
 
@@ -406,7 +400,7 @@ class SpectraProc(ProcessingUnit):
         num_chan = jspectra.shape[0]
         num_hei = jspectra.shape[2]
 
-        if jcspectra != None:
+        if jcspectra.any() != None:
             jcspectraExist = True
             num_pairs = jcspectra.shape[0]
         else:   jcspectraExist = False
@@ -569,7 +563,7 @@ class SpectraProc(ProcessingUnit):
             jspectra[ich,indAux[0],indAux[1]] = tmp_noise * (1 - 1/math.sqrt(num_incoh))
 
         #Remocion de Interferencia en el Cross Spectra
-        if jcspectra == None: return jspectra, jcspectra
+        if (jcspectra == None).any: return jspectra, jcspectra
         num_pairs = jcspectra.size/(num_prof*num_hei)
         jcspectra = jcspectra.reshape(num_pairs, num_prof, num_hei)
 

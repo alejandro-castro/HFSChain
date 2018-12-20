@@ -162,7 +162,7 @@ class MomentsPlot(Figure):
             axes.pcolor(x, y, zdB[i,:,:],
                         xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, zmin=zmin, zmax=zmax,
                         xlabel=xlabel, ylabel=ylabel, title=title,
-                        ticksize=9, cblabel='')
+                        ticksize=9,cblabel='')#
                         #Mean Line
             mean = dataOut.data_param[i, 1, :]
             axes.addpline(mean, y, idline=0, color="black", linestyle="solid", lw=1)
@@ -591,8 +591,8 @@ class ParametersPlot(Figure):
         self.__isConfig = False
         self.__nsubplots = 1
 
-        self.WIDTH = 800
-        self.HEIGHT = 150
+        self.WIDTH = 480
+        self.HEIGHT = 320
         self.WIDTHPROF = 120
         self.HEIGHTPROF = 0
         self.counter_imagwr = 0
@@ -698,7 +698,7 @@ class ParametersPlot(Figure):
             parameterIndex = 1
         x = dataOut.getTimeRange1()
         y = dataOut.heightList
-        print "parameterIndex:", parameterIndex
+        #print "parameterIndex:", parameterIndex
         z = data_param[channelIndexList,parameterIndex,:].copy()
         #print "z:",z
 

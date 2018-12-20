@@ -21,8 +21,8 @@ class SpectraPlot(Figure):
         self.isConfig = False
         self.__nsubplots = 1
 
-        self.WIDTH = 780
-        self.HEIGHT = 600
+        self.WIDTH = 380
+        self.HEIGHT = 320
         self.WIDTHPROF = 120
         self.HEIGHTPROF = 0
         self.counter_imagwr = 0
@@ -177,7 +177,7 @@ class SpectraPlot(Figure):
             axes.pcolor(x, y, zdB[i,:,:],
                         xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, zmin=zmin, zmax=zmax,
                         xlabel=xlabel, ylabel=ylabel, title=title,
-                        ticksize=9, cblabel='')
+                        ticksize=9,cblabel='')
 
             if self.__showprofile:
                 axes = self.axesList[i*self.__nsubplots +1]
@@ -245,7 +245,7 @@ class CrossSpectraPlot(Figure):
         self.isConfig = False
         self.__nsubplots = 4
         self.counter_imagwr = 0
-        self.WIDTH = 50
+        self.WIDTH = 380
         self.HEIGHT = 250
         self.WIDTHPROF = 0
         self.HEIGHTPROF = 0
@@ -669,7 +669,7 @@ class CoherenceMap(Figure):
         self.isConfig = False
         self.__nsubplots = 1
 
-        self.WIDTH = 800
+        self.WIDTH = 480
         self.HEIGHT = 150
         self.WIDTHPROF = 120
         self.HEIGHTPROF = 0
@@ -1030,8 +1030,8 @@ class SpectraCutPlot(Figure):
         self.isConfig = False
         self.__nsubplots = 1
 
-        self.WIDTH = 780
-        self.HEIGHT = 600
+        self.WIDTH = 480
+        self.HEIGHT = 400
         self.WIDTHPROF = 120
         self.HEIGHTPROF = 0
         self.counter_imagwr = 0
