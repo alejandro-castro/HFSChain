@@ -1,5 +1,0 @@
-#!/bin/bash
-echo "HFA0_C0"
-python PLOT_HF.py -online 0 -f 2.72 -code 0
-echo "HFA0_C1"
-python PLOT_HF.py -online 0 -f 2.72 -code 2

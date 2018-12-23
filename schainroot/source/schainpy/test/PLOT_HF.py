@@ -120,9 +120,9 @@ readUnitConfObj = controllerObj.addReadUnit(datatype = 'HFReader',
                                             startDate= date,   #'2017/12/31',# 2017/11/14 date
                                             endDate  = date,   #'2017/12/31',#date 2017/11/14
                                             code     = code,
-     		                            frequency= setupF,
-				            campaign = campaign,
-					    inc_int  = inc_int,
+                                            frequency= setupF,
+											campaign = campaign,
+											inc_int  = inc_int,
                                             startTime= time_start,
                                             endTime  = time_end,
                                             online   = online,

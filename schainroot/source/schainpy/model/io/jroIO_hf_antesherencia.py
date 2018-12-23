@@ -1057,12 +1057,10 @@ class HFParamReader(HFReader):
     fp = None
     dataOut = None
     isConfig = False
-    print 'Usando ParamReader'
-    '''
     def __init__(self):
-
-        #Constructor
-
+        '''
+        Constructor
+        '''
         ProcessingUnit.__init__(self)
         self.isConfig =False
         self.datablock = None
@@ -1102,10 +1100,10 @@ class HFParamReader(HFReader):
                online = False,
                delay = 60,
                walk = True):
+        '''
+        In this method we should set all initial parameters.
 
-        #In this method we should set all initial parameters.
-
-
+        '''
         if path==None:
             raise ValueError,"The path is not valid"
 
@@ -1168,13 +1166,13 @@ class HFParamReader(HFReader):
             return None
 
     def __readMetadata(self):
-
-        #Reads Metadata
-        #self.pathMeta
-        #self.listShapes
-        #self.listMetaname
-        #self.listMeta
-
+        '''
+        Reads Metadata
+        self.pathMeta
+        self.listShapes
+        self.listMetaname
+        self.listMeta
+        '''
         filename = self.filenameList[0]
 
         fp = h5py.File(filename,'r')
@@ -1335,11 +1333,10 @@ class HFParamReader(HFReader):
         return 1
 
     def run(self, **kwargs):
-
-        #This method will be called many times so here you should put all your code
-
+        '''
+        This method will be called many times so here you should put all your code
+        '''
         if not self.isConfig:
             self.setup(**kwargs)
             self.isConfig = True
         self.getData()
-    '''

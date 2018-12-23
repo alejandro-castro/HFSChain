@@ -118,7 +118,7 @@ time.sleep(4)
 figpath='/home/jm/Pictures/graphics_schain/sp'+str(code)+'1_f'+str(ngraph)+'/'
 print "figpath",figpath
 #---------------------------------------------------------------------------#
-
+'''
 readUnitConfObj = controllerObj.addReadUnit(datatype = 'HFReader',
                                             path     = path,
                                             startDate= date,   #'2017/12/31',# 2017/11/14 date
@@ -135,7 +135,7 @@ readUnitConfObj = controllerObj.addReadUnit(datatype = 'HFReader',
                                             walk     = 1,
                                             timezone = -5*3600
                                             )
-
+'''
 readUnitConfObj = controllerObj.addReadUnit(datatype='HFParamReader',
                                             path     = path,
                                             startDate= date,   #'2017/12/31',# 2017/11/14 date

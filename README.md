@@ -1,3 +1,5 @@
+23/12/2018
+Hay un jroIO_param.py que se puede usar en la version 3.xParamReader
 20/12/2018
 Cambios Generados para la reduccion de datos
 TODO:
