@@ -324,8 +324,6 @@ class Voltage(JROData):
         '''
         Constructor
         '''
-        raw_input("Entras?")
-
         self.radarControllerHeaderObj = RadarControllerHeader()
 
         self.systemHeaderObj = SystemHeader()

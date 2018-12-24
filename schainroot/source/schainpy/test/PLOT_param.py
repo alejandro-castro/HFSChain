@@ -5,10 +5,11 @@ import datetime
 path = os.path.split(os.getcwd())[0]
 sys.path.append(path)
 from controller import *
-desc = "HF_EXAMPLE"
+desc = "Este programa graficara los parametros adquiridos a traves de los momentos espectrales."
 filename = "hf_test.xml"
 controllerObj = Project()
-controllerObj.setup(id = '191', name='test02', description=desc)
+controllerObj.setup(id = '191', name='paramplot', description=desc)
+
 #----------------------------------------------NEW----------------------------------------------------#
 '''
 example:
@@ -107,7 +108,7 @@ print "set",set
 print "Location&orientation",lo
 print "REVISAR LA LINEA DE EJEMPLO EN EL ARCHIVO EN CASO PROBLEMAS DE EJECUCION"
 
-time.sleep(4)
+time.sleep(1)
 #-----------------------------------------------------------------------------------------------------#
 #python PLOT_HF_test.py -online 0 -C 0 -ii 6 -f 2.64990234375 -code 0 -date "2018/01/08" -startTime "00:20:00" -endTime "23:59:59" -lo 11
 
@@ -115,8 +116,10 @@ time.sleep(4)
 #path='/media/igp-114/PROCDATA/'
 #-----------------------------PATH-graficos-----------------------------------#
 
-figpath='/home/jm/Pictures/graphics_schain/sp'+str(code)+'1_f'+str(ngraph)+'/'
+figpath=    '/home/jm/Pictures/graphics_schain/sp'+str(code)+'1_f'+str(ngraph)+'/'
+parampath = '/home/jm/Pictures/graphics_schain/sp'+str(code)+'1_f'+str(ngraph)+'/param/'
 print "figpath",figpath
+print "paramPath", parampath
 #---------------------------------------------------------------------------#
 '''
 readUnitConfObj = controllerObj.addReadUnit(datatype = 'HFReader',
@@ -136,8 +139,43 @@ readUnitConfObj = controllerObj.addReadUnit(datatype = 'HFReader',
                                             timezone = -5*3600
                                             )
 '''
+#controllerObj es una clase Project que inicializa algunas variables simples
+# y un Diccionario llamado self.procUnitConfObjDict = {}
+# En este diccionario al parecer iran ingresando una serie de procesos formando una cola.
+# Quien Agrega procesos a procUnitConfObjDict ?
+# addReadUnit agregara una unidad de lectura y configurara esa unida en ReadUnitConf()
+# tambien hara el setup donde se configuran el id, starttime endtime day y se llama a
+# addRunOperation(**kwargs)
+# Preguta : que es addRunOperation()?
+# R: addRunOperation llama a addOperation y ha addParameter.
+# Pregunta que es addOperation?
+# R: addOperation agrega un id y una prioridad a la Operacion
+# llama a OperationConf()
+# {Que es OperationConf?}
+# {R: Es una clase base que ne su setup declara la lista parmConfObjList }
+# llama a Operation.setup
+# y agrega la configuracion a la lista de configuraciones.
+
+# Pregunta que es addParameter?
+# R: addParameter tiene 2 significados dependiendo de la clase donde se encuentre
+# lo tiene OperationConf() y procUnitConf(), manda todos los kwargs a opConfObjList[0],
+# Pregunta xq a la primera posicion? es acaso una lista? o un diccionario?
+
+
+# Pregunta es : que es ReadUnitConf()?
+# R: ReadUnitConf() es una clase que hereda de procUnitConf
+
+# Pregunta que es procUnitConf?
+# R: procUnitConf es una unidad de procesamiento, que inicializa ciertos valores como
+# un diccionario opObjDict y una lista opConfObjList.
+# Gracias a que hereda de procUnitConf se le puede asignar los metodos "addOperation", "addParameter"
+# y el .run()!
+
+
+
+
 readUnitConfObj = controllerObj.addReadUnit(datatype='HFParamReader',
-                                            path     = path,
+                                            path     = parampath,
                                             startDate= date,   #'2017/12/31',# 2017/11/14 date
                                             endDate  = date,   #'2017/12/31',#date 2017/11/14
                                             code     = code,
