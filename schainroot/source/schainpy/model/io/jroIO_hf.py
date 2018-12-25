@@ -1036,28 +1036,32 @@ class HFParamReader(HFReader):
     startTime
     endTime
     '''
-    ext = ".hdf5"
-    optchar = "D"
-    timezone = None
-    startTime = None
-    endTime = None
-    fileIndex = None
-    utcList = None      #To select data in the utctime list
-    blockList = None    #List to blocks to be read from the file
-    blocksPerFile = None    #Number of blocks to be read
-    blockIndex = None
-    path = None
-    filenameList = None
-    datetimeList = None
-    listMetaname = None
-    listMeta = None
-    listDataname = None
-    listShapes = None
-    listData = None
-    fp = None
-    dataOut = None
-    isConfig = False
-    print 'Usando ParamReader'
+
+    def __init__(self):
+        HFReader.__init__(self)
+
+        self.ext = ".hdf5"
+        self.optchar = "D"
+        self.timezone = None
+        self.startTime = None
+        self.endTime = None
+        self.fileIndex = None
+        self.utcList = None      #To select data in the utctime list
+        self.blockList = None    #List to blocks to be read from the file
+        self.blocksPerFile = None    #Number of blocks to be read
+        self.blockIndex = None
+        self.path = None
+        self.filenameList = None
+        self.datetimeList = None
+        self.listMetaname = None
+        self.listMeta = None
+        self.listDataname = None
+        self.listShapes = None
+        self.listData = None
+        self.fp = None
+        self.dataOut = None
+        self.isConfig = False
+        print 'Usando ParamReader'
 
     def __isFileInTimeRange(self,filename, startDate, endDate, startTime, endTime):
 
@@ -1360,14 +1364,12 @@ class HFParamReader(HFReader):
         return selData
 
     def __setLocalVariables(self):
-
         self.datablock = numpy.zeros((self.nChannels, self.nHeights,self.nProfiles), dtype = numpy.complex)
         self.datacspec = numpy.zeros(( self.nHeights,self.nProfiles), dtype = numpy.complex)
         self.dataImage  = numpy.zeros((self.nHeights,3,self.nChannels), dtype = numpy.float) #RGBdata
         self.profileIndex = 9999
 
-    def __searchFilesOffLine(self,
-                            path,
+    def __searchFilesOffLine(self,path,
                             startDate=None,
                             endDate=None,
                             startTime=datetime.time(0,0,0),
@@ -1475,6 +1477,16 @@ class HFParamReader(HFReader):
         raw_input("xq no dejas?")
         if not online:
             print "Searching files in offline mode..."
+            self.__searchFilesOffline(path,startDate, endDate, startTime, endTime, ext, walk)
+            '''
+                def __searchFilesOffLine(self,path,
+                                        startDate=None,
+                                        endDate=None,
+                                        startTime=datetime.time(0,0,0),
+                                        endTime=datetime.time(23,59,59),
+                                        ext='.hdf5',
+                                        walk=True):
+            '''
             self.__searchFilesOffline(path,frequency,startDate, endDate, ext, startTime, endTime, walk)
         else:
             print "Searching files in online mode..."
