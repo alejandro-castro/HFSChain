@@ -1061,7 +1061,6 @@ class HFParamReader(HFReader):
         thisDate = thisDatetime.date()
         thisTime = thisDatetime.time()
         print 'startTime: ',startTime
-        raw_input("CheckStarttime")
         startUtcTime = (datetime.datetime.combine(thisDate,startTime)- datetime.datetime(1970, 1, 1)).total_seconds()
         endUtcTime = (datetime.datetime.combine(thisDate,endTime)- datetime.datetime(1970, 1, 1)).total_seconds()
 
@@ -1149,10 +1148,10 @@ class HFParamReader(HFReader):
         self.listMeta
 
         '''
+        toextract = self.filenameList[0].split('/')[-2]
+        filename = self.filenameList[0].replace(toextract,'').replace('//','/').replace('D','M')
+        print 'Metadata de ParamReader en : ',filename
 
-        print 'Metadata de ParamReader...'
-        raw_input("Sera")
-        filename = self.filenameList[0]
         fp = h5py.File(filename,'r')
         gp = fp['Metadata']
         listMetaname = []
@@ -1185,7 +1184,8 @@ class HFParamReader(HFReader):
         for item in list(grp.items()):
             name = item[0]
             listdataname.append(name)
-
+            print 'grp[name]: ',grp[name]
+            print 'self.listShapes[name]:', self.listShapes[name]
             array = self.__setDataArray(grp[name],self.listShapes[name])
             listdata.append(array)
 
@@ -1196,19 +1196,20 @@ class HFParamReader(HFReader):
     def __setDataArray(self, dataset, shapes):
 
         nDims = shapes[0]
-
         nDim2 = shapes[1]      #Dimension 0
-
         nDim1 = shapes[2]      #Dimension 1, number of Points or Parameters
-
         nDim0 = shapes[3]      #Dimension 2, number of samples or ranges
-
         mode = shapes[4]        #Mode of storing
-
         blockList = self.blockList
-
         blocksPerFile = self.blocksPerFile
 
+        print 'mode: ', mode
+        print 'nDims' , nDims
+        print 'nDims1' , nDim1
+        print 'nDims2' , nDim2
+        print 'nDims0' , nDim0
+        print 'blockList: ',blockList
+        print 'blocksPerFile: ', blocksPerFile
         #Depending on what mode the data was stored
         if mode == 0:       #Divided in channels
             arrayData = dataset.value.astype(numpy.float)[0][blockList]
