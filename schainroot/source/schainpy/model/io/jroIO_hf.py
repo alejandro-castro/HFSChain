@@ -1028,7 +1028,6 @@ class HFParamReader(HFReader):
         return
 
     def __isFileInTimeRange(self,filename, startDate, endDate, startTime, endTime):
-
         """
         Retorna 1 si el archivo de datos se encuentra dentro del rango de horas especificado.
 
@@ -1050,9 +1049,7 @@ class HFParamReader(HFReader):
         Excepciones:
             Si el archivo no existe o no puede ser abierto
             Si la cabecera no puede ser leida.
-
         """
-
         try:
             fp = h5py.File(filename,'r')
             grp1 = fp['Data']
@@ -1060,8 +1057,7 @@ class HFParamReader(HFReader):
         except IOError:
             traceback.print_exc()
             raise IOError("The file %s can't be opened" %(filename))
-        #chino rata
-        #In case has utctime attribute
+
         grp2 = grp1['utctime']
         thisUtcTime = grp2.value[0]
         fp.close()
@@ -1070,14 +1066,8 @@ class HFParamReader(HFReader):
         thisDatetime = datetime.datetime.fromtimestamp(thisUtcTime[0] + 5*3600)
         thisDate = thisDatetime.date()
         thisTime = thisDatetime.time()
-
         startUtcTime = (datetime.datetime.combine(thisDate,startTime)- datetime.datetime(1970, 1, 1)).total_seconds()
         endUtcTime = (datetime.datetime.combine(thisDate,endTime)- datetime.datetime(1970, 1, 1)).total_seconds()
-
-        #General case
-        #           o>>>>>>>>>>>>>><<<<<<<<<<<<<<o
-        #-----------o----------------------------o-----------
-        #       startTime                     endTime
 
         if endTime >= startTime:
             thisUtcLog = numpy.logical_and(thisUtcTime > startUtcTime, thisUtcTime < endUtcTime)
@@ -1085,20 +1075,12 @@ class HFParamReader(HFReader):
                 return thisDatetime
             return None
 
-        #If endTime < startTime then endTime belongs to the next day
-        #<<<<<<<<<<<o                            o>>>>>>>>>>>
-        #-----------o----------------------------o-----------
-        #        endTime                    startTime
-
         if (thisDate == startDate) and numpy.all(thisUtcTime < startUtcTime):
             return None
-
         if (thisDate == endDate) and numpy.all(thisUtcTime > endUtcTime):
             return None
-
         if numpy.all(thisUtcTime < startUtcTime) and numpy.all(thisUtcTime > endUtcTime):
             return None
-
         return thisDatetime
 
     def __setNextFileOffline(self):
@@ -1409,8 +1391,9 @@ class HFParamReader(HFReader):
                 sizeoffile= verifyFile(filename,size=self.sizeofHF_File)#9650368 en 600
                 if not (sizeoffile):
                     continue
-
-                thisDatetime = isFileinThisTime(filename, self.startDate,self.endDate,self.startTime, self.endTime,self.timezone)
+                #Linea provenia de la version anterior.
+                #thisDatetime = isFileinThisTime(filename, self.startDate,self.endDate,self.startTime, self.endTime,self.timezone)
+                thisDatetime = __isFileInTimeRange(filename, self.startDate,self.endDate,self.startTime, self.endTime,self.timezone)
 
                 if not(thisDatetime):
                     continue
@@ -1461,49 +1444,6 @@ class HFParamReader(HFReader):
         self.__setParameters(path,frequency,startDate, endDate, startTime, endTime, walk)
         self.__checkPath()
         pathList,filenameList=self.__findDataForDates()
-
-        '''
-
-        JRODataObj = JRODataReader()
-        dateList, pathList = JRODataObj.findDatafiles(path, startDate, endDate, expLabel, ext, walk, include_path=True)
-        if dateList == []:
-            print("[Reading] No *%s files in %s from %s to %s)"%(ext, path,
-                                                        datetime.datetime.combine(startDate,startTime).ctime(),
-                                                        datetime.datetime.combine(endDate,endTime).ctime()))
-
-            return None, None
-
-        if len(dateList) > 1:
-            print("[Reading] %d days were found in date range: %s - %s" %(len(dateList), startDate, endDate))
-        else:
-            print("[Reading] data was found for the date %s" %(dateList[0]))
-
-        filenameList = []
-        datetimeList = []
-
-        for thisPath in pathList:
-            fileList = glob.glob1(thisPath, "*%s" %ext)
-            fileList.sort()
-
-            for file in fileList:
-                filename = os.path.join(thisPath,file)
-                if not __isFileInDateRange(filename, startDate, endDate):
-                    continue
-                thisDatetime = self.__isFileInTimeRange(filename, startDate, endDate, startTime, endTime)
-                if not(thisDatetime):
-                    continue
-                filenameList.append(filename)
-                datetimeList.append(thisDatetime)
-
-        if not(filenameList):
-            print("[Reading] Any file was found int time range %s - %s" %(datetime.datetime.combine(startDate,startTime).ctime(), datetime.datetime.combine(endDate,endTime).ctime()))
-            return None, None
-
-        print("[Reading] %d file(s) was(were) found in time range: %s - %s" %(len(filenameList), startTime, endTime))
-        print()
-        self.filenameList = filenameList
-        self.datetimeList = datetimeList
-        '''
         #la version 3 le da mas robustes?
         return pathList, filenameList
 
