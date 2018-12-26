@@ -1027,29 +1027,23 @@ class HFParamReader(HFReader):
             return
         return
 
-    def __isFileInTimeRange(self,filename, startDate, endDate, startTime, endTime):
+    def isFileInTimeRange(self,filename, startDate, endDate, startTime, endTime):
         """
         Retorna 1 si el archivo de datos se encuentra dentro del rango de horas especificado.
-
         Inputs:
             filename            :    nombre completo del archivo de datos en formato Jicamarca (.r)
-
             startDate          :    fecha inicial del rango seleccionado en formato datetime.date
-
             endDate            :    fecha final del rango seleccionado en formato datetime.date
-
             startTime          :    tiempo inicial del rango seleccionado en formato datetime.time
-
             endTime            :    tiempo final del rango seleccionado en formato datetime.time
-
         Return:
             Boolean    :    Retorna True si el archivo de datos contiene datos en el rango de
                             fecha especificado, de lo contrario retorna False.
-
         Excepciones:
             Si el archivo no existe o no puede ser abierto
             Si la cabecera no puede ser leida.
         """
+        print "Analyzing: ",filename
         try:
             fp = h5py.File(filename,'r')
             grp1 = fp['Data']
@@ -1066,6 +1060,8 @@ class HFParamReader(HFReader):
         thisDatetime = datetime.datetime.fromtimestamp(thisUtcTime[0] + 5*3600)
         thisDate = thisDatetime.date()
         thisTime = thisDatetime.time()
+        print 'startTime: ',startTime
+        raw_input("CheckStarttime")
         startUtcTime = (datetime.datetime.combine(thisDate,startTime)- datetime.datetime(1970, 1, 1)).total_seconds()
         endUtcTime = (datetime.datetime.combine(thisDate,endTime)- datetime.datetime(1970, 1, 1)).total_seconds()
 
@@ -1393,7 +1389,8 @@ class HFParamReader(HFReader):
                     continue
                 #Linea provenia de la version anterior.
                 #thisDatetime = isFileinThisTime(filename, self.startDate,self.endDate,self.startTime, self.endTime,self.timezone)
-                thisDatetime = __isFileInTimeRange(filename, self.startDate,self.endDate,self.startTime, self.endTime,self.timezone)
+                #isFileInTimeRange(self,filename, startDate, endDate, startTime, endTime):
+                thisDatetime = self.isFileInTimeRange(filename, self.startDate,self.endDate,self.startTime, self.endTime)
 
                 if not(thisDatetime):
                     continue
@@ -1441,6 +1438,7 @@ class HFParamReader(HFReader):
         pathList = []
         '''
         '''
+        print 'startTime from offline2: ',startTime
         self.__setParameters(path,frequency,startDate, endDate, startTime, endTime, walk)
         self.__checkPath()
         pathList,filenameList=self.__findDataForDates()
@@ -1501,7 +1499,7 @@ class HFParamReader(HFReader):
         if not online:
             print "Searching files in offline mode..."
             #self.__searchFilesOffLine2(path,startDate,endDate,startTime, endTime, ext, walk)
-            self.__searchFilesOffLine2(path,frequency,startDate, endDate, ext, startTime, endTime, walk)
+            self.__searchFilesOffLine2(path,frequency,startDate, endDate, startTime, endTime, ext,walk)
         else:
             print "Searching files in online mode..."
             self.__searchFilesOnline(path,frequency,startDate,endDate,ext,walk,set)
