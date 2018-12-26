@@ -16,10 +16,6 @@ from model.data.jroheaderIO import RadarControllerHeader, SystemHeader
 from model.data.jrodata import Voltage
 from model.proc.jroproc_base import ProcessingUnit, Operation
 
-#Formato necesario para leer datos
-from model.io.jroIO_base import JRODataReader
-
-
 def isNumber(str):
     """
     Chequea si el conjunto de caracteres que componen un string puede ser convertidos a un numero.
@@ -323,7 +319,6 @@ class HFReader(ProcessingUnit):
 
             if not(dirList):
                 return None, None
-
             thisDate=self.startDate
 
             while(thisDate <= self.endDate):
@@ -993,7 +988,7 @@ class HFReader(ProcessingUnit):
             self.isConfig = True
         self.getData()
 
-class HFParamReader(JRODataReader,HFReader):
+class HFParamReader(HFReader):
     #las variables fuera del init son atributos.
     #Los datos compaJRODataReader,rtidos pueden tener efectos inesperados que involucren objetos mutables como ser listas y diccionarios.
     def __init__(self): #argumentos que se pasen al operador de instanciacion de la clase
@@ -1022,6 +1017,15 @@ class HFParamReader(JRODataReader,HFReader):
         self.isConfig = False
         #self.searchFilesOffLine2()
         print 'Usando ParamReader'
+
+    def __checkPath(self):
+        if os.path.exists(self.path):
+            self.status=1
+        else:
+            self.status=0
+            print 'Path %s does not exits'%self.path
+            return
+        return
 
     def __isFileInTimeRange(self,filename, startDate, endDate, startTime, endTime):
 
@@ -1312,6 +1316,123 @@ class HFParamReader(JRODataReader,HFReader):
 
         return selData
 
+    def __setParameters(self,path='',frequency='', startDate='',endDate='',startTime='', endTime='', walk=''):
+        self.path = path
+        self.frequency=frequency
+        self.startDate = startDate
+        self.endDate = endDate
+        self.startTime = startTime
+        self.endTime = endTime
+        self.walk = walk
+
+    def __findDataForDates(self,online=False):
+        if not(self.status):
+            return None
+        pathList = []
+        multi_path=self.path.split(',')
+        for single_path in multi_path:
+            dirList=[]
+            for thisPath in os.listdir(single_path):
+                if not os.path.isdir(os.path.join(single_path,thisPath)):
+                    continue
+                if not isDoyFolder(thisPath):
+                    continue
+
+                dirList.append(thisPath)
+
+            if not(dirList):
+                return None, None
+
+            thisDate=self.startDate
+            #Porque usar un fnmatch.filter y no un glob glob?
+
+            while(thisDate <= self.endDate):
+                    year = thisDate.timetuple().tm_year
+                    doy = thisDate.timetuple().tm_yday
+
+                    matchlist = fnmatch.filter(dirList, '?' + '%4.4d%3.3d' % (year,doy) + '*')
+                    if len(matchlist) == 0:
+                        thisDate += datetime.timedelta(1)
+                        continue
+                    for match in matchlist:
+                        pathList.append(os.path.join(single_path,match))
+
+                    thisDate += datetime.timedelta(1)
+
+        if pathList == []:
+            print "Any folder was found for the date range: %s-%s" %(self.startDate, self.endDate)
+            return None, None
+
+        print "%d folder(s) was(were) found for the date range: %s - %s" %(len(pathList), self.startDate, self.endDate)
+        filenameList = []
+        datetimeList = []
+        pathDict = {}
+        filenameList_to_sort = []
+
+        flag=False
+        if self.frequency<3:
+            add_folder='sp'+str(self.code)+'1_f0'
+            flag=True
+        if self.frequency>=3:
+            add_folder='sp'+str(self.code)+'1_f1'
+            flag=True
+
+        if flag==False:
+            print "Please write 2.72 or 3.64"
+            return 0
+
+        for i in range(len(pathList)):
+            #pathList[i] = pathList[i]+"/"+add_folder
+            pathList[i] = pathList[i]+"/"
+        print 'Data path to looking for: ',pathList
+        for i in range(len(pathList)):
+            thisPath = pathList[i]
+            fileList = glob.glob1(thisPath, "*%s" %self.ext)
+            fileList.sort()
+            pathDict.setdefault(fileList[0])
+            pathDict[fileList[0]] = i
+            filenameList_to_sort.append(fileList[0])
+
+        filenameList_to_sort.sort()
+
+        for file in filenameList_to_sort:
+            thisPath = pathList[pathDict[file]]
+            fileList = glob.glob1(thisPath, "*%s" %self.ext)
+            fileList.sort()
+            ##################### NEW - PART - OFF LINE ##############
+            last_filename=os.path.join(thisPath,fileList[-1])
+            self.sizeofHF_File=os.path.getsize(last_filename)
+            ##################################################
+            for file in fileList:
+
+                filename = os.path.join(thisPath,file)
+                sizeoffile= verifyFile(filename,size=self.sizeofHF_File)#9650368 en 600
+                if not (sizeoffile):
+                    continue
+
+                thisDatetime = isFileinThisTime(filename, self.startDate,self.endDate,self.startTime, self.endTime,self.timezone)
+
+                if not(thisDatetime):
+                    continue
+
+                filenameList.append(filename)
+                datetimeList.append(thisDatetime)
+
+        if not(filenameList):
+            print "Any file was found for the time range %s - %s" %(self.startTime, self.endTime)
+            return None, None
+
+        print "%d file(s) was(were) found for the time range: %s - %s" %(len(filenameList), self.startTime, self.endTime)
+        print
+
+        for i in range(len(filenameList)):
+            print "%s -> [%s]" %(filenameList[i], datetimeList[i].ctime())
+
+        self.filenameList = filenameList
+        self.datetimeList = datetimeList
+
+        return pathList, filenameList
+
     def __setLocalVariables(self):
         print "Esta wbda si funciona"
         '''
@@ -1320,8 +1441,10 @@ class HFParamReader(JRODataReader,HFReader):
         self.dataImage  = numpy.zeros((self.nHeights,3,self.nChannels), dtype = numpy.float) #RGBdata
         self.profileIndex = 9999
         '''
+
     def __searchFilesOffLine2(self,
                             path,
+                            frequency,
                             startDate=None,
                             endDate=None,
                             startTime=datetime.time(0,0,0),
@@ -1437,8 +1560,8 @@ class HFParamReader(JRODataReader,HFReader):
         self.__setLocalVariables()
         if not online:
             print "Searching files in offline mode..."
-            self.__searchFilesOffLine2(path,startDate,endDate,startTime, endTime, ext, walk)
-            #self.__searchFilesOffline(path,frequency,startDate, endDate, ext, startTime, endTime, walk)
+            #self.__searchFilesOffLine2(path,startDate,endDate,startTime, endTime, ext, walk)
+            self.__searchFilesOffLine2(path,frequency,startDate, endDate, ext, startTime, endTime, walk)
         else:
             print "Searching files in online mode..."
             self.__searchFilesOnline(path,frequency,startDate,endDate,ext,walk,set)
