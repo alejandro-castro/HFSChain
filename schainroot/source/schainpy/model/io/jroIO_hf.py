@@ -16,6 +16,9 @@ from model.data.jroheaderIO import RadarControllerHeader, SystemHeader
 from model.data.jrodata import Voltage
 from model.proc.jroproc_base import ProcessingUnit, Operation
 
+#Formato necesario para leer datos
+from model.io.jroIO_base import JRODataReader
+
 
 def isNumber(str):
     """
@@ -64,7 +67,6 @@ def verifyFile(filename,size):
         return None
 
     return sizeoffile
-
 
 def isDoyFolder(folder):
     try:
@@ -161,30 +163,21 @@ def getlastFileFromPath(path, ext):
             print "There is a file or folder with different format"
         if not isNumber(number):
             continue
-
-#        year = thisFile[1:5]
-#        if not isNumber(year):
-#            continue
-
-#       doy = thisFile[5:8]
-#        if not isNumber(doy):
-#            continue
-
+        #year = thisFile[1:5]
+        #if not isNumber(year):
+            #continue
+        #doy = thisFile[5:8]
+        #if not isNumber(doy):
+        #continue
         number= int(number)
-#        year = int(year)
-#        doy = int(doy)
-
+        #year = int(year)
+        #doy = int(doy)
         if (os.path.splitext(thisFile)[-1].lower() != ext.lower()):
             continue
-
-
         validFilelist.append(thisFile)
-
-
     if validFilelist:
         validFilelist = sorted( validFilelist, key=str.lower )
         return validFilelist[-1]
-
     return None
 
 class HFReader(ProcessingUnit):
@@ -245,10 +238,7 @@ class HFReader(ProcessingUnit):
 
         self.campaign = 1
 
-        #--------------------------------------------------
-
         self.dataOut = self.createObjByDefault()
-
 
     def createObjByDefault(self):
 
@@ -274,8 +264,7 @@ class HFReader(ProcessingUnit):
         self.blocksize = pts2read
 
     def __readHeader(self):
-
-	#self.nProfiles = 100#600
+        #self.nProfiles = 100#600
         self.nHeights = 1000
         self.nChannels =2
         self.__firstHeigth=0
@@ -423,7 +412,6 @@ class HFReader(ProcessingUnit):
 
         return pathList, filenameList
 
-
     def __getTimeFromData(self):
         startDateTime_Reader = datetime.datetime.combine(self.startDate,self.startTime)
         endDateTime_Reader = datetime.datetime.combine(self.endDate,self.endTime)
@@ -452,12 +440,9 @@ class HFReader(ProcessingUnit):
         self.filenameList= dirList
 
     def __selectDataForTimes(self, online=False):
-
         if not(self.status):
             return None
-        #----------------
         self.__getFilenameList()
-        #----------------
         if not(online): #offline
             if not(self.all):
                 self.__getTimeFromData()
@@ -468,7 +453,6 @@ class HFReader(ProcessingUnit):
                 self.status=0
                 return None
         else:
-
             if self.campaign == 1:
                 value_set=6
             else:
@@ -488,7 +472,6 @@ class HFReader(ProcessingUnit):
                 else:
                     if filename == None:
                         raise ValueError, "corregir"
-
                     self.dirnameList=[filename]
                     fullfilename=self.path+"/"+filename
                     self.filenameList=[fullfilename]
@@ -499,10 +482,8 @@ class HFReader(ProcessingUnit):
                         pass
                     else:
                         print "No existe el siguiente archivo"
-
             else:
                 filename =getlastFileFromPath(self.path,self.ext)
-
                 if self.flag_nextfile==True:
                     self.dirnameList=[filename]
                     fullfilename=self.path+"/"+filename
@@ -528,8 +509,6 @@ class HFReader(ProcessingUnit):
                    else:
                        print "No existe el siguiente archivo"
 
-
-
     def __searchFilesOffline(self,
                             path,
                             frequency,
@@ -539,7 +518,6 @@ class HFReader(ProcessingUnit):
                             startTime=datetime.time(0,0,0),
                             endTime=datetime.time(23,59,59),
                             walk=True):
-
         self.__setParameters(path,frequency,startDate, endDate, startTime, endTime, walk)
         self.__checkPath()
         pathList,filenameList=self.__findDataForDates()
@@ -620,8 +598,6 @@ class HFReader(ProcessingUnit):
         return
 
     def __setNextFile(self,online=False):
-        """
-        """
         if not(online):
             newFile = self.__setNextFileOffline()
         else:
@@ -632,8 +608,6 @@ class HFReader(ProcessingUnit):
         return 1
 
     def __setNextFileOffline(self):
-        """
-        """
         idFile= self.fileIndex
         while(True): #TODO 2018, xq dentro de un while?
             idFile += 1
@@ -641,7 +615,6 @@ class HFReader(ProcessingUnit):
                 self.flagNoMoreFiles = 1
                 print "No more Files"
                 return 0
-
             filename = self.filenameList[idFile]
             hfFilePointer =h5py.File(filename,'r')
             epoc=hfFilePointer['t'].value
@@ -652,17 +625,13 @@ class HFReader(ProcessingUnit):
         self.flagIsNewFile = 1
         self.fileIndex = idFile
         self.filename = filename
-
         self.hfFilePointer = hfFilePointer
         hfFilePointer.close()
         self.__t0=epoc
         print "Setting the file: %s"%self.filename
-
         return 1
 
     def __setNextFileOnline(self):
-        """
-        """
         #print "SOY NONE",self.set
         if self.set==None:
             pass
@@ -812,7 +781,7 @@ class HFReader(ProcessingUnit):
     def __readMetadata(self):
         self.__readHeader()
 
-    def __setLocalVariables(self):
+    def __setLocalVariables(self): # deberia heredarlo?
 
         self.datablock = numpy.zeros((self.nChannels, self.nHeights,self.nProfiles), dtype = numpy.complex)
         self.datacspec = numpy.zeros(( self.nHeights,self.nProfiles), dtype = numpy.complex)
@@ -962,9 +931,9 @@ class HFReader(ProcessingUnit):
                 time.sleep(delay)
                 fp=h5py.File(self.filename,'r')
 
-        #Puntero que apunta al archivo hdf5
-	if self.code==None:
-	 	self.code=0
+
+        if self.code==None:
+            self.code=0
         name0='pw0_C'+str(self.code)
         name1='pw1_C'+str(self.code)
         name2='cspec01_C'+str(self.code)
@@ -1014,7 +983,6 @@ class HFReader(ProcessingUnit):
 
         return self.dataOut.data
 
-
     def run(self, **kwargs):
         '''
         This method will be called many times so here you should put all your code
@@ -1025,21 +993,12 @@ class HFReader(ProcessingUnit):
             self.isConfig = True
         self.getData()
 
-
-class HFParamReader(HFReader):
-    '''
-    20/12/18 : Esta clase se genera para poder plotear de los datos reducidos.
-    Reads HDF5 compress format files.
-    inputparameters :  path
-    startDate
-    endDate
-    startTime
-    endTime
-    '''
-
-    def __init__(self):
+class HFParamReader(JRODataReader,HFReader):
+    #las variables fuera del init son atributos.
+    #Los datos compaJRODataReader,rtidos pueden tener efectos inesperados que involucren objetos mutables como ser listas y diccionarios.
+    def __init__(self): #argumentos que se pasen al operador de instanciacion de la clase
+        #Las variables dentro del init tendran q ir acompaadas del self
         HFReader.__init__(self)
-
         self.ext = ".hdf5"
         self.optchar = "D"
         self.timezone = None
@@ -1061,6 +1020,7 @@ class HFParamReader(HFReader):
         self.fp = None
         self.dataOut = None
         self.isConfig = False
+        #self.searchFilesOffLine2()
         print 'Usando ParamReader'
 
     def __isFileInTimeRange(self,filename, startDate, endDate, startTime, endTime):
@@ -1099,16 +1059,11 @@ class HFParamReader(HFReader):
         #chino rata
         #In case has utctime attribute
         grp2 = grp1['utctime']
- #         thisUtcTime = grp2.value[0] - 5*3600 #To convert to local time
         thisUtcTime = grp2.value[0]
-
         fp.close()
-
         if self.timezone == 'lt':
             thisUtcTime -= 5*3600
-
         thisDatetime = datetime.datetime.fromtimestamp(thisUtcTime[0] + 5*3600)
- #         thisDatetime = datetime.datetime.fromtimestamp(thisUtcTime[0])
         thisDate = thisDatetime.date()
         thisTime = thisDatetime.time()
 
@@ -1143,7 +1098,6 @@ class HFParamReader(HFReader):
         return thisDatetime
 
     def __setNextFileOffline(self):
-
         self.fileIndex += 1
         idFile = self.fileIndex
 
@@ -1152,20 +1106,15 @@ class HFParamReader(HFReader):
             return 0
 
         filename = self.filenameList[idFile]
-
         filePointer = h5py.File(filename,'r')
-
         self.filename = filename
-
         self.fp = filePointer
-
         print("Setting the file: %s"%self.filename)
-
- #         self.__readMetadata()
+        #self.__readMetadata()
         self.__setBlockList()
         self.__readData()
- #         self.nRecords = self.fp['Data'].attrs['blocksPerFile']
- #         self.nRecords = self.fp['Data'].attrs['nRecords']
+        #self.nRecords = self.fp['Data'].attrs['blocksPerFile']
+        #self.nRecords = self.fp['Data'].attrs['nRecords']
         self.blockIndex = 0
         return 1
 
@@ -1335,7 +1284,7 @@ class HFParamReader(HFReader):
         listShapes = self.listShapes
 
         blockIndex = self.blockIndex
- #         blockList = self.blockList
+        #blockList = self.blockList
 
         for i in range(len(listMeta)):
             setattr(self.dataOut,listMetaname[i],listMeta[i])
@@ -1364,12 +1313,15 @@ class HFParamReader(HFReader):
         return selData
 
     def __setLocalVariables(self):
+        print "Esta wbda si funciona"
+        '''
         self.datablock = numpy.zeros((self.nChannels, self.nHeights,self.nProfiles), dtype = numpy.complex)
         self.datacspec = numpy.zeros(( self.nHeights,self.nProfiles), dtype = numpy.complex)
         self.dataImage  = numpy.zeros((self.nHeights,3,self.nChannels), dtype = numpy.float) #RGBdata
         self.profileIndex = 9999
-
-    def __searchFilesOffLine(self,path,
+        '''
+    def __searchFilesOffLine2(self,
+                            path,
                             startDate=None,
                             endDate=None,
                             startTime=datetime.time(0,0,0),
@@ -1381,9 +1333,16 @@ class HFParamReader(HFReader):
         self.filenameList = []
         self.datetimeList = []
         pathList = []
+        '''
+        '''
+        self.__setParameters(path,frequency,startDate, endDate, startTime, endTime, walk)
+        self.__checkPath()
+        pathList,filenameList=self.__findDataForDates()
+
+        '''
+
         JRODataObj = JRODataReader()
         dateList, pathList = JRODataObj.findDatafiles(path, startDate, endDate, expLabel, ext, walk, include_path=True)
-
         if dateList == []:
             print("[Reading] No *%s files in %s from %s to %s)"%(ext, path,
                                                         datetime.datetime.combine(startDate,startTime).ctime(),
@@ -1421,6 +1380,8 @@ class HFParamReader(HFReader):
         print()
         self.filenameList = filenameList
         self.datetimeList = datetimeList
+        '''
+        #la version 3 le da mas robustes?
         return pathList, filenameList
 
     def setup(self,
@@ -1473,21 +1434,11 @@ class HFParamReader(HFReader):
         self.timezone= timezone
         self.online= online
         self.all=all
-        #self.__setLocalVariables()
-        raw_input("xq no dejas?")
+        self.__setLocalVariables()
         if not online:
             print "Searching files in offline mode..."
-            self.__searchFilesOffline(path,startDate, endDate, startTime, endTime, ext, walk)
-            '''
-                def __searchFilesOffLine(self,path,
-                                        startDate=None,
-                                        endDate=None,
-                                        startTime=datetime.time(0,0,0),
-                                        endTime=datetime.time(23,59,59),
-                                        ext='.hdf5',
-                                        walk=True):
-            '''
-            self.__searchFilesOffline(path,frequency,startDate, endDate, ext, startTime, endTime, walk)
+            self.__searchFilesOffLine2(path,startDate,endDate,startTime, endTime, ext, walk)
+            #self.__searchFilesOffline(path,frequency,startDate, endDate, ext, startTime, endTime, walk)
         else:
             print "Searching files in online mode..."
             self.__searchFilesOnline(path,frequency,startDate,endDate,ext,walk,set)
@@ -1510,48 +1461,6 @@ class HFParamReader(HFReader):
         self.isConfig = True
 
 
-        '''
-            def setup(self, **kwargs):
-
-        path = kwargs['path']
-        startDate = kwargs['startDate']
-        endDate = kwargs['endDate']
-        startTime = kwargs['startTime']
-        endTime = kwargs['endTime']
-        walk = kwargs['walk']
-        if 'ext' in kwargs:
-            ext = kwargs['ext']
-        else:
-            ext = '.hdf5'
-        if 'timezone' in kwargs:
-            self.timezone = kwargs['timezone']
-        else:
-            self.timezone = 'lt'
-
-        print("[Reading] Searching files in offline mode ...")
-        pathList, filenameList = self.searchFilesOffLine(path, startDate=startDate, endDate=endDate,
-                                                               startTime=startTime, endTime=endTime,
-                                                               ext=ext, walk=walk)
-
-        if not(filenameList):
-            print("There is no files into the folder: %s"%(path))
-            sys.exit(-1)
-
-        self.fileIndex = -1
-        self.startTime = startTime
-        self.endTime = endTime
-
-        self.__readMetadata()
-
-        self.__setNextFileOffline()
-
-        return
-        '''
-
-    #Jm: Este metodo no es el mismo para HFReader
-
-
-
     def getData(self):
 
         if self.blockIndex==self.blocksPerFile:
@@ -1566,13 +1475,10 @@ class HFParamReader(HFReader):
 
         return
 
-
     def run(self, **kwargs):
         #Generar el Setup y llama al getData
         if not self.isConfig:
             self.setup(**kwargs)
             self.isConfig = True
-
         self.getData()
-
         return
