@@ -780,7 +780,9 @@ class HFReader(ProcessingUnit):
 
         self.datablock = numpy.zeros((self.nChannels, self.nHeights,self.nProfiles), dtype = numpy.complex)
         self.datacspec = numpy.zeros(( self.nHeights,self.nProfiles), dtype = numpy.complex)
-        self.dataImage  = numpy.zeros((self.nHeights,3,self.nChannels), dtype = numpy.float) #RGBdata
+        #self.dataImage  = numpy.zeros((self.nHeights,3,self.nChannels), dtype = numpy.float) #RGBdata
+        #Correcion para que todas las alturas esten en filas
+        self.dataImage  = numpy.zeros((3,self.nHeights,self.nChannels), dtype = numpy.float) #RGBdata
         self.profileIndex = 9999
 
     def __setHeaderDO(self):
@@ -948,7 +950,7 @@ class HFReader(ProcessingUnit):
         ch1= ch1.swapaxes(0,1)   #Segundo canal (100,1000)--(alturas,perfiles)
         self.datablock = numpy.array([ch0,ch1])
         self.datacspec = numpy.array([cspc])
-        self.dataImage = numpy.array([ch0_image,ch1_image])
+        self.dataImage = numpy.array([ch0_image.transpose(),ch1_image.transpose()])
         self.flagIsNewFile=0
 
         self.profileIndex=0
@@ -1087,7 +1089,7 @@ class HFParamReader(HFReader):
             return 0
 
         filename = self.filenameList[idFile]
-        filePointer = h5py.File(filename,'r')
+        filePointer = h5py.File(filename,'r+')
         self.filename = filename
         self.fp = filePointer
         print("Setting the file: %s"%self.filename)
@@ -1140,13 +1142,10 @@ class HFParamReader(HFReader):
     def __readMetadata(self):
         '''
         Reads Metadata
-
         self.pathMeta
-
         self.listShapes
         self.listMetaname
         self.listMeta
-
         '''
         toextract = self.filenameList[0].split('/')[-2]
         filename = self.filenameList[0].replace(toextract,'').replace('//','/').replace('D','M')
@@ -1178,14 +1177,18 @@ class HFParamReader(HFReader):
 
     def __readData(self):
         grp = self.fp['Data']
+
         listdataname = []
         listdata = []
-
+        print 'listShapes: ', self.listShapes
         for item in list(grp.items()):
+            print 'item: ',item
             name = item[0]
+            print 'name: ',name
             listdataname.append(name)
-            print 'grp[name]: ',grp[name]
+            print 'grp[name]: ',grp[name] # Esto es como self.fp['Data']['CrossData']
             print 'self.listShapes[name]:', self.listShapes[name]
+
             array = self.__setDataArray(grp[name],self.listShapes[name])
             listdata.append(array)
 
@@ -1205,14 +1208,17 @@ class HFParamReader(HFReader):
 
         print 'mode: ', mode
         print 'nDims' , nDims
-        print 'nDims1' , nDim1
-        print 'nDims2' , nDim2
-        print 'nDims0' , nDim0
+        print 'nDim1' , nDim1
+        print 'nDim2' , nDim2
+        print 'nDim0' , nDim0
         print 'blockList: ',blockList
         print 'blocksPerFile: ', blocksPerFile
         #Depending on what mode the data was stored
         if mode == 0:       #Divided in channels
-            arrayData = dataset.value.astype(numpy.float)[0][blockList]
+            #arrayData = dataset['channel0'].value.astype(numpy.float)[0][blockList]
+            strds = 'channel'
+            #arrayData = dataset.value.astype(numpy.float)[0][blockList] #De esta forma estaba...
+            #print arrayData
         if mode == 1:     #Divided in parameter
             strds = 'table'
             nDatas = nDim1
@@ -1237,21 +1243,23 @@ class HFParamReader(HFReader):
         if nDims == 0:
             arrayData = dataset.value.astype(numpy.float)[0][blockList]
 
-        #    Two dimensions
+        #    Two dimensions : just for HF HDF5 compress data Format
         elif nDims == 2:
             arrayData = numpy.zeros((blocksPerFile,nDim1,nDim0))
             newShapes = (blocksPerFile,nDim0)
             nDatas = nDim1
 
-            for i in range(nDatas):
+            for i in range(nDim1):
                 data = dataset[strds + str(i)].value
                 arrayData[:,i,:] = data[blockList,:]
+        #       three dimensions
+        #ValueError: could not broadcast input array from shape (1000,3) into shape (2,3)
+        #arrayData[b,:,i,:] = data[:,:,blockList[b]]
 
-        #    Three dimensions
         else:
             arrayData = numpy.zeros((blocksPerFile,nDim2,nDim1,nDim0))
-            for i in range(nDatas):
-
+            print 'dataset: ',dataset
+            for i in range(nDim1): #Por cada canal, osea nDim1 es numero de canales?
                 data = dataset[strds + str(i)].value
 
                 for b in range(blockList.size):
