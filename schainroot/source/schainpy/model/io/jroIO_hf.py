@@ -553,7 +553,7 @@ class HFReader(ProcessingUnit):
 
             tmp = dirList[-1]
             flag=False
-            #print self.frequency,"HOLA AMIGO QUE TAL"
+
             if self.frequency<3:
                 add_folder='sp'+str(self.code)+'1_f0'
                 flag=True
@@ -604,7 +604,7 @@ class HFReader(ProcessingUnit):
 
     def __setNextFileOffline(self):
         idFile= self.fileIndex
-        while(True): #TODO 2018, xq dentro de un while?
+        while(True):
             idFile += 1
             if not (idFile < len(self.filenameList)):
                 self.flagNoMoreFiles = 1
@@ -627,7 +627,6 @@ class HFReader(ProcessingUnit):
         return 1
 
     def __setNextFileOnline(self):
-        #print "SOY NONE",self.set
         if self.set==None:
             pass
         else:
@@ -1190,6 +1189,7 @@ class HFParamReader(HFReader):
             print 'self.listShapes[name]:', self.listShapes[name]
 
             array = self.__setDataArray(grp[name],self.listShapes[name])
+            print 'array.shape: ',array.shape
             listdata.append(array)
 
         self.listDataname = listdataname
@@ -1199,8 +1199,8 @@ class HFParamReader(HFReader):
     def __setDataArray(self, dataset, shapes):
 
         nDims = shapes[0]
-        nDim2 = shapes[1]      #Dimension 0
-        nDim1 = shapes[2]      #Dimension 1, number of Points or Parameters
+        nDim1 = shapes[1]      #Dimension 0
+        nDim2 = shapes[2]      #Dimension 1, number of Points or Parameters
         nDim0 = shapes[3]      #Dimension 2, number of samples or ranges
         mode = shapes[4]        #Mode of storing
         blockList = self.blockList

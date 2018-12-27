@@ -230,11 +230,14 @@ class ParametersProc(ProcessingUnit):
         for ind in range(oldspec.shape[1]):
 
             spec = oldspec[:,ind]
+            #TODO : if snr = (spec2.mean()-n0)/n0 SNR es menor que 0.3dB no hagas el resto.
+            #TODO : hacer un noise special para el slice metodo privado de ParametersProc
             aux = spec*fwindow[0:len(spec)] #Jm:hardcoded to match with lenghts
             max_spec = aux.max()
             m = list(aux).index(max_spec)
 
             #Smooth
+            #TODO : probar el whitenning smooth que dio Juha
             if (smooth == 0):   spec2 = spec
             else:   spec2 = scipy.ndimage.filters.uniform_filter1d(spec,size=smooth)
 
@@ -263,6 +266,7 @@ class ParametersProc(ProcessingUnit):
             #print 'valid[0]:',freq[valid[0]]
             #print 'valid[-1]:',freq[valid[-1]]
             power = ((spec2[valid] - n0)*fwindow[valid]).sum() # m_0 = first moments
+            #TODO probar la estimacion de fd con el calculo de ruido por perfil.
             fd = ((spec2[valid]- n0)*freq[valid]*fwindow[valid]).sum()/power # m_1=radial velocity = frequecy doppler?
             w = math.sqrt((  (spec2[valid] - n0)*fwindow[valid]  *(freq[valid]- fd)**2   ).sum()/power)
             snr = (spec2.mean()-n0)/n0
@@ -278,6 +282,7 @@ class ParametersProc(ProcessingUnit):
             vec_lv[ind]=freq[valid[-1]]
             #vec_sw[ind] = sw
 
+            #else : vec_power[ind] = un numero x, fd , w y snr igual.
         moments = numpy.vstack((vec_snr, vec_power, vec_fd, vec_w,vec_fv,vec_lv))
         return moments
 
