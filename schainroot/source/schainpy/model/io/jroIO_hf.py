@@ -1014,8 +1014,9 @@ class HFParamReader(HFReader):
         self.listShapes = None
         self.listData = None
         self.fp = None
-        self.dataOut = None
+        #self.dataOut = None
         self.isConfig = False
+        self.dataOut = self.createObjByDefault()
         #self.searchFilesOffLine2()
         print 'Usando ParamReader'
 
@@ -1273,21 +1274,28 @@ class HFParamReader(HFReader):
         listDataname = self.listDataname
         listData = self.listData
         listShapes = self.listShapes
-
         blockIndex = self.blockIndex
         #blockList = self.blockList
-
+        #Redefine porque un self.xxx no puede ser atributo de un self.dataOut
         for i in range(len(listMeta)):
+            print 'listMetaname[i]:' ,listMetaname[i]
+            print 'listMeta[i]:' ,listMeta[i]
             setattr(self.dataOut,listMetaname[i],listMeta[i])
+            #igual a self.dataOut.listMetaname[i]=listMeta[i]
 
         for j in range(len(listData)):
             nShapes = listShapes[listDataname[j]][0]
             mode = listShapes[listDataname[j]][4]
+            print 'mode: ',mode
+
             if nShapes == 1:
+                print 'listDataname nshape1 : ',listDataname[j]
                 setattr(self.dataOut,listDataname[j],listData[j][blockIndex])
-            elif nShapes > 1:
+            elif nShapes > 1: #HF entra aqui.
+                print 'listDataname +1 : ',listDataname[j]
                 setattr(self.dataOut,listDataname[j],listData[j][blockIndex,:])
             elif mode==0:
+                print 'listDataname mode = 0: ',listDataname[j]
                 setattr(self.dataOut,listDataname[j],listData[j][blockIndex])
             #Mode Meteors
             elif mode ==2:
@@ -1540,9 +1548,7 @@ class HFParamReader(HFReader):
 
         self.__setDataOut()
         self.dataOut.flagNoData = False
-
         self.blockIndex += 1
-
         return
 
     def run(self, **kwargs):
