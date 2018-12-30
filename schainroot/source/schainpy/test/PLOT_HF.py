@@ -357,7 +357,7 @@ opObj31.addParameter(name='xmin', value='-50', format='float')
 opObj31.addParameter(name='xmax', value='50', format='float')
 opObj31.addParameter(name='ymin', value='200', format='float')
 opObj31.addParameter(name='ymax', value='500', format='float')
-opObj31.addParameter(name='show', value='1', format='bool')
+opObj31.addParameter(name='show', value='0', format='bool')
 
 print "Escribiendo el archivo XML"
 controllerObj.writeXml(filename)

@@ -428,7 +428,7 @@ class ReadUnitConf(ProcUnitConf):
 
     ELEMENTNAME = 'ReadUnit'
     #Acordarse que un init puede reemplazar al de la herencia.
-    
+
     def __init__(self):
 
         self.id = None
@@ -637,7 +637,7 @@ class Project():
             self.__connect(puObjIN, thisPUObj)
 
     def run(self):
-        raw_input("Haces el run?")
+
         while(True):
 
             finalSts = False

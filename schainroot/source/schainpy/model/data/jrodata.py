@@ -9,6 +9,9 @@ import numpy
 import datetime
 
 from jroheaderIO import SystemHeader, RadarControllerHeader
+# pero si tengo schainpy
+import cSchainNoise
+#from cSchainNoise import hildebrand_sekhon
 
 def getNumpyDtype(dataTypeCode):
 
@@ -53,6 +56,7 @@ def hildebrand_sekhon(data, navg):
     data = data.copy()
 
     sortdata = numpy.sort(data,axis=None)
+    '''
     lenOfData = len(sortdata)
     nums_min = lenOfData/10
 
@@ -88,6 +92,8 @@ def hildebrand_sekhon(data, navg):
     lnoise = sump /j
     stdv = numpy.sqrt((sumq - lnoise**2)/(j - 1))
     return lnoise
+    '''
+    return cSchainNoise.hildebrand_sekhon(sortdata, navg)
 
 class Beam:
     def __init__(self):
