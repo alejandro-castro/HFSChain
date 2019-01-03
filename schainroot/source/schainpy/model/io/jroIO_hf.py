@@ -878,6 +878,7 @@ class HFReader(ProcessingUnit):
 
         self.dataOut.last_block = len(self.filenameList)
 
+
     def __hasNotDataInBuffer(self):
 
         if self.profileIndex >= self.nProfiles:
@@ -1171,9 +1172,22 @@ class HFParamReader(HFReader):
         self.listShapes = listShapes
         self.listMetaname = listMetaname
         self.listMeta = listMetadata
+        self.__readHeader() # read some radar parameters like number of heights or ippsecond.
 
         fp.close()
         return
+
+    def __readHeader(self):
+        #self.nProfiles = 100#600
+        self.nHeights = 1000
+        self.nChannels =2
+        self.__firstHeigth=0
+        self.__nSamples=1000
+        self.__deltaHeigth=1.5
+        self.__sample_rate=1e5
+        self.__frequency=None
+        self.__online = False
+        self.filename_next_set=None
 
     def __readData(self):
         grp = self.fp['Data']
@@ -1465,6 +1479,106 @@ class HFParamReader(HFReader):
         pathList,filenameList=self.__findDataForDates()
         #la version 3 le da mas robustes?
         return pathList, filenameList
+
+
+    def __setHeaderDO(self):
+        '''
+        Set Header for dataOut
+        '''
+
+        self.dataOut.radarControllerHeaderObj = RadarControllerHeader()
+        self.dataOut.systemHeaderObj = SystemHeader()
+        #---------------------------------------------------------
+        self.dataOut.systemHeaderObj.nProfiles=100
+        self.dataOut.systemHeaderObj.nSamples=1000
+
+        SAMPLING_STRUCTURE=[('h0', '<f4'), ('dh', '<f4'), ('nsa', '<u4')]
+        self.dataOut.radarControllerHeaderObj.samplingWindow=numpy.zeros((1,),SAMPLING_STRUCTURE)
+        self.dataOut.radarControllerHeaderObj.samplingWindow['h0']=0
+        self.dataOut.radarControllerHeaderObj.samplingWindow['dh']=1.5
+        self.dataOut.radarControllerHeaderObj.samplingWindow['nsa']=1000
+        self.dataOut.radarControllerHeaderObj.nHeights=int(self.dataOut.radarControllerHeaderObj.samplingWindow['nsa'])
+        self.dataOut.radarControllerHeaderObj.firstHeight = self.dataOut.radarControllerHeaderObj.samplingWindow['h0']
+        self.dataOut.radarControllerHeaderObj.deltaHeight = self.dataOut.radarControllerHeaderObj.samplingWindow['dh']
+        self.dataOut.radarControllerHeaderObj.samplesWin = self.dataOut.radarControllerHeaderObj.samplingWindow['nsa']
+
+        self.dataOut.radarControllerHeaderObj.nWindows=1
+        self.dataOut.radarControllerHeaderObj.codetype=0
+        self.dataOut.radarControllerHeaderObj.numTaus=0
+        #self.dataOut.radarControllerHeaderObj.Taus = numpy.zeros((1,),'<f4')
+        #self.dataOut.radarControllerHeaderObj.nCode=numpy.zeros((1,), '<u4')
+        #self.dataOut.radarControllerHeaderObj.nBaud=numpy.zeros((1,), '<u4')
+        #self.dataOut.radarControllerHeaderObj.code=numpy.zeros(0)
+
+        self.dataOut.radarControllerHeaderObj.code_size=0
+        self.dataOut.nBaud=0
+        self.dataOut.nCode=0
+        self.dataOut.nPairs=0
+        #nuevo
+        self.dataOut.radarControllerHeaderObj.expType=2
+        self.dataOut.radarControllerHeaderObj.nTx=1
+        self.dataOut.radarControllerHeaderObj.txA=0
+        self.dataOut.radarControllerHeaderObj.txB=0
+        #---------------------------------------------------------
+
+        self.dataOut.type = "Spectra"
+
+        self.dataOut.data = None
+
+        self.dataOut.dtype = numpy.dtype([('real','<f4'),('imag','<f4')])
+
+        self.dataOut.nProfiles = 1
+
+        self.dataOut.heightList = self.__firstHeigth + numpy.arange(self.__nSamples, dtype = numpy.float)*self.__deltaHeigth
+
+        self.dataOut.channelList = range(self.nChannels)
+
+        #self.dataOut.channelIndexList = None
+
+        self.dataOut.flagNoData = True
+
+        #Set to TRUE if the data is discontinuous
+        self.dataOut.flagDiscontinuousBlock = False
+
+        self.dataOut.utctime = None
+
+        self.dataOut.useLocalTime=True
+
+        self.dataOut.timeZone = -self.timezone# original en -self.timezone/60
+
+        self.dataOut.dstFlag = 0
+
+        self.dataOut.errorCount = 0
+
+        self.dataOut.nCohInt = 1 #6(60seg) o 1(10seg)
+
+        self.dataOut.blocksize = self.dataOut.getNChannels() * self.dataOut.getNHeights()
+
+        self.dataOut.flagDecodeData = False #asumo que la data esta decodificada
+
+        self.dataOut.flagDeflipData = False #asumo que la data esta sin flip
+
+        self.dataOut.flagShiftFFT = False
+
+        self.dataOut.ippSeconds = 1.0*self.__nSamples/self.__sample_rate*10  ######
+
+        self.dataOut.ippSeconds= 0.1
+
+        #Time interval between profiles
+        #self.dataOut.timeInterval =self.dataOut.ippSeconds * self.dataOut.nCohInt
+
+
+        self.dataOut.frequency = self.__frequency
+
+        self.dataOut.nIncohInt = self.__inc_int
+
+        #print "QUE INTERESANTE",self.dataOut.nIncohInt,self.__inc_int
+
+        self.dataOut.realtime = self.__online
+
+        self.dataOut.last_block = len(self.filenameList)
+
+
 
     def setup(self,
                path = None,

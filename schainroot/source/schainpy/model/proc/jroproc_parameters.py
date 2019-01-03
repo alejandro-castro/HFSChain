@@ -131,6 +131,10 @@ class ParametersProc(ProcessingUnit):
         if self.dataIn.type == "Parameters":
             self.dataOut.copy(self.dataIn)#Datain is listdata?
             self.dataOut.flagNoData = False
+            #also works with HF?
+            self.dataOut.outputInterval = 60
+            self.dataOut.timeInterval = 60
+            #self.dataOut.abscissaList = self.dataIn.getVelRange(1)
 
             return True
 

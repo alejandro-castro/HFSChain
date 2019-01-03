@@ -1043,6 +1043,17 @@ class Parameters(JROData): #parameter hereda de spectra
         datatime = numpy.array(datatime)
 
         return datatime
+        
+    def getVelRange(self, extrapoints=0):
+        #deltafreq = 2*self.getFmax() / (self.nFFTPoints)
+        #print deltafreq,'Deltafreq TEST1'
+
+	#print self.getVmax() , 'TEST 0'
+        deltav = 2*self.getVmax() / (self.nFFTPoints)# agregar comentario
+
+        velrange = deltav*(numpy.arange(self.nFFTPoints+extrapoints)-self.nFFTPoints/2.) - (deltav/2)*extrapoints
+
+        return velrange
 
 
 class Image(JROData):

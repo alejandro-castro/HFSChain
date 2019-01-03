@@ -714,15 +714,15 @@ class ParametersPlot(Figure):
         if parameterIndex == None:
             parameterIndex = 1
         #Me quede aqui 03\01\19
+        #Vamos a checkiar que tipo de formato recibe comunmente para poder darle el formato al tiempo
+        #
         x = dataOut.getTimeRange1()
         y = dataOut.heightList
-        #print "parameterIndex:", parameterIndex
         print 'x:',x
         z = data_param[channelIndexList,parameterIndex,:].copy()
         print 'z.shape: SNR?',z.shape
         #Se esta asumiendo que entra abscissaList en el dataout. vamos a recontruirlo.
-
-        #zRange = dataOut.abscissaList
+        zRange = dataOut.abscissaList
         nplots = z.shape[0]
 #        thisDatetime = dataOut.datatime
 
