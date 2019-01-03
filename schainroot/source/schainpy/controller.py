@@ -409,7 +409,7 @@ class ProcUnitConf():
             for parmConfObj in opConfObj.getParameterObjList():
                 kwargs[parmConfObj.name] = parmConfObj.getValue()
 
-            #print "\tRunning the '%s' operation with %s" %(opConfObj.name, opConfObj.id)
+            print "\tRunning the '%s' operation with %s" %(opConfObj.name, opConfObj.id)
             sts = self.procUnitObj.call(opType = opConfObj.type,
                                         opName = opConfObj.name,
                                         opId = opConfObj.id,

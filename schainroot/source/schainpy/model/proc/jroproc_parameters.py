@@ -67,8 +67,7 @@ class ParametersProc(ProcessingUnit):
                                                 dtype='f')
 
     def run(self, nSeconds = None, nProfiles = None):
-
-
+        #raw_input("self.dataIn.type: %s"%(self.dataIn.type))
 
         if self.firstdatatime == None:
             self.firstdatatime = self.dataIn.utctime
@@ -127,10 +126,10 @@ class ParametersProc(ProcessingUnit):
             self.dataOut.groupList = self.dataIn.pairsList
             self.dataOut.flagNoData = False
 
-                #----------------------    Correlation Data    ---------------------------
+        #----------------------    Parameters Data    ---------------------------
 
         if self.dataIn.type == "Parameters":
-            self.dataOut.copy(self.dataIn)
+            self.dataOut.copy(self.dataIn)#Datain is listdata?
             self.dataOut.flagNoData = False
 
             return True
@@ -710,7 +709,7 @@ class ParametersProc(ProcessingUnit):
         return voltsCCF
 
     def __getNoise(self, power, timeSegment, timeInterval):
-	print "here I am"
+
         numProfPerBlock = numpy.ceil(timeSegment/timeInterval)
         numBlocks = int(power.shape[0]/numProfPerBlock)
         numHeights = power.shape[1]

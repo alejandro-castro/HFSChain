@@ -263,13 +263,14 @@ class JROData(GenericData):
 
     def getFmax(self):
 
-	#print self.ippSeconds,'IPPSECONDS'
-	#print self.ippFactor,'IPPFACTOR'
+        #print self.ippSeconds,'IPPSECONDS'
+        #print self.ippFactor,'IPPFACTOR'
         #print self.nCohInt,'COHINT'
 
         PRF = 1./(self.ippSeconds * self.nCohInt*self.ippFactor) #AGREGARCOMENTARIO
 
         fmax = PRF/2.
+        raw_input("Testing value - fmax %f :"%(fmax))
         #print fmax,'FMAX'
 
 

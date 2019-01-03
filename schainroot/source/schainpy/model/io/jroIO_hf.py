@@ -1177,20 +1177,22 @@ class HFParamReader(HFReader):
 
     def __readData(self):
         grp = self.fp['Data']
-
+        print 'Reading Data: '
         listdataname = []
         listdata = []
         print 'listShapes: ', self.listShapes
+
         for item in list(grp.items()):
-            print 'item: ',item
+            print '1 item: ',item
             name = item[0]
-            print 'name: ',name
+            print '2 name: ',name
             listdataname.append(name)
-            print 'grp[name]: ',grp[name] # Esto es como self.fp['Data']['CrossData']
-            print 'self.listShapes[name]:', self.listShapes[name]
+            print '3 grp[name]: ',grp[name]
+            print '4 self.listShapes[name]:', self.listShapes[name]
 
             array = self.__setDataArray(grp[name],self.listShapes[name])
-            print 'array.shape: ',array.shape
+            print '5 array.shape: ',array.shape
+            print '\t'
             listdata.append(array)
 
         self.listDataname = listdataname
@@ -1203,10 +1205,10 @@ class HFParamReader(HFReader):
         nDim1 = shapes[1]      #Dimension 0
         nDim2 = shapes[2]      #Dimension 1, number of Points or Parameters
         nDim0 = shapes[3]      #Dimension 2, number of samples or ranges
-        mode = shapes[4]        #Mode of storing
+        mode = shapes[4]       #Mode of storing
         blockList = self.blockList
         blocksPerFile = self.blocksPerFile
-
+        print 'Reading Data Part II : '
         print 'mode: ', mode
         print 'nDims' , nDims
         print 'nDim1' , nDim1
@@ -1241,16 +1243,18 @@ class HFParamReader(HFReader):
             return arrayData
 
         #    One dimension
-        if nDims == 0:
+        if nDims == 1:
             arrayData = dataset.value.astype(numpy.float)[0][blockList]
+            print arrayData
 
         #    Two dimensions : just for HF HDF5 compress data Format
         elif nDims == 2:
-            arrayData = numpy.zeros((blocksPerFile,nDim1,nDim0))
+            arrayData = numpy.zeros((blocksPerFile,nDim2,nDim0))
             newShapes = (blocksPerFile,nDim0)
             nDatas = nDim1
-
-            for i in range(nDim1):
+            print 'arrayData.shape:',arrayData.shape
+            for i in range(nDim2):
+                print 'strds + str(i)}: ', strds + str(i)
                 data = dataset[strds + str(i)].value
                 arrayData[:,i,:] = data[blockList,:]
         #       three dimensions
@@ -1278,21 +1282,21 @@ class HFParamReader(HFReader):
         #blockList = self.blockList
         #Redefine porque un self.xxx no puede ser atributo de un self.dataOut
         for i in range(len(listMeta)):
-            print 'listMetaname[i]:' ,listMetaname[i]
-            print 'listMeta[i]:' ,listMeta[i]
+            print 'listMetaname[i]:' ,listMetaname[i],'listMeta[i]:' ,listMeta[i]
+            #print 'listMeta[i]:' ,listMeta[i]
             setattr(self.dataOut,listMetaname[i],listMeta[i])
             #igual a self.dataOut.listMetaname[i]=listMeta[i]
 
         for j in range(len(listData)):
             nShapes = listShapes[listDataname[j]][0]
             mode = listShapes[listDataname[j]][4]
-            print 'mode: ',mode
 
             if nShapes == 1:
-                print 'listDataname nshape1 : ',listDataname[j]
+                print 'listDataname nshape1 : ',listDataname[j] , listData[j][blockIndex]
                 setattr(self.dataOut,listDataname[j],listData[j][blockIndex])
+                #print 'self.dataOut.utctime: ',self.dataOut.utctime
             elif nShapes > 1: #HF entra aqui.
-                print 'listDataname +1 : ',listDataname[j]
+                print 'listDataname +1 : ',listDataname[j] , listData[j][blockIndex,:]
                 setattr(self.dataOut,listDataname[j],listData[j][blockIndex,:])
             elif mode==0:
                 print 'listDataname mode = 0: ',listDataname[j]
@@ -1512,7 +1516,7 @@ class HFParamReader(HFReader):
         self.timezone= timezone
         self.online= online
         self.all=all
-        self.__setLocalVariables()
+        #self.__setLocalVariables()
         if not online:
             print "Searching files in offline mode..."
             #self.__searchFilesOffLine2(path,startDate,endDate,startTime, endTime, ext, walk)
@@ -1529,7 +1533,7 @@ class HFParamReader(HFReader):
             print "There  is no files into the folder: %s"%(path)
             sys.exit(-1)
 
-        self.__setLocalVariables() # Redefiniendo los valores del dataout
+        #self.__setLocalVariables() # Redefiniendo los valores del dataout
 
         self.fileIndex = -1
         self.startTime = startTime

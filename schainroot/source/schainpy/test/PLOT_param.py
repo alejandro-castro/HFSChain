@@ -121,24 +121,7 @@ parampath = '/home/jm/Pictures/graphics_schain/sp'+str(code)+'1_f'+str(ngraph)+'
 print "figpath",figpath
 print "paramPath", parampath
 #---------------------------------------------------------------------------#
-'''
-readUnitConfObj = controllerObj.addReadUnit(datatype = 'HFReader',
-                                            path     = path,
-                                            startDate= date,   #'2017/12/31',# 2017/11/14 date
-                                            endDate  = date,   #'2017/12/31',#date 2017/11/14
-                                            code     = code,
-                                            frequency= setupF,
-                                            campaign = campaign,
-                                            inc_int  = inc_int,
-                                            startTime= time_start,
-                                            endTime  = time_end,
-                                            online   = online,
-                                            set      = 0,
-                                            delay    = 0,
-                                            walk     = 1,
-                                            timezone = -5*3600
-                                            )
-'''
+
 #controllerObj es una clase Project que inicializa algunas variables simples
 # y un Diccionario llamado self.procUnitConfObjDict = {}
 # En este diccionario al parecer iran ingresando una serie de procesos formando una cola.
@@ -190,15 +173,31 @@ readUnitConfObj = controllerObj.addReadUnit(datatype='HFParamReader',
                                             walk     = 1,
                                             timezone = -5*3600
                                             )
+#2do : agregar una unidad de procesamiento... aunque deberia ser una unidad de ploteo?
+procUnitConfObj1 = controllerObj.addProcUnit(datatype='ParametersProc', inputId=readUnitConfObj.getId())
 
-# procUnitConfObj0 = controllerObj.addProcUnit(datatype='HDF5Reader', inputId=readUnitConfObj.getId())
-#
-# opObj1 = procUnitConfObj0.addOperation(name='HDF5Reader')
-# opObj1.addParameter(name='path', value=figpath+'/param')
-# opObj1.addParameter(name='blocksPerFile', value='10', format='int')
-# opObj1.addParameter(name='metadataList',value='type,inputUnit,heightList,frequency',format='list')#,RxInfo,TxInfo /*RxInfo = lat,long,alt,type double or simple, etc...
-# opObj1.addParameter(name='dataList',value='data_param,data_SNR,data_RGB,CrossData,utctime',format='list')#AvgCohModuledata_DC,data_Coherence
-# opObj1.addParameter(name='mode',value='0',format='int')#call channels
+opObj21 = procUnitConfObj1.addOperation(name='ParametersPlot', optype='other')
+opObj21.addParameter(name='id', value='8000', format='int')
+opObj21.addParameter(name='wintitle', value='SNR_1', format='str')
+opObj21.addParameter(name='channelList', value='1', format='intlist')
+opObj21.addParameter(name='show', value='1', format='bool')
+opObj21.addParameter(name='SNR', value='1', format='bool')
+opObj21.addParameter(name='DOP', value='0', format='bool')
+opObj21.addParameter(name='SNRdBmin', value='-9', format='int')
+opObj21.addParameter(name='SNRdBmax', value='9', format='int')
+#opObj21.addParameter(name='SNRthresh', value='0', format='float')
+opObj21.addParameter(name='xmin', value=0, format='float')
+opObj21.addParameter(name='xmax', value=24, format='float')
+#opObj21.addParameter(name='parameterIndex', value=, format='int')
+opObj21.addParameter(name='save', value='1', format='bool')
+opObj21.addParameter(name='figpath', value=figpath, format='str')
+opObj21.addParameter(name='data_time_save',value='1',format='bool')
+opObj21.addParameter(name='wr_period', value='10', format='int')
+opObj21.addParameter(name='ftp_wei', value=str(lo_1), format='int')
+opObj21.addParameter(name='exp_code', value='666', format='int')
+opObj21.addParameter(name='sub_exp_code', value=number, format='int')
+opObj21.addParameter(name='plot_pos', value='1', format='int')
+opObj21.addParameter(name='ext', value='.jpeg', format='str')
 
 
 print "Escribiendo el archivo XML"

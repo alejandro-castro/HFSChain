@@ -693,9 +693,12 @@ class ParametersPlot(Figure):
         #here we extract the data passed through dataOut.data_param that content the moments: snr,power,FreqDoppler,radialVelocity
         #Not sure if exists dataOut.data_param from the new HDF5 format.
         #try to fix and read to plot it.
-        
-        data_param = getattr(dataOut, parameterObject)
 
+        data_param = getattr(dataOut, parameterObject)
+        from pprint import pprint
+        print 'dataOut objects:'
+        pprint(dataOut.__dict__)
+        #print 'utctimearray: ',utctimearray
         if channelList == None:
             channelIndexList = numpy.arange(data_param.shape[0])
         else:
@@ -710,14 +713,17 @@ class ParametersPlot(Figure):
         #tmax = None
         if parameterIndex == None:
             parameterIndex = 1
+        #Me quede aqui 03\01\19
         x = dataOut.getTimeRange1()
         y = dataOut.heightList
         #print "parameterIndex:", parameterIndex
+        print 'x:',x
         z = data_param[channelIndexList,parameterIndex,:].copy()
-        #print "z:",z
+        print 'z.shape: SNR?',z.shape
+        #Se esta asumiendo que entra abscissaList en el dataout. vamos a recontruirlo.
 
-        zRange = dataOut.abscissaList
-        nplots = z.shape[0]    #Number of wind dimensions estimated
+        #zRange = dataOut.abscissaList
+        nplots = z.shape[0]
 #        thisDatetime = dataOut.datatime
 
         if (dataOut.data_SNR != None).any():
@@ -729,6 +735,7 @@ class ParametersPlot(Figure):
             ind = numpy.where(SNRarray < SNRthresh)
             z[ind] = numpy.nan
 
+        print 'dataOut.getTimeRange()[1]:',dataOut.getTimeRange1()
         thisDatetime = datetime.datetime.utcfromtimestamp(dataOut.getTimeRange()[1])
         title = wintitle + " Parameters Plot" #: %s" %(thisDatetime.strftime("%d-%b-%Y"))
         xlabel = ""
