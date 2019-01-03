@@ -688,9 +688,12 @@ class ParametersPlot(Figure):
             zmin            :    None,
             zmax            :    None
         """
-	SNRmin= SNRdBmin
-	SNRmax= SNRdBmax
+        SNRmin= SNRdBmin
+        SNRmax= SNRdBmax
         #here we extract the data passed through dataOut.data_param that content the moments: snr,power,FreqDoppler,radialVelocity
+        #Not sure if exists dataOut.data_param from the new HDF5 format.
+        #try to fix and read to plot it.
+        
         data_param = getattr(dataOut, parameterObject)
 
         if channelList == None:
