@@ -1093,7 +1093,7 @@ class HFParamReader(HFReader):
         filePointer = h5py.File(filename,'r+')
         self.filename = filename
         self.fp = filePointer
-        print("Setting the file: %s"%self.filename)
+        print("Setting the file %d / %d: %s"%(self.fileIndex,len(self.filenameList),self.filename))
         #self.__readMetadata()
         self.__setBlockList()
         self.__readData()
@@ -1148,7 +1148,7 @@ class HFParamReader(HFReader):
         '''
         toextract = self.filenameList[0].split('/')[-2]
         filename = self.filenameList[0].replace(toextract,'').replace('//','/').replace('D','M')
-        print 'Metadata de ParamReader en : ',filename
+        #print 'Metadata de ParamReader en : ',filename
 
         fp = h5py.File(filename,'r')
         gp = fp['Metadata']
@@ -1189,22 +1189,22 @@ class HFParamReader(HFReader):
 
     def __readData(self):
         grp = self.fp['Data']
-        print 'Reading Data: '
+        #print 'Reading Data: '
         listdataname = []
         listdata = []
-        print 'listShapes: ', self.listShapes
+        #print 'listShapes: ', self.listShapes
 
         for item in list(grp.items()):
-            print '1 item: ',item
+            #print '1 item: ',item
             name = item[0]
-            print '2 name: ',name
+            #print '2 name: ',name
             listdataname.append(name)
-            print '3 grp[name]: ',grp[name]
-            print '4 self.listShapes[name]:', self.listShapes[name]
+            #print '3 grp[name]: ',grp[name]
+            #print '4 self.listShapes[name]:', self.listShapes[name]
 
             array = self.__setDataArray(grp[name],self.listShapes[name])
-            print '5 array.shape: ',array.shape
-            print '\t'
+            #print '5 array.shape: ',array.shape
+            #print '\t'
             listdata.append(array)
 
         self.listDataname = listdataname
@@ -1220,6 +1220,7 @@ class HFParamReader(HFReader):
         mode = shapes[4]       #Mode of storing
         blockList = self.blockList
         blocksPerFile = self.blocksPerFile
+        '''
         print 'Reading Data Part II : '
         print 'mode: ', mode
         print 'nDims' , nDims
@@ -1228,6 +1229,7 @@ class HFParamReader(HFReader):
         print 'nDim0' , nDim0
         print 'blockList: ',blockList
         print 'blocksPerFile: ', blocksPerFile
+        '''
         #Depending on what mode the data was stored
         if mode == 0:       #Divided in channels
             #arrayData = dataset['channel0'].value.astype(numpy.float)[0][blockList]
@@ -1257,16 +1259,14 @@ class HFParamReader(HFReader):
         #    One dimension
         if nDims == 1:
             arrayData = dataset.value.astype(numpy.float)[0][blockList]
-            print arrayData
-
         #    Two dimensions : just for HF HDF5 compress data Format
         elif nDims == 2:
             arrayData = numpy.zeros((blocksPerFile,nDim2,nDim0))
             newShapes = (blocksPerFile,nDim0)
             nDatas = nDim1
-            print 'arrayData.shape:',arrayData.shape
+
             for i in range(nDim2):
-                print 'strds + str(i)}: ', strds + str(i)
+                #print 'strds + str(i)}: ', strds + str(i)
                 data = dataset[strds + str(i)].value
                 arrayData[:,i,:] = data[blockList,:]
         #       three dimensions
@@ -1275,7 +1275,7 @@ class HFParamReader(HFReader):
 
         else:
             arrayData = numpy.zeros((blocksPerFile,nDim2,nDim1,nDim0))
-            print 'dataset: ',dataset
+
             for i in range(nDim1): #Por cada canal, osea nDim1 es numero de canales?
                 data = dataset[strds + str(i)].value
 
@@ -1294,7 +1294,7 @@ class HFParamReader(HFReader):
         #blockList = self.blockList
         #Redefine porque un self.xxx no puede ser atributo de un self.dataOut
         for i in range(len(listMeta)):
-            print 'listMetaname[i]:' ,listMetaname[i],'listMeta[i]:' ,listMeta[i]
+            #print 'listMetaname[i]:' ,listMetaname[i],'listMeta[i]:' ,listMeta[i]
             #print 'listMeta[i]:' ,listMeta[i]
             setattr(self.dataOut,listMetaname[i],listMeta[i])
             #igual a self.dataOut.listMetaname[i]=listMeta[i]
@@ -1304,14 +1304,12 @@ class HFParamReader(HFReader):
             mode = listShapes[listDataname[j]][4]
 
             if nShapes == 1:
-                print 'listDataname nshape1 : ',listDataname[j] , listData[j][blockIndex]
+                #print 'listDataname nshape1 : ',listDataname[j] , listData[j][blockIndex]
                 setattr(self.dataOut,listDataname[j],listData[j][blockIndex])
-                #print 'self.dataOut.utctime: ',self.dataOut.utctime
             elif nShapes > 1: #HF entra aqui.
-                print 'listDataname +1 : ',listDataname[j] , listData[j][blockIndex,:]
+                #print 'listDataname +1 : ',listDataname[j] , listData[j][blockIndex,:]
                 setattr(self.dataOut,listDataname[j],listData[j][blockIndex,:])
             elif mode==0:
-                print 'listDataname mode = 0: ',listDataname[j]
                 setattr(self.dataOut,listDataname[j],listData[j][blockIndex])
             #Mode Meteors
             elif mode ==2:
@@ -1447,7 +1445,7 @@ class HFParamReader(HFReader):
         return pathList, filenameList
 
     def __setLocalVariables(self):
-        print "Esta wbda si funciona"
+        print "is really needed?"
         '''
         self.datablock = numpy.zeros((self.nChannels, self.nHeights,self.nProfiles), dtype = numpy.complex)
         self.datacspec = numpy.zeros(( self.nHeights,self.nProfiles), dtype = numpy.complex)
@@ -1471,7 +1469,6 @@ class HFParamReader(HFReader):
         pathList = []
         '''
         '''
-        print 'startTime from offline2: ',startTime
         self.__setParameters(path,frequency,startDate, endDate, startTime, endTime, walk)
         self.__checkPath()
         pathList,filenameList=self.__findDataForDates()

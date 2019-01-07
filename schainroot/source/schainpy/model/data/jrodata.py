@@ -240,7 +240,7 @@ class JROData(GenericData):
 
     def getltctime(self):
 
-        print self.useLocalTime
+        #print self.useLocalTime
 
         if self.useLocalTime:
             return self.utctime - 5*3600
@@ -733,7 +733,7 @@ class Fits:
     def getltctime(self):
 
         if self.useLocalTime:
-            print self.utctime,self.timeZone
+            #print self.utctime,self.timeZone
             return self.utctime - self.timeZone*60
 
         return self.utctime

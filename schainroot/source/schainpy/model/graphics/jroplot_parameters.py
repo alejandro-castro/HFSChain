@@ -732,7 +732,7 @@ class ParametersPlot(Figure):
             ind = numpy.where(SNRarray < SNRthresh)
             z[ind] = numpy.nan
 
-        print 'dataOut.getTimeRange()[1]:',dataOut.getTimeRange1()
+        #print 'dataOut.getTimeRange()[1]:',dataOut.getTimeRange1()
         thisDatetime = datetime.datetime.utcfromtimestamp(dataOut.getTimeRange()[1])
         title = wintitle + " Parameters Plot" #: %s" %(thisDatetime.strftime("%d-%b-%Y"))
         xlabel = ""
