@@ -321,7 +321,7 @@ opObj21.addParameter(name='sub_exp_code', value=number, format='int')
 opObj21.addParameter(name='plot_pos', value='1', format='int')
 opObj21.addParameter(name='ext', value='.jpeg', format='str')
 #  # # # # #
-
+'''
 opObj21 = procUnitConfObj2.addOperation(name='ParametersPlot', optype='other')
 opObj21.addParameter(name='id', value='8000', format='int')
 opObj21.addParameter(name='wintitle', value='SNR_1', format='str')
@@ -344,7 +344,7 @@ opObj21.addParameter(name='exp_code', value='666', format='int')
 opObj21.addParameter(name='sub_exp_code', value=number, format='int')
 opObj21.addParameter(name='plot_pos', value='1', format='int')
 opObj21.addParameter(name='ext', value='.jpeg', format='str')
-'''
+
 opObj31 = procUnitConfObj2.addOperation(name='MomentsPlot', optype='other')
 opObj31.addParameter(name='id', value='3', format='int')
 opObj31.addParameter(name='showprofile', value='1', format='int')
@@ -357,7 +357,7 @@ opObj31.addParameter(name='xmin', value='-50', format='float')
 opObj31.addParameter(name='xmax', value='50', format='float')
 opObj31.addParameter(name='ymin', value='200', format='float')
 opObj31.addParameter(name='ymax', value='500', format='float')
-opObj31.addParameter(name='show', value='0', format='bool')
+opObj31.addParameter(name='show', value='1', format='bool')
 
 print "Escribiendo el archivo XML"
 controllerObj.writeXml(filename)

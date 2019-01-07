@@ -240,8 +240,10 @@ class JROData(GenericData):
 
     def getltctime(self):
 
+        print self.useLocalTime
+
         if self.useLocalTime:
-            return self.utctime - self.timeZone
+            return self.utctime - 5*3600
 
         return self.utctime
 
@@ -263,14 +265,10 @@ class JROData(GenericData):
 
     def getFmax(self):
 
-        #print self.ippSeconds,'IPPSECONDS'
-        #print self.ippFactor,'IPPFACTOR'
-        #print self.nCohInt,'COHINT'
-
         PRF = 1./(self.ippSeconds * self.nCohInt*self.ippFactor) #AGREGARCOMENTARIO
 
         fmax = PRF/2.
-        raw_input("Testing value - fmax %f :"%(fmax))
+        #raw_input("Testing value - fmax %f :"%(fmax))
         #print fmax,'FMAX'
 
 
@@ -735,7 +733,7 @@ class Fits:
     def getltctime(self):
 
         if self.useLocalTime:
-	    print self.utctime,self.timeZone
+            print self.utctime,self.timeZone
             return self.utctime - self.timeZone*60
 
         return self.utctime
@@ -1032,6 +1030,9 @@ class Parameters(JROData): #parameter hereda de spectra
         self.systemHeaderObj = SystemHeader()
 
         self.type = "Parameters"
+        #TODO esto no deberia venir harcoded ... 2019 arreglar.
+
+        self.useLocalTime = True
 
     def getTimeRange1(self):
 
@@ -1043,7 +1044,7 @@ class Parameters(JROData): #parameter hereda de spectra
         datatime = numpy.array(datatime)
 
         return datatime
-        
+
     def getVelRange(self, extrapoints=0):
         #deltafreq = 2*self.getFmax() / (self.nFFTPoints)
         #print deltafreq,'Deltafreq TEST1'

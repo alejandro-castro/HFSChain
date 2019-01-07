@@ -1,23 +1,13 @@
-23/12/2018
-Hay un jroIO_param.py que se puede usar en la version 3.xParamReader
-20/12/2018
-Cambios Generados para la reduccion de datos
-TODO:
-Generar los plots de los datos reducidos
-Calcular los momentos con el ruido de cada altura. Deberia ser siempre 
-en modo campana
-No olvidar hacer commits y comentarios.
- 
 Project Summary
 Información General
-Nombre: Radar HF 
+Nombre: Radar HF (Multi estatico) 
 Area: Operaciones
-Preparado por: Ramiro Yanque
+Preparado por: Marco Milla, Ramiro Yanque, Karim Kuyeng, Josemaria Gomez, Alexander Valdez.
 
 Equipo
 Nombre Rol
 Alexander Valdez Responsable
-Josemaría Gomez Responsable (Hasta Dic 2017)
+Josemaría Gomez Responsable (Hasta Dic 2017, regreso en Agosto 2018 :)
 Luis Vilcatoma Responsable
 Ramiro Yanque Asesor
 Karim Kuyeng Supervisora (Desde Marzo 2018)
@@ -38,6 +28,7 @@ Para la segunda etapa se contempla los siguientes objetivos:
 - Almacenar los resultados en una pagina web
 http://jro-app.igp.gob.pe/hfdatabase/webhf/web_signalchain/rawdata_test_new/#
 Versión 1.1 Mayo 2017
+
 - Tener 3 estaciones de transmisión
 - Tener 7 estaciones de recepción
 - Tener datos por el menos el 90% de cada mes por cada estación.
@@ -49,6 +40,7 @@ http://jro-app.igp.gob.pe/hfdatabase/webhf/web_signalchain/rawdata_test_new/#
 Presupuesto: IGP Donaciones Radar HF
 Fecha de Inicio: 01/04/2017
 Fecha de Fin: 16/10/2017
+
 Versión 1.1 Mayo 2017
 Fecha de Inicio: 01/04/2017
 Fecha de Fin: 09/08/2021

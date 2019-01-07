@@ -463,7 +463,6 @@ class WindProfilerPlot(Figure):
         tmax = None
 
         x = dataOut.getTimeRange1()
-#         y = dataOut.heightList
         y = dataOut.heightList
 
         z = dataOut.data_output.copy()
@@ -602,7 +601,7 @@ class ParametersPlot(Figure):
         self.__isConfig = False
         self.__nsubplots = 1
 
-        self.WIDTH = 380
+        self.WIDTH = 420
         self.HEIGHT = 320
         self.WIDTHPROF = 120
         self.HEIGHTPROF = 0
@@ -667,11 +666,11 @@ class ParametersPlot(Figure):
             xmin=None, xmax=None, ymin=None, ymax=None, zmin=None, zmax=None,timerange=None,
             parameterIndex = None, onlyPositive = False,
             SNRthresh = -numpy.inf, DOP=True,SNR = True, SNRdBmin = None, SNRdBmax = None,
-
             zlabel = "", parameterName = "", parameterObject = "data_param",
             save=False, figpath='', lastone=0,figfile=None, ftp=False, wr_period=1, show=True,
             server=None, folder=None, username=None, password=None,
-            ftp_wei=0, exp_code=0, sub_exp_code=0, plot_pos=0,ext='.png',data_time_save=False):
+            ftp_wei=0, exp_code=0, sub_exp_code=0, plot_pos=0,ext='.png',data_time_save=False,
+            nFFTPoints = None, nProfiles=None,pairsList=""):
 
         """
 
@@ -695,10 +694,12 @@ class ParametersPlot(Figure):
         #try to fix and read to plot it.
 
         data_param = getattr(dataOut, parameterObject)
+        '''
         from pprint import pprint
         print 'dataOut objects:'
         pprint(dataOut.__dict__)
         #print 'utctimearray: ',utctimearray
+        '''
         if channelList == None:
             channelIndexList = numpy.arange(data_param.shape[0])
         else:
@@ -713,14 +714,10 @@ class ParametersPlot(Figure):
         #tmax = None
         if parameterIndex == None:
             parameterIndex = 1
-        #Me quede aqui 03\01\19
-        #Vamos a checkiar que tipo de formato recibe comunmente para poder darle el formato al tiempo
-        #
+
         x = dataOut.getTimeRange1()
         y = dataOut.heightList
-        print 'x:',x
         z = data_param[channelIndexList,parameterIndex,:].copy()
-        print 'z.shape: SNR?',z.shape
         #Se esta asumiendo que entra abscissaList en el dataout. vamos a recontruirlo.
         zRange = dataOut.abscissaList
         nplots = z.shape[0]

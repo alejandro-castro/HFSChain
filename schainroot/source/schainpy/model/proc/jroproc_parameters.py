@@ -14,14 +14,12 @@ import itertools
 from jroproc_base import ProcessingUnit, Operation
 from model.data.jrodata import Parameters
 
-
 class ParametersProc(ProcessingUnit):
 
     nSeconds = None
 
     def __init__(self):
         ProcessingUnit.__init__(self)
-
 #         self.objectDict = {}
         self.buffer = None
         self.firstdatatime = None
@@ -129,12 +127,14 @@ class ParametersProc(ProcessingUnit):
         #----------------------    Parameters Data    ---------------------------
 
         if self.dataIn.type == "Parameters":
-            self.dataOut.copy(self.dataIn)#Datain is listdata?
+            self.dataOut.copy(self.dataIn)
             self.dataOut.flagNoData = False
-            #also works with HF?
+
+            #Just for HF - its hardcoded
             self.dataOut.outputInterval = 60
             self.dataOut.timeInterval = 60
-            #self.dataOut.abscissaList = self.dataIn.getVelRange(1)
+            self.dataOut.ippSeconds= 0.1
+            #self.dataOut.abscissaList = self.dataOut.getVelRange(1)
 
             return True
 
@@ -167,10 +167,27 @@ class ParametersProc(ProcessingUnit):
             #phase = numpy.arctan(-1*coherenceComplex.imag/coherenceComplex.real)*180/numpy.pi
             #self.dataOut.CohPhase = numpy.arctan2(coherenceComplex.imag, coherenceComplex.real)*180/numpy.pi
 
+    #Defini los argumentos de entrara para que sean posibles parametros de entrada.
+
     def GetRGBData(self):
         #TODO > any future operation do here
         #self.dataOut.data_RGB = self.dataIn.Image
         print "Getting RGB Data from Image dataset..."
+
+
+    def GetVelData(self,nFFTPoints=None,nProfiles=None,ippFactor=None,pairsList=""):
+        #TODO > any future operation do here
+        #self.dataOut.data_RGB = self.dataIn.Image
+        #raw_input("Calculando Velocidades.")
+
+        if nFFTPoints == None:
+            print "Ingresar numero de FFT"
+
+        self.dataOut.ippFactor = 1
+        self.dataOut.nFFTPoints = nFFTPoints
+        self.dataOut.pairsList = pairsList
+        self.dataOut.nCohInt = 6
+        self.dataOut.abscissaList = self.dataOut.getVelRange(1)
     #-------------------    Get Moments    ----------------------------------
     def GetMoments(self, channelList = None):
         '''
@@ -294,8 +311,6 @@ class ParametersProc(ProcessingUnit):
         data = self.dataOut.data_pre
         crossdata = self.dataIn.data_cspc
         a = 1
-
-
 
     #-------------------    Get Lags    ----------------------------------
 

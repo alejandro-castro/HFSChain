@@ -175,6 +175,12 @@ readUnitConfObj = controllerObj.addReadUnit(datatype='HFParamReader',
                                             )
 #2do : agregar una unidad de procesamiento... aunque deberia ser una unidad de ploteo?
 procUnitConfObj1 = controllerObj.addProcUnit(datatype='ParametersProc', inputId=readUnitConfObj.getId())
+opObj20 = procUnitConfObj1.addOperation(name='GetVelData')
+opObj20.addParameter(name='nFFTPoints', value=nFFT, format='int')
+opObj20.addParameter(name='nProfiles', value=nProfiles, format='int')
+opObj20.addParameter(name='pairsList', value='(0,1)', format='pairsList')
+opObj20.addParameter(name='ippFactor', value='1', format='int')
+
 
 opObj21 = procUnitConfObj1.addOperation(name='ParametersPlot', optype='other')
 opObj21.addParameter(name='id', value='8000', format='int')
@@ -185,7 +191,7 @@ opObj21.addParameter(name='SNR', value='1', format='bool')
 opObj21.addParameter(name='DOP', value='0', format='bool')
 opObj21.addParameter(name='SNRdBmin', value='-9', format='int')
 opObj21.addParameter(name='SNRdBmax', value='9', format='int')
-#opObj21.addParameter(name='SNRthresh', value='0', format='float')
+opObj21.addParameter(name='SNRthresh', value='1', format='float')
 opObj21.addParameter(name='xmin', value=0, format='float')
 opObj21.addParameter(name='xmax', value=24, format='float')
 #opObj21.addParameter(name='parameterIndex', value=, format='int')

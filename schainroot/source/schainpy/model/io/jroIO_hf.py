@@ -1120,12 +1120,10 @@ class HFParamReader(HFReader):
 
         grp = fp['Data']
         thisUtcTime = grp['utctime'].value.astype(numpy.float)[0]
+        #thisUtcTime = thisUtcTime+ self.timezone
 
-        #ERROOOOR
-        if self.timezone == 'lt':
-            thisUtcTime -= 5*3600
+        thisDatetime = datetime.datetime.fromtimestamp(thisUtcTime[0]+ 5*3600)
 
-        thisDatetime = datetime.datetime.fromtimestamp(thisUtcTime[0] + 5*3600)
 
         thisDate = thisDatetime.date()
         thisTime = thisDatetime.time()
@@ -1627,7 +1625,7 @@ class HFParamReader(HFReader):
         if self.__inc_int>6:
             raise ValueError, "The number of incoherent integration should be between 0 and 6"
 
-        self.timezone= timezone
+        self.timeZone= timezone # argumento es con Z mayuscula
         self.online= online
         self.all=all
         #self.__setLocalVariables()
