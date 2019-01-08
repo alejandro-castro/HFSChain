@@ -803,15 +803,23 @@ class CoherenceMap(Figure):
         for i in range(self.nplots):
 
             pair = dataOut.pairsList[pairsIndexList[i]]
+            #In this point dataout has crossdatainfo?
+            '''
+            from pprint import pprint
+            print 'dataOut objects:'
+            pprint(dataOut.__dict__)
+            '''
+            if hasattr(dataOut, 'data_cspc'):
+                ccf = numpy.average(dataOut.data_cspc[pairsIndexList[i],:,:],axis=0)
+                #print 'pairsIndex:', pairsIndexList[i] #JUST 4DEBUGG
+                powa = numpy.average(dataOut.data_spc[pair[0],:,:],axis=0)
+                powb = numpy.average(dataOut.data_spc[pair[1],:,:],axis=0)
 
-            ccf = numpy.average(dataOut.data_cspc[pairsIndexList[i],:,:],axis=0)
-            #print 'pairsIndex:', pairsIndexList[i] #JUST 4DEBUGG
-            powa = numpy.average(dataOut.data_spc[pair[0],:,:],axis=0)
-            powb = numpy.average(dataOut.data_spc[pair[1],:,:],axis=0)
+                avgcoherenceComplex = ccf/numpy.sqrt(powa*powb)
+                coherence = numpy.abs(avgcoherenceComplex)
 
-
-            avgcoherenceComplex = ccf/numpy.sqrt(powa*powb)
-            coherence = numpy.abs(avgcoherenceComplex)
+            else: # proviene de datos reducidos.
+                coherence = dataOut.CrossData[0][0].transpose()/100.0
 
             z = coherence.reshape((1,-1))
 
@@ -834,9 +842,14 @@ class CoherenceMap(Figure):
                             ytick_visible=False, nxticks=5,
                             grid='x')
 
-            phase = numpy.arctan2(avgcoherenceComplex.imag, avgcoherenceComplex.real)*180/numpy.pi
+            if hasattr(dataOut, 'data_cspc'):
+                phase = numpy.arctan2(avgcoherenceComplex.imag, avgcoherenceComplex.real)*180/numpy.pi
+
+            else:
+                phase = dataOut.CrossData[1][0].transpose()
 
             z = phase.reshape((1,-1))
+
 
             if PHASE:
                 title = "Phase %d%d: %s" %(pair[0], pair[1], thisDatetime.strftime("%d-%b-%Y %H:%M:%S"))
