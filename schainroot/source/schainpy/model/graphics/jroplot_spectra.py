@@ -819,7 +819,7 @@ class CoherenceMap(Figure):
                 coherence = numpy.abs(avgcoherenceComplex)
 
             else: # proviene de datos reducidos.
-                coherence = dataOut.CrossData[0][0].transpose()/100.0
+                coherence = dataOut.CrossData[0][0].transpose()
 
             z = coherence.reshape((1,-1))
 

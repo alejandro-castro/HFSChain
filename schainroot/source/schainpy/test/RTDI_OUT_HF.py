@@ -1,98 +1,76 @@
-import os, sys
+#!/usr/bin/env python
+import h5py
+import os
+import glob
 import time
-import datetime
+import matplotlib.pyplot as plt
+import numpy
+import math
 
-path = os.path.split(os.getcwd())[0]
-sys.path.append(path)
-from controller import *
-desc = "HF_EXAMPLE"
-filename = "hf_test.xml"
-controllerObj = Project()
-controllerObj.setup(id = '191', name='test01', description=desc)
-######################CONFIGURACION DE OUT##########################333
-####default 1424 y por test de operacion continua 10 segundos 1440*6 =8640
-blocksPerFile='1440'
-#----------------------------------------------NEW----------------------------------------------------#
-'''
-example:
-python RTDI_OUT_HF.py  -path '/home/hfuser1204/HFA' -f 2.72 -C 0 -ii 6 -ch 0 -online 0 -code 0 -lo 11 -date "2018/01/25" -startTime "00:00:00" -endTime "23:59:59"
-
-python RTDI_OUT_HF.py -path '/home/hfuser1204/HFA' -f 2.72 -code 0 -lo 11 -ch 0
-
-
-python RTDI_OUT_HF.py -path '/home/hfuser1204/HFA' -f 2.72 -code 0 -lo 11 -ch 0 -date "2018/02/15"
-'''
-print "REVISAR LA LINEA DE EJEMPLO EN EL ARCHIVO EN CASO PROBLEMAS DE EJECUCION"
 import argparse
+"""
+python RTDI_OUT_HF.py -path '/media/ci-81/062717d4-e7c7-4462-9365-08418e5483b2/' -C 0 -ii 6 -f 2.72216796875 -code 0 -lo 11 -date "2018/03/20" -ch 0 # modo normal
+python RTDI_OUT_HF.py -path '/home/jm/Documents/2018.HF/' -C 0 -ii 6 -f 2.72216796875 -code 0 -lo 11 -date "2018/01/08" -ch 0 # modo normal
+/home/jm/Documents/2018.HF/
+"""
+#################
 parser = argparse.ArgumentParser()
-########################## PATH- DATA  ###################################################################################################
-parser.add_argument('-path',action='store',dest='path_lectura',help='Directorio de Datos \
-					.Por defecto, se esta ingresando entre comillas /home/hfuser1204/HFA/',default='/home/hfuser1204/HFA/')
+
+parser.add_argument('-pathin',action='store',dest='path_lectura',help='Directorio de Datos \
+					.Por defecto, se esta ingresando entre comillas /home/hfuser1204/HFA/',default='/home/jm/Documents/2018.HF/')
+
+parser.add_argument('-pathout',action='store',dest='path_escritura',help='Directorio de Datos \
+					.Por defecto, se esta ingresando entre comillas /home/hfuser1204/HFA/',default='/home/jm/Pictures/')
 ########################## FRECUENCIA ####################################################################################################
 parser.add_argument('-f',action='store',dest='f_freq',type=float,help='Frecuencia en Mhz 2.72 y 3.64. Por defecto, se esta ingresando 2.72 ',default=2.72)
-########################## CAMPAIGN ### 600 o 100 perfiles ###############################################################################
-parser.add_argument('-C',action='store',dest='c_campaign',type=int,help='Campaign 1 (600 perfiles) y 0(100 perfiles). Por defecto, se esta ingresando 1',default=1)
-########################## INCOHERENT INTEGRATION ### Entre 0 y 6  #######################################################################
-parser.add_argument('-ii',action='store',dest='i_integration',type=int,help='Data spectra tiene integraciones incoherentes entre \
-									0 y 6. Por defecto, se esta ingresando 0',default=0)
-########################## ONLINE OR OFFLINE   ###########################################################################################
-parser.add_argument('-online',action='store',dest='online',type=int,help='Operacion 0 Off-line 1 On-Line\
-									   .Por defecto, se esta ingresando 0(off Line) ',default=0)
 ########################## CODIGO - INPUT ################################################################################################
 parser.add_argument('-code',action='store',dest='code_seleccionado',type=int,help='Code de Tx para generar en estacion \
-										de Rx Spectro 0,1,2. Por defecto, se esta ingresando 0(Ancon)',default=0)
-########################## DAY- SELECCION ################################################################################################
-yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
-daybefore= yesterday.strftime("%Y/%m/%d")
-today = datetime.datetime.now().strftime("%Y/%m/%d")
+											de Rx Spectro 0,1,2. Por defecto, se esta ingresando 0(Ancon)',default=0)
+########################## DIA CONFIG ################################################################################################
+yesterday=time.localtime(time.time() - 86400)
+str_yesterday=("%d/%d/%d")%(yesterday.tm_year,yesterday.tm_mon,yesterday.tm_mday)
 parser.add_argument('-date',action='store',dest='date_seleccionado',help='Seleccionar fecha si es OFFLINE se ingresa \
-							la fecha con el dia deseado. Por defecto, considera el dia anterior',default=daybefore)
+							la fecha con el dia deseado. Por defecto, considera el dia anterior',default=str_yesterday)
 ######################### TIME- SELECCION ################################################################################################
-parser.add_argument('-startTime',action='store',dest='time_start',help='Ingresar tiempo de inicio, formato 00:00:00 entre comillas',default="23:50:59")
+parser.add_argument('-startTime',action='store',dest='time_start',help='Ingresar tiempo de inicio, formato 00:00:00 entre comillas',default="00:00:00")
 parser.add_argument('-endTime',action='store',dest='time_end',help='Ingresar tiempo de fin, formato 23:59:59 entre comillas',default="23:59:59")
 
 ########################## LOCATION AND ORIENTATION ####################################################################################################
 parser.add_argument('-lo',action='store',dest='lo_seleccionado',type=int,help='Parametro para establecer la ubicacion de la estacion de Rx y su orientacion.\
 										Example: XA   ----- X: Es el primer valor determina la ubicacion de la estacion. A: Es \
-										  el segundo valor determina la orientacion N45O o N45E.  \
-										11: JRO-N450, 12: JRO-N45E \
-										        21: HYO-N45O, 22: HYO-N45E',default=11)
+												  el segundo valor determina la orientacion N45O o N45E.  \
+													11: JRO-N450, 12: JRO-N45E \
+												        21: HYO-N45O, 22: HYO-N45E',default=11)
 
 ########################## CHANNEL ########################################################################################################
 parser.add_argument('-ch',action='store',dest='ch_seleccionado',type=int,help=' Seleccion de Canal entre 0 y 1',default=0)
 ###########################################################################################################################################
 
 results    = parser.parse_args()
-path       = str(results.path_lectura)
+pathin       = str(results.path_lectura)
+pathout     = str(results.path_escritura)
+pathout=pathout[0:-1]
+
 freq       = results.f_freq
-campaign   = results.c_campaign
-inc_int    = results.i_integration
-online       = (results.online)
+if freq == 2.72 :
+    freqstr= 272
+    freqidx=0
+else :
+    freqstr= 364
+    freqidx=1
+
 code       = int(results.code_seleccionado)
 date       = results.date_seleccionado
+datatime   = time.strptime(date,"%Y/%m/%d")
+
 time_start = results.time_start
 time_end   = results.time_end
 lo         = results.lo_seleccionado
 channel    = results.ch_seleccionado
 
-
-nProfiles = 100
-nFFT      = 100
-set       = 0
-
-if campaign == 1:
-	nProfiles=600
-   	nFFT     =600
-	inc_int= 0
-if online == 1:
-        date      = today
-	time_start= "23:50:59"
-	time_end  = "23:59:59"
-	set = None
-
 ngraph= 1
 if channel==0:
-	c_web = 6
+	c_web=6
 else:
 	c_web=8
 
@@ -103,118 +81,359 @@ if freq <3:
 	else:
 		c_web=7
 
-setupF   = freq
-setradarF= freq*10**6
-numberF  = int(freq*10**3)
-c_freq   = int(freq*10**2)
-number   = str(numberF)
-lo_n=lo/10
-lo_0=lo_n*10+1
-lo_1=lo_0+1
+if lo%10==1:
+	status_figpath= True
+else:
+	status_figpath= False
 
-print "Path",path
-print "Frecuencia en Mhz",freq
-print "Freq_setup",freq
-print "Freq_setradar",setradarF
-print "Freq_number", numberF
-print "c_freq", c_freq
-print "Mode Campaign" ,campaign
-print "nProfiles",nProfiles
-print "nFFT",nFFT
-print "Incoherent integration",inc_int
-print "Online",online
-print "Code",code
-print "Date",date
-print "Time_start", time_start
-print "Time_end"  , time_end
-print "ngraph",ngraph
-print "set",set
-print "Location&orientation",lo
-print "Channel",channel
-print "REVISAR LA LINEA DE EJEMPLO EN EL ARCHIVO EN CASO PROBLEMAS DE EJECUCION"
+if len(str(datatime.tm_yday))==2:
+    doystr = '0'+str(datatime.tm_yday)
+elif len(str(datatime.tm_yday))==1:
+    doystr = '00'+str(datatime.tm_yday)
+else :
+    doystr = str(datatime.tm_yday)
 
-time.sleep(4)
+doypath=pathin+'d'+str(datatime.tm_year) +doystr+'/'#doypath='/media/ci-81/062717d4-e7c7-4462-9365-08418e5483b2/d2018076/'
 
-#-----------------------------------------------------------------------------------------------------#
-#-------------------------PATH-PDATA-------------------------------------
-#path='/media/igp-114/PROCDATA/'
-#-----------------------------PATH-graficos-----------------------------------#
-figpath='/home/ci-81/Documents/2018.HF/HFSW/testfigures/sp'+str(code)+'1_f'+str(ngraph)+'/'
-print "figpath",figpath
-#---------------------------------------------------------------------------#
-readUnitConfObj = controllerObj.addReadUnit(datatype = 'HFReader',
-                                            path     = path,
-                                            startDate= date,   #'2017/12/31',# 2017/11/14 date
-                                            endDate  = date,   #'2017/12/31',#date 2017/11/14
-                                            code     = code,
-     		                            frequency= setupF,
-				            campaign = campaign,
-					    inc_int  = inc_int,
-                                            startTime= time_start,
-                                            endTime  = time_end,
-                                            online   = online,
-                                            set      = 0,
-                                            delay    = 0,
-                                            walk     = 1,
-                                            timezone = -5*3600
-                                            )
+PLOT_Spectras = 0
+queue=[0,0,0,0,0,32655,32655]
+tmp=[0,0,0,0,0,0,0]
+icount=0
+contador=0
+outr=[]
+outt=[]
+ippSeconds=0.1
+nCohInt=6
+ippFactor = 1
+PRF = 1./(ippSeconds*nCohInt*ippFactor) #AGREGARCOMENTARIO
+fmax = PRF/2.
+C = 3e8
+frequency = freq
+_lambda = C/frequency
+vmax = fmax*_lambda/2
+nFFTPoints = 600
+deltav = 2*vmax/ (nFFTPoints)# agregar comentario
+velrange = deltav*(numpy.arange(nFFTPoints)-nFFTPoints/2.)
 
-procUnitConfObj0 = controllerObj.addProcUnit(datatype='VoltageProc', inputId=readUnitConfObj.getId())
+NRANGE= 1000
+nSamples=1000
+profile = range(nSamples)
+dr=1.5
+rango=range(1000)
+#for i in range(NRANGE):
+#    rango[i]=float(i*dr)
+def GetMoments(spec,absc,n):
+        '''
+        Function GetMoments()
 
-opObj12 = procUnitConfObj0.addOperation(name='setRadarFrequency')
-opObj12.addParameter(name='frequency', value=setradarF, format='float')
+        Input:
+            spec: spectrogram
+            absc: abscissaList
+            n : noise
 
-procUnitConfObj1 = controllerObj.addProcUnit(datatype='SpectraProc', inputId=procUnitConfObj0.getId())
-procUnitConfObj1.addParameter(name='nFFTPoints', value=nFFT, format='int')
-procUnitConfObj1.addParameter(name='nProfiles', value=nProfiles, format='int')
-procUnitConfObj1.addParameter(name='pairsList', value='(0,1)', format='pairsList')
+        Output:
+            params : -Radial velocity(DOPPLER)
+                     -power
+                     -spectralwidth
+        '''
+        #data_param = numpy.zeros((data.shape[0], 4, data.shape[2]))
+        #This change has been done for HF processing
+        data_param = numpy.zeros((spec.shape[0], 6, spec.shape[1])) # Jm : harcoded to show the limits frequencies
+        data_param = CalculateMoments(spec, absc, n)
 
-procUnitConfObj2 = controllerObj.addProcUnit(datatype='ParametersProc',inputId=procUnitConfObj1.getId())
-opObj20 = procUnitConfObj2.addOperation(name='GetMoments')
+        return data_param
 
-procUnitConfObj3= controllerObj.addProcUnit(datatype='ImageProc',inputId=procUnitConfObj2.getId())
-procUnitConfObj3.addParameter(name='channel', value=str(channel), format='int')
-procUnitConfObj3.addParameter(name='threshv', value='0.1', format='float')
+def CalculateMoments(oldspec, oldfreq, n0, nicoh = None, graph = None, smooth = None, type1 = None, fwindow = None, snrth = None, dc = None, aliasing = None, oldfd = None, wwauto = None):
 
-opObj11= procUnitConfObj3.addOperation(name='ImageWriter',optype='other')
-opObj11.addParameter(name='blocksPerFile', value=blocksPerFile, format='int') ####default 1424 y por test de operacion continua 10 segundos 1440*6 =8640
-opObj11.addParameter(name='standard', value='1', format='bool')
-opObj11.addParameter(name='c_station_o', value=str(lo), format='str')
-opObj11.addParameter(name='c_freq', value=str(c_freq), format='str')
-opObj11.addParameter(name='c_cod_Tx', value=str(code), format='str')
-opObj11.addParameter(name='c_ch', value=str(channel), format='str')
-opObj11.addParameter(name='path',value=figpath)
+    if (nicoh == None): nicoh = 1
+    if (graph == None): graph = 0
+    if (smooth == None): smooth = 0
+    elif (smooth < 3): smooth = 0
 
-opObj11 = procUnitConfObj3.addOperation(name='RTDIPlot', optype='other')
-opObj11.addParameter(name='id', value='402', format='int')
-opObj11.addParameter(name='wintitle', value='HF_RTDI', format='str')
-opObj11.addParameter(name='showprofile', value='1', format='int')
-opObj11.addParameter(name='xmin', value='0', format='int')
-opObj11.addParameter(name='xmax', value='24', format='int')
-opObj11.addParameter(name='save', value='1', format='bool')
-opObj11.addParameter(name='figpath', value=figpath, format='str')
-#opObj11.addParameter(name='figfile', value="holi.jpeg", format='str')
-opObj11.addParameter(name='data_time_save',value='1',format='bool')
-# opObj11.addParameter(name='ftp_wei', value='11', format='int')
-# opObj11.addParameter(name='exp_code', value='888', format='int')
-# opObj11.addParameter(name='sub_exp_code', value=number, format='int')
-# opObj11.addParameter(name='plot_pos', value='1', format='int')
-opObj11.addParameter(name='ext', value='.jpeg', format='str')
-opObj11.addParameter(name='standard', value='1', format='bool')
-opObj11.addParameter(name='c_station_o', value=str(lo), format='str')
-opObj11.addParameter(name='c_web', value=str(c_web), format='str')
-opObj11.addParameter(name='c_freq', value=str(c_freq), format='str')
-opObj11.addParameter(name='c_cod_Tx', value=str(code), format='str')
-opObj11.addParameter(name='c_ch', value=str(channel), format='str')
+    if (type1 == None): type1 = 0
+    if (fwindow == None): fwindow = numpy.zeros(oldfreq.size) + 1 #abscissaList
+    if (snrth == None): snrth = -3
+    if (dc == None): dc = 0
+    if (aliasing == None): aliasing = 0
+    if (oldfd == None): oldfd = 0
+    if (wwauto == None): wwauto = 0
 
-print "Escribiendo el archivo XML"
-controllerObj.writeXml(filename)
-print "Leyendo el archivo XML"
-controllerObj.readXml(filename)
+    if (n0 < 1.e-20):   n0 = 1.e-20
 
-controllerObj.createObjects()
-controllerObj.connectObjects()
+    freq = oldfreq # Doppler velocity values
+    vec_power = numpy.zeros(oldspec.shape[1])
+    vec_fd = numpy.zeros(oldspec.shape[1])
+    vec_w = numpy.zeros(oldspec.shape[1])
+    vec_snr = numpy.zeros(oldspec.shape[1])
+    vec_fv = numpy.zeros(oldspec.shape[1])#First Valid frequency
+    vec_lv = numpy.zeros(oldspec.shape[1])#Last Valid Frequency
 
-#timeit.timeit('controllerObj.run()', number=2)
+    for ind in range(oldspec.shape[1]):
 
-controllerObj.run()
+        spec = oldspec[:,ind]
+        #TODO : if snr = (spec2.mean()-n0)/n0 SNR es menor que 0.3dB no hagas el resto.
+        #TODO : hacer un noise special para el slice metodo privado de ParametersProc
+        aux = spec*fwindow[0:len(spec)] #Jm:hardcoded to match with lenghts
+        max_spec = aux.max()
+        m = list(aux).index(max_spec)
+
+        #Smooth
+        #TODO : probar el whitenning smooth que dio Juha
+        if (smooth == 0):   spec2 = spec
+        else:   spec2 = scipy.ndimage.filters.uniform_filter1d(spec,size=smooth)
+
+        #    Calculo de Momentos
+        bb = spec2[range(m,spec2.size)]
+        bb = (bb<n0).nonzero()
+        bb = bb[0]
+
+        ss = spec2[range(0,m + 1)]
+        ss = (ss<n0).nonzero()
+        ss = ss[0]
+
+        if (bb.size == 0):
+            bb0 = spec.size - 1 - m
+        else:
+            bb0 = bb[0] - 1
+            if (bb0 < 0):
+                bb0 = 0
+
+        if (ss.size == 0):   ss1 = 1
+        else: ss1 = max(ss) + 1
+
+        if (ss1 > m):   ss1 = m
+
+        valid = numpy.asarray(range(int(m + bb0 - ss1 + 1))) + ss1
+        #print 'valid[0]:',freq[valid[0]]
+        #print 'valid[-1]:',freq[valid[-1]]
+        power = ((spec2[valid] - n0)*fwindow[valid]).sum() # m_0 = first moments
+        #TODO probar la estimacion de fd con el calculo de ruido por perfil.
+        fd = ((spec2[valid]- n0)*freq[valid]*fwindow[valid]).sum()/power # m_1=radial velocity = frequecy doppler?
+        w = math.sqrt((  (spec2[valid] - n0)*fwindow[valid]  *(freq[valid]- fd)**2   ).sum()/power)
+        snr = (spec2.mean()-n0)/n0
+
+        if (snr < 1.e-20) :
+            snr = 1.e-20
+
+        vec_power[ind] = power
+        vec_fd[ind] = fd
+        vec_w[ind] = w
+        vec_snr[ind] = snr
+        vec_fv[ind]=freq[valid[0]]
+        vec_lv[ind]=freq[valid[-1]]
+        #vec_sw[ind] = sw
+
+        #else : vec_power[ind] = un numero x, fd , w y snr igual.
+    moments = numpy.vstack((vec_snr, vec_power, vec_fd, vec_w,vec_fv,vec_lv))
+    return moments
+
+
+def hildebrand_sekhon(data, navg):
+    '''
+    Input : spectrogram like power-dopplerspectra, etc.
+    Output: avg noise of spectrogram
+    '''
+    sortdata = numpy.sort(data,axis=None)
+    lenOfData = len(sortdata)
+    nums_min = lenOfData/10
+
+    if (lenOfData/10) > 2:
+        nums_min = lenOfData/10
+    else:
+        nums_min = 2
+
+    sump = 0.
+
+    sumq = 0.
+
+    j = 0
+
+    cont = 1
+
+    while((cont==1)and(j<lenOfData)):
+
+        sump += sortdata[j]
+
+        sumq += sortdata[j]**2
+
+        j += 1
+
+        if j > nums_min:
+            rtest = float(j)/(j-1) + 1.0/navg
+            if ((sumq*j) > (rtest*sump**2)):
+                j = j - 1
+                sump  = sump - sortdata[j]
+                sumq =  sumq - sortdata[j]**2
+                cont = 0
+
+    lnoise = sump /j
+    stdv = numpy.sqrt((sumq - lnoise**2)/(j - 1))
+    return lnoise
+
+def bubbleSort(alist):
+    for passnum in range(len(alist)-1,0,-1):
+        for i in range(passnum):
+            if alist[i]>alist[i+1]:
+                temp=alist[i]
+                alist[i]=alist[i+1]
+                alist[i+1]=temp
+
+
+
+start=0
+
+#sp21_f1 cambie para ver el otro tx
+print "Hola Muchacho estoy aqui doypath>",doypath, code ,freqidx
+for each_ch in glob.glob(doypath+"sp%s1_f%s/"%(code,freqidx)):
+    print each_ch
+
+    files = []
+    files = glob.glob("%s/*.hdf5"%(each_ch))
+    files.sort()
+    #files = files[837:-1]
+
+    filesres = []
+    filesres = glob.glob("%s/res-*.hdf5"%(each_ch))
+    filesres.sort()
+
+
+    filesspec = []
+    filesspec = glob.glob("%s/spec-*.hdf5"%(each_ch))
+    filesspec.sort()
+
+    Ntime = len(files)-1
+    Ntimeres = len(filesres)-1
+    Ntimespec = len(filesspec)-1
+
+    step=1
+    spc_db = numpy.empty((1000,Ntime//step,3))
+    spc_snr = numpy.empty((1000,Ntime//step))
+    count_filename=0
+    for filename in numpy.arange(0,Ntimespec//step):
+    #count_filename+=1
+        try:
+            f = h5py.File(filesspec[filename*step], 'r')
+            print "File %d of %d "%(filename+1,Ntimespec//step)
+            a_group_key = f.keys()[6] # ch 0? pw0
+            b_group_key = f.keys()[7] # ch 1? pw1
+            time_key    = f.keys()[8]
+            data_a_matrix = numpy.array(list(f[a_group_key]))
+            datatime=time.localtime(f['t'].value)
+            f.close()
+            noiselvl=hildebrand_sekhon(data_a_matrix,6)
+            spc_snr[:,filename]=GetMoments(data_a_matrix,velrange,noiselvl)[0].transpose()
+            threshv=0.1
+            L= data_a_matrix.shape[0] # DECLARACION DE PERFILES 3 = 100
+            if L >100:
+                linearfactor=L//100
+            else:
+                linearfactor=L//100
+
+            N= data_a_matrix.shape[1] #DECLARCION DE ALTURAS 1000 = 1000
+            i0l=int(math.floor(L*threshv))*linearfactor #10 -> 60
+            i0h=int(L-math.floor(L*threshv))*linearfactor #90 - > 540
+            im=int(math.floor(L/2)) #50->300
+
+            colm=numpy.zeros([N,3],dtype=numpy.float32)
+            for ri in numpy.arange(N):
+                colm[ri,1]= numpy.sum(data_a_matrix[0:i0l,ri]) + numpy.sum(data_a_matrix[i0h:L,ri])
+                colm[ri,2]= numpy.sum(data_a_matrix[i0l:im,ri])
+                colm[ri,0]= numpy.sum(data_a_matrix[im:L,ri])
+
+            noise=range(3)
+            snr=range(3)
+            sn1=-10.0
+            sn2=20.0
+            image=colm
+            npy=image.shape[1]
+
+            r2=min(nSamples,image.shape[0]-1)
+            r1=int(r2*0.9)
+            ncount=0.0
+            noise[0]=noise[1]=noise[2]=0.0
+            for i in range(r1,r2):
+                for j in range(0,npy):
+                    if (j==0): ncount +=1
+                    noise[j]+=image[i,j]
+
+            for j in range(0,npy):
+                noise[j]/=ncount
+
+            buffer2=numpy.zeros((1000,3),dtype='float')
+
+            for i in range(r2):
+                for j in range(npy):
+                    snr[j]=image[i,j]
+                    snr[j]=(snr[j]-noise[j])/noise[j]
+                    if (snr[j]>0.01):
+                        snr[j]=(10.0*math.log10(snr[j])-sn1)/(sn2-sn1)
+                    else:
+                        snr[j]=0.0
+                #print "i",i,"snr",snr
+                buffer2[i]=snr
+            #print "self.buffer2",self.buffer2
+            data_img_snr=buffer2
+            r2=data_img_snr.shape[0]-1 # = 999 o 1000
+            RGB=data_img_snr
+
+            for i in range(r2): #de 0 a 1000
+                ir=max(min(int(RGB[i][0]*255),255),0)
+                ig=max(min(int(RGB[i][1]*255),255),0)
+                ib=max(min(int(RGB[i][2]*255),255),0)
+                #print i,filename,ir,ig,ib
+                if (ir+ig+ib)>0: # aqui podemos insertar un filtro de color
+                    spc_db[i,filename,:] =(ir,ig,ib)
+            # PART III - Getting Reflexions.
+
+            max_deriv=0
+            npy=3
+
+            for i in range(NRANGE):
+                profile[i]=data_img_snr[i][0]+data_img_snr[i][1]+data_img_snr[i][2]
+
+            for i in range(NRANGE):
+                if (rango[i]>133 and rango[i]<600.0/1.5):
+                    deriv=(-2.0*profile[i-2]-profile[i-1]+profile[i+1]+2.0*profile[i+2])/10.0
+                    if (deriv>max_deriv):
+                        max_deriv=deriv
+                        layer=i
+
+            queue[icount]=layer
+            m=7
+
+            #print "icount: ",self.icount
+            for i in range(7):
+                tmp[i]=queue[i]
+            bubbleSort(tmp)
+            layer=tmp[m/2]
+            icount=(icount+1)%m
+
+            #print self.contador,self.rango[self.layer]
+            data_img_genaro = rango[layer]
+
+            spc_db[data_img_genaro-2:data_img_genaro+2,filename-2:filename+2,:] =(250,250,250)
+            contador+=1
+            data_time_genaro= (int(datatime.tm_sec)/60.0 + datatime.tm_min)/60.0 + datatime.tm_hour  +0.000278
+            outt.append(data_time_genaro)
+            outr.append(data_img_genaro)
+
+        except:
+            pass
+
+    plt.ioff()
+    plt.clf()
+    plt.imshow(spc_db.astype(numpy.uint8),origin='lower',aspect='auto',extent=[0,24,0,1500])#')#vmin=-10,vmax=30
+    plt.xlabel("Local Time",color="k")
+    plt.ylabel("Virtual Range (km)",color="k")
+    #plt.axis([0,24,0,1500],color="blue")#plt.plot(numpy.log10(numpy.real(power))*10.0,'--r')
+    plt.xticks(range(0,24,1))
+    plt.yticks(range(0,1500,100))
+    plt.title("RTDI %s-%s-%s"%(datatime.tm_year,datatime.tm_mon,datatime.tm_mday))
+    #plt.xlim([0, 3600*24+1])
+    #plt.ylabel('Red is from spectra')
+    plt.show()
+    plt.savefig("%s/%s%s%s%s%s%s%s.jpeg"%(pathout,datatime.tm_year,datatime.tm_yday,lo,c_web,freqstr,code,channel))
+    start+=1
+
+    plt.imshow(10*numpy.log10(spc_snr))
+    plt.show()

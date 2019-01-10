@@ -188,6 +188,8 @@ class ParametersProc(ProcessingUnit):
         self.dataOut.pairsList = pairsList
         self.dataOut.nCohInt = 6
         self.dataOut.abscissaList = self.dataOut.getVelRange(1)
+        print self.dataOut.abscissaList
+        raw_input('Take abscissaList')
     #-------------------    Get Moments    ----------------------------------
     def GetMoments(self, channelList = None):
         '''

@@ -54,9 +54,8 @@ class SpectraProc(ProcessingUnit):
         self.dataOut.windowOfFilter = self.dataIn.windowOfFilter
 
 #         self.dataOut.timeInterval = self.dataIn.timeInterval*self.dataOut.nFFTPoints*self.dataOut.nIncohInt
-        #print self.dataIn.frequency,"12324454565"
+
         self.dataOut.frequency = self.dataIn.frequency
-    #print self.dataOut.frequency,"ABCDEFGH"
         self.dataOut.realtime = self.dataIn.realtime
 
         self.dataOut.azimuth = self.dataIn.azimuth
@@ -161,8 +160,8 @@ class SpectraProc(ProcessingUnit):
 
             if ippFactor == None:
                 ippFactor = 1
-            self.dataOut.ippFactor = ippFactor
 
+            self.dataOut.ippFactor = ippFactor
             self.dataOut.nFFTPoints = nFFTPoints
             self.dataOut.pairsList = pairsList
         #print "wtf",str(self.buffer)
@@ -788,6 +787,7 @@ class IncohInt(Operation):
 
         if not self.__withOverapping:
             self.__buffer_spc += data_spc
+
 
             if data_cspc == None:
                 self.__buffer_cspc = None
