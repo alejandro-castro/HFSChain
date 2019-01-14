@@ -435,5 +435,5 @@ for each_ch in glob.glob(doypath+"sp%s1_f%s/"%(code,freqidx)):
     plt.savefig("%s/%s%s%s%s%s%s%s.jpeg"%(pathout,datatime.tm_year,datatime.tm_yday,lo,c_web,freqstr,code,channel))
     start+=1
 
-    plt.imshow(10*numpy.log10(spc_snr))
+    plt.imshow(10*numpy.log10(spc_snr),origin='lower')
     plt.show()
