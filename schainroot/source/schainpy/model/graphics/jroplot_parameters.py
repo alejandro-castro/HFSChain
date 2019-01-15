@@ -114,7 +114,7 @@ class MomentsPlot(Figure):
 
         x = dataOut.abscissaList
         print x
-        raw_input('Take abscissaList')
+        #raw_input('Take abscissaList')
         y = dataOut.heightList
         z = dataOut.data_pre[channelIndexList,:,:]/factor
         z = numpy.where(numpy.isfinite(z), z, numpy.NAN)
