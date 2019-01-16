@@ -284,8 +284,8 @@ def bubbleSort(alist):
 
 
 # Format the seconds on the axis as min:sec
-def fmtsec(x,pos):
-    return "{:02d}:{:02d}".format(int(x//24), int(x%60))
+def fmtsec(x,pos,offset):
+    return "{:02d}:{:02d}".format(int((x)//60), int((x)%60))
 
 
 
@@ -297,6 +297,9 @@ initTimeXaxisValue=datatime
 #5) Add starttime to init value and limit data.
 #print 'time.strptime(date,time_start):',time.strptime(time_start,"%H:%M:%S")
 
+offsetValue=int(math.floor( (time.mktime(datatime) - time.mktime(zerodatatime)) / 60.0))
+print offsetValue
+raw_input("what?")
 
 start=0
 
@@ -454,15 +457,16 @@ for each_ch in glob.glob(doypath+"sp%s1_f%s/"%(code,freqidx)):
 
     plt.ioff()
     plt.clf()
-    plt.imshow(spc_db.astype(numpy.uint8),origin='lower',aspect='auto',extent=[0,1440,0,1500])#')#vmin=-10,vmax=30
-    plt.gca().xaxis.set_major_formatter(mticker.FuncFormatter(fmtsec))
+    plt.imshow(spc_db.astype(numpy.uint8),origin='lower',aspect='auto',extent=[0,colmsnumber//step,0,1500])#')#vmin=-10,vmax=30
+    #offsetValue , este valor es e, offset value para la hora.
+    plt.gca().xaxis.set_major_formatter(mticker.FuncFormatter(fmtsec(lambda x: x + 120)))
     # Use nice tick positions as multiples of 30 seconds
-    plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(60*60*2))
-
+    plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(120))
+    #plt.gcf().autofmt_xdate()
     plt.xlabel("Local Time",color="k")
     plt.ylabel("Virtual Range (km)",color="k")
     #plt.axis([0,24,0,1500],color="blue")#plt.plot(numpy.log10(numpy.real(power))*10.0,'--r')
-    plt.xticks(range(0,24,1))
+    #plt.xticks(range(0,24,1))
     plt.yticks(range(0,1500,100))
     plt.title("RTDI %s-%s-%s"%(filedatatime.tm_year,filedatatime.tm_mon,filedatatime.tm_mday))
     #plt.xlim([0, 3600*24+1])
