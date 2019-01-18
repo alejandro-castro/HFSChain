@@ -11,6 +11,7 @@ import datetime
 from jroheaderIO import SystemHeader, RadarControllerHeader
 # pero si tengo schainpy
 import cSchainNoise
+#return cSchainNoise.hildebrand_sekhon(sortdata, navg)
 #from cSchainNoise import hildebrand_sekhon
 
 def getNumpyDtype(dataTypeCode):
@@ -505,15 +506,17 @@ class Spectra(JROData):
         """
 
         noise = numpy.zeros(self.nChannels)
-	#print "TEST 1 nIncohInt",self.nIncohInt
         for channel in range(self.nChannels):
             daux = self.data_spc[channel,:,:]
             noise[channel] = hildebrand_sekhon(daux, self.nIncohInt)
 
+        #print 'self.nIncohInt>',self.nIncohInt
+        #print 'ch0 noise> ',10.0*numpy.log10(noise[0])
+        #print 'ch1 noise> ',10.0*numpy.log10(noise[1])
+        #raw_input('Check noise')
         return noise
 
     def getNoise(self):
-	#print "GETNOISE_SPECTRA"
         if self.noise_estimation != None:
             return self.noise_estimation #this was estimated by getNoise Operation defined in jroproc_spectra.py
         else:
@@ -530,12 +533,8 @@ class Spectra(JROData):
         return freqrange
 
     def getVelRange(self, extrapoints=0):
-        #deltafreq = 2*self.getFmax() / (self.nFFTPoints)
-        #print deltafreq,'Deltafreq TEST1'
-
-	#print self.getVmax() , 'TEST 0'
+        #NO puede ser
         deltav = 2*self.getVmax() / (self.nFFTPoints)# agregar comentario
-
         velrange = deltav*(numpy.arange(self.nFFTPoints+extrapoints)-self.nFFTPoints/2.) - (deltav/2)*extrapoints
 
         return velrange

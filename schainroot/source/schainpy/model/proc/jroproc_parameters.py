@@ -14,6 +14,9 @@ import itertools
 from jroproc_base import ProcessingUnit, Operation
 from model.data.jrodata import Parameters
 
+#just fort test01import matplotlib.pyplot as pl
+
+
 class ParametersProc(ProcessingUnit):
 
     nSeconds = None
@@ -188,8 +191,6 @@ class ParametersProc(ProcessingUnit):
         self.dataOut.pairsList = pairsList
         self.dataOut.nCohInt = 6
         self.dataOut.abscissaList = self.dataOut.getVelRange(1)
-        print self.dataOut.abscissaList
-        raw_input('Take abscissaList')
     #-------------------    Get Moments    ----------------------------------
     def GetMoments(self, channelList = None):
         '''
@@ -216,11 +217,20 @@ class ParametersProc(ProcessingUnit):
         if channelList== None:
             channelList = self.dataIn.channelList
         self.dataOut.channelList = channelList
+        #plt.plot(10.0*numpy.log10(data[0,:,:][500,:][-201:-1]))
+        #plt.imshow(10.0*numpy.log10(data[0,:,:]),vmin=-110,vmax=-75,cmap='jet')
+        #plt.show()
 
         for ind in channelList:
             data_param[ind,:,:] = self.__calculateMoments(data[ind,:,:], absc, noise[ind])
 
-        self.dataOut.data_param = data_param[:,1:,:]
+        #print 'spc_dop>',data_param[0,0,:]
+        print 'noises:',10.0*numpy.log10(noise[0])
+        print 'absc:',absc
+        import matplotlib.pyplot as plt
+        plt.plot(data_param[0,2,:],'g')
+        raw_input("testing")
+        self.dataOut.data_param = data_param[:,1:,:]#drop first colm
         self.dataOut.data_SNR = data_param[:,0]
         return
 

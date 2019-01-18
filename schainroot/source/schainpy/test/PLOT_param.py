@@ -14,6 +14,9 @@ controllerObj.setup(id = '191', name='paramplot', description=desc)
 '''
 example:
 python PLOT_HF.py  -path '/media/igp-114/PROCDATA' -f 2.72 -C 0 -ii 6 -online 0 -code 0 -date "2018/01/25" -startTime "00:00:00" -endTime "23:59:59" -lo 31
+last start command >
+python PLOT_param.py  -path '/home/jm/Documents/2018.HF/' -f 2.72  -online 0 -code 1 -date "2018/10/03" -startTime "00:00:00" -endTime "23:59:59" -lo 11
+
 '''
 print "REVISAR LA LINEA DE EJEMPLO EN EL ARCHIVO EN CASO PROBLEMAS DE EJECUCION"
 import argparse

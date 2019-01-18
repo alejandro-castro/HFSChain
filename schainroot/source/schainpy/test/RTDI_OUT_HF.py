@@ -7,8 +7,9 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import numpy
 import math
-
 import argparse
+import cSchainNoise
+#
 """
 python RTDI_OUT_HF.py -path '/media/ci-81/062717d4-e7c7-4462-9365-08418e5483b2/' -C 0 -ii 6 -f 2.72216796875 -code 0 -lo 11 -date "2018/03/20" -ch 0 # modo normal
 python RTDI_OUT_HF.py -path '/home/jm/Documents/2018.HF/' -C 0 -ii 6 -f 2.72216796875 -code 0 -lo 11 -date "2018/01/08" -ch 0 # modo normal
@@ -35,6 +36,9 @@ parser.add_argument('-date',action='store',dest='date_seleccionado',help='Selecc
 ######################### TIME- SELECCION ################################################################################################
 parser.add_argument('-startTime',action='store',dest='time_start',help='Ingresar tiempo de inicio, formato 00:00:00 entre comillas',default="00:00:00")
 parser.add_argument('-endTime',action='store',dest='time_end',help='Ingresar tiempo de fin, formato 23:59:59 entre comillas',default="23:59:59")
+parser.add_argument('-xTickSpace',action='store',dest='xticksSperation',help='Ingresar la separacion de tiempo',default=120)
+parser.add_argument('-maxHeight',action='store',dest='maxHeight',help='Ingresar altura maxima',default=1500)
+parser.add_argument('-show',action='store',dest='show',help='Mostrar Grafico',default=1)
 
 ########################## LOCATION AND ORIENTATION ####################################################################################################
 parser.add_argument('-lo',action='store',dest='lo_seleccionado',type=int,help='Parametro para establecer la ubicacion de la estacion de Rx y su orientacion.\
@@ -66,7 +70,11 @@ time_start = results.time_start
 time_end   = results.time_end
 zerodatatime = time.strptime(date,"%Y/%m/%d")
 datatime   = time.strptime(date+' '+time_start,"%Y/%m/%d %H:%M:%S")
-lastdatatime = time.strptime(date+' '+'23:59:59',"%Y/%m/%d %H:%M:%S")
+lastdatatime = time.strptime(date+' '+time_end,"%Y/%m/%d %H:%M:%S")
+xticksSperation = results.xticksSperation
+maxHeight = results.maxHeight
+show = results.show
+#
 
 
 lo         = results.lo_seleccionado
@@ -106,18 +114,20 @@ icount=0
 contador=0
 outr=[]
 outt=[]
+outd=[]
 ippSeconds=0.1
-nCohInt=6
+nCohInt=1
 ippFactor = 1
 PRF = 1./(ippSeconds*nCohInt*ippFactor) #AGREGARCOMENTARIO
 fmax = PRF/2.
 C = 3e8
-frequency = freq
+frequency = freq*1e6
 _lambda = C/frequency
 vmax = fmax*_lambda/2
-nFFTPoints = 600
+nFFTPoints = 600#Depende si es campign o normal
 deltav = 2*vmax/ (nFFTPoints)# agregar comentario
-velrange = deltav*(numpy.arange(nFFTPoints)-nFFTPoints/2.)
+extrapoints=1
+velrange = deltav*(numpy.arange(nFFTPoints+extrapoints)-nFFTPoints/2.)- (deltav/2)*extrapoints
 
 NRANGE= 1000
 nSamples=1000
@@ -238,6 +248,7 @@ def hildebrand_sekhon(data, navg):
     Output: avg noise of spectrogram
     '''
     sortdata = numpy.sort(data,axis=None)
+    '''
     lenOfData = len(sortdata)
     nums_min = lenOfData/10
 
@@ -273,6 +284,8 @@ def hildebrand_sekhon(data, navg):
     lnoise = sump /j
     stdv = numpy.sqrt((sumq - lnoise**2)/(j - 1))
     return lnoise
+    '''
+    return cSchainNoise.hildebrand_sekhon(sortdata, navg)
 
 def bubbleSort(alist):
     for passnum in range(len(alist)-1,0,-1):
@@ -284,8 +297,8 @@ def bubbleSort(alist):
 
 
 # Format the seconds on the axis as min:sec
-def fmtsec(x,pos,offset):
-    return "{:02d}:{:02d}".format(int((x)//60), int((x)%60))
+def fmtsec(x,pos):
+    return "{:02d}:{:02d}".format(int(x//60), int(x%60))
 
 
 
@@ -296,11 +309,9 @@ def fmtsec(x,pos,offset):
 initTimeXaxisValue=datatime
 #5) Add starttime to init value and limit data.
 #print 'time.strptime(date,time_start):',time.strptime(time_start,"%H:%M:%S")
-
+#6) time end will reduce the colmsnumber
 offsetValue=int(math.floor( (time.mktime(datatime) - time.mktime(zerodatatime)) / 60.0))
 print offsetValue
-raw_input("what?")
-
 start=0
 
 #sp21_f1 cambie para ver el otro tx
@@ -329,21 +340,23 @@ for each_ch in glob.glob(doypath+"sp%s1_f%s/"%(code,freqidx)):
     step=1
     #spc_db = numpy.empty((1000,Ntime//step,3))
     colmsnumber= 1+int(math.floor( (time.mktime(lastdatatime) - time.mktime(datatime)) / 60.0))
+    #If colmsnumber is less than 5 hours
+    if colmsnumber<=60*5:
+        xticksSperation = 30
     print 'colmsnumber>',colmsnumber
     spc_db = numpy.empty((1000,colmsnumber//step,3))
-    spc_snr = numpy.empty((1000,colmsnumber//step))
+    spc_dop = numpy.empty((1000,1))
     count_filename=0
     XaxisValue=0
+    setup = "doit"
 
     for filename in numpy.arange(0,Ntimespec//step):
         try:
             f = h5py.File(filesspec[filename*step], 'r')
-            print "File %d of %d : %d "%(filename+1,Ntimespec//step,XaxisValue)
-            a_group_key = f.keys()[6] # ch 0? pw0
-            b_group_key = f.keys()[7] # ch 1? pw1
+            print "File %s %d of %d : %d "%(filesspec[filename*step],filename+1,Ntimespec//step,XaxisValue)
             time_key    = f.keys()[8]
-            data_a_matrix = numpy.array(list(f[a_group_key]))
-            data_a_matrix[0,:] = (data_a_matrix[-1,:] + data_a_matrix[1,:])/2.0 #RemoveDC mode 1
+            #data_a_matrix = numpy.array(list(filesspec[filename*step],f[a_group_key]))
+            #data_a_matrix[0,:] = (data_a_matrix[-1,:] + data_a_matrix[1,:])/2.0 #RemoveDC mode 1
             #print f['t'].value # cOMES WITH DECIMAL.
             filedatatime=time.localtime(f['t'].value)
             #print 'datatime:',datatime
@@ -353,14 +366,43 @@ for each_ch in glob.glob(doypath+"sp%s1_f%s/"%(code,freqidx)):
             XaxisValue= int(math.floor( (time.mktime(filedatatime) - time.mktime(datatime)) / 60.0))
             f.close()
             if filedatatime>=initTimeXaxisValue and filedatatime<=lastdatatime:
-                noiselvl=hildebrand_sekhon(data_a_matrix,6)
-                spc_snr[:,XaxisValue]=GetMoments(data_a_matrix,velrange,noiselvl)[0].transpose()
+                #If data is on time, extract data
+                f = h5py.File(filesspec[filename*step], 'r')
+                #a_group_key = f.keys()[6] # ch 0? pw0
+                #b_group_key = f.keys()[7] # ch 1? pw1
+                #data_a_matrix = numpy.array(list(f[a_group_key]))
+                name='pw0_C'+str(code)
+                data_a_matrix = (f[name]).value
+                data_a_matrix= data_a_matrix.swapaxes(0,1)
+                print data_a_matrix.shape
+                data_a_matrix= data_a_matrix.real
+                data_a_matrix[:,0] = (data_a_matrix[:,0] + data_a_matrix[:,1])/2.0 #RemoveDC mode 1
+                f.close()
+                data_a_matrix = numpy.fft.fftshift(data_a_matrix,axes=(1,))
+                data_a_matrix= data_a_matrix.transpose()
+                #data_a_matrix = data_a_matrix.real
+                if setup is not 'done':
+                    nFFTPoints = data_a_matrix.shape[0]
+                    deltav = 2.*vmax/(nFFTPoints)# agregar comentario
+                    velrange = deltav*(numpy.arange(nFFTPoints+extrapoints)-nFFTPoints/2.)-(deltav/2.)*extrapoints
+                    setup='done'
+
+                #plt.imshow(10.0*numpy.log10(data_a_matrix),vmin=-110,vmax=-75,cmap='jet')
+                #plt.show()
+                noiselvl=hildebrand_sekhon(data_a_matrix,1)
+                print velrange
+                print 'len(velrange):',len(velrange)
+                spc_dop=GetMoments(data_a_matrix,velrange,noiselvl)
+                print 'noises:',10.0*numpy.log10(noiselvl)
+                print "spc_dop.shape:", spc_dop.shape
+                raw_input("El negro")
+                plt.plot(spc_dop[2],'r')
+                plt.show()
+                #print 'spc_dop', spc_dop
+                #print 'spc dop len', len(spc_dop)
                 threshv=0.1
                 L= data_a_matrix.shape[0] # DECLARACION DE PERFILES 3 = 100
-                if L >100:
-                    linearfactor=L//100
-                else:
-                    linearfactor=L//100
+                linearfactor=L//100
 
                 N= data_a_matrix.shape[1] #DECLARCION DE ALTURAS 1000 = 1000
                 i0l=int(math.floor(L*threshv))*linearfactor #10 -> 60
@@ -425,7 +467,7 @@ for each_ch in glob.glob(doypath+"sp%s1_f%s/"%(code,freqidx)):
                     profile[i]=data_img_snr[i][0]+data_img_snr[i][1]+data_img_snr[i][2]
 
                 for i in range(NRANGE):
-                    if (rango[i]>133 and rango[i]<600.0/1.5):
+                    if (rango[i]>150/1.5 and rango[i]<600.0/1.5):
                         deriv=(-2.0*profile[i-2]-profile[i-1]+profile[i+1]+2.0*profile[i+2])/10.0
                         if (deriv>max_deriv):
                             max_deriv=deriv
@@ -441,27 +483,30 @@ for each_ch in glob.glob(doypath+"sp%s1_f%s/"%(code,freqidx)):
                 layer=tmp[m/2]
                 icount=(icount+1)%m
 
-                #print self.contador,self.rango[self.layer]
                 data_img_genaro = rango[layer]
 
-                spc_db[data_img_genaro-2:data_img_genaro+2,XaxisValue-2:XaxisValue+2,:] =(250,250,250)
+                spc_db[data_img_genaro-2:data_img_genaro+2,XaxisValue-2:XaxisValue+2,:] =(211,211,211)
                 contador+=1
                 data_time_genaro= (int(filedatatime.tm_sec)/60.0 + filedatatime.tm_min)/60.0 + filedatatime.tm_hour  +0.000278
+                # Extracting radialVelocity from spectral moments.
+                #self.data_tmp_doppler=data_param[numpy.array(self.dataOut.channel_img),parameterIndex,:]
+                #self.data_doppler=self.data_tmp_doppler[int(self.data_genaro/1.5)]# debe ser entre 1.5 porque los 1500 alturas e indices.
+                outd.append(spc_dop[int(data_img_genaro)])
                 outt.append(data_time_genaro)
-                outr.append(data_img_genaro)
+                outr.append(data_img_genaro*1.5)
             else:
                 print 'Fuera de tiempo.'
 
         except:
             pass
 
-    plt.ioff()
+    #plt.ioff()
     plt.clf()
-    plt.imshow(spc_db.astype(numpy.uint8),origin='lower',aspect='auto',extent=[0,colmsnumber//step,0,1500])#')#vmin=-10,vmax=30
+    plt.imshow(spc_db.astype(numpy.uint8),origin='lower',aspect='auto',extent=[0+offsetValue,colmsnumber//step+offsetValue,0,maxHeight])#')#vmin=-10,vmax=30
     #offsetValue , este valor es e, offset value para la hora.
-    plt.gca().xaxis.set_major_formatter(mticker.FuncFormatter(fmtsec(lambda x: x + 120)))
+    plt.gca().xaxis.set_major_formatter(mticker.FuncFormatter(fmtsec))
     # Use nice tick positions as multiples of 30 seconds
-    plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(120))
+    plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(int(xticksSperation)))
     #plt.gcf().autofmt_xdate()
     plt.xlabel("Local Time",color="k")
     plt.ylabel("Virtual Range (km)",color="k")
@@ -469,11 +514,19 @@ for each_ch in glob.glob(doypath+"sp%s1_f%s/"%(code,freqidx)):
     #plt.xticks(range(0,24,1))
     plt.yticks(range(0,1500,100))
     plt.title("RTDI %s-%s-%s"%(filedatatime.tm_year,filedatatime.tm_mon,filedatatime.tm_mday))
-    #plt.xlim([0, 3600*24+1])
-    #plt.ylabel('Red is from spectra')
-    plt.show()
-    plt.savefig("%s/%s%s%s%s%s%s%s.jpeg"%(pathout,filedatatime.tm_year,filedatatime.tm_yday,lo,c_web,freqstr,code,channel))
+    plt.savefig("%s/%s%s%s%s%s%s%s.jpeg"%(pathout,filedatatime.tm_year,doystr,lo,c_web,freqstr,code,channel))
+    if show is 1:
+        plt.show()
+
     start+=1
 
-    plt.imshow(10*numpy.log10(spc_snr),origin='lower')
-    plt.show()
+
+    Out_filename = "%s/H%s%s%s%s%s%s%s.out"%(pathout,filedatatime.tm_year,doystr,lo,c_web,freqstr,code,channel)
+    print 'grabando txt en > ', Out_filename
+    f_out1 = open(Out_filename, 'w')
+    #f_out1.write('time(s) rTEC(TECu) (T0 = %d  UT)\n'% t[0]) #For first line
+    for ip in range(0,len(outt)):
+        #write("%f %f  %f\n" %(data_timege,data_genaro,data_doppler))
+        write_buf = "%f %f %f\n"%(outt[ip],outr[ip],outd[ip])
+        f_out1.write(write_buf)
+    f_out1.close
