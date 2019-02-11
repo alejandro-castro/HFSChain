@@ -343,7 +343,7 @@ for each_ch in glob.glob(doypath+"sp%s1_f%s/"%(code,freqidx)):
     #If colmsnumber is less than 5 hours
     if colmsnumber<=60*5:
         xticksSperation = 30
-    print 'colmsnumber>',colmsnumber
+    #print 'colmsnumber>',colmsnumber
     spc_db = numpy.empty((1000,colmsnumber//step,3))
     spc_dop = numpy.empty((1000,1))
     count_filename=0
@@ -373,10 +373,10 @@ for each_ch in glob.glob(doypath+"sp%s1_f%s/"%(code,freqidx)):
                 #data_a_matrix = numpy.array(list(f[a_group_key]))
                 name='pw0_C'+str(code)
                 data_a_matrix = (f[name]).value
+                data_a_matrix[0,:] = (data_a_matrix[-1,:] + data_a_matrix[1,:])/2.0 #RemoveDC mode 1
                 data_a_matrix= data_a_matrix.swapaxes(0,1)
-                print data_a_matrix.shape
                 data_a_matrix= data_a_matrix.real
-                data_a_matrix[:,0] = (data_a_matrix[:,0] + data_a_matrix[:,1])/2.0 #RemoveDC mode 1
+                #data_a_matrix[:,0] = (data_a_matrix[:,0] + data_a_matrix[:,1])/2.0 #RemoveDC mode 1
                 f.close()
                 data_a_matrix = numpy.fft.fftshift(data_a_matrix,axes=(1,))
                 data_a_matrix= data_a_matrix.transpose()
@@ -390,16 +390,16 @@ for each_ch in glob.glob(doypath+"sp%s1_f%s/"%(code,freqidx)):
                 #plt.imshow(10.0*numpy.log10(data_a_matrix),vmin=-110,vmax=-75,cmap='jet')
                 #plt.show()
                 noiselvl=hildebrand_sekhon(data_a_matrix,1)
-                print velrange
-                print 'len(velrange):',len(velrange)
+                #print velrange
+                #print 'len(velrange):',len(velrange)
                 spc_dop=GetMoments(data_a_matrix,velrange,noiselvl)
-                print 'noises:',10.0*numpy.log10(noiselvl)
-                print "spc_dop.shape:", spc_dop.shape
-                raw_input("El negro")
-                plt.plot(spc_dop[2],'r')
+                fig = plt.figure(figsize=(5,3))
+                ax=fig.add_subplot(111)
+                ax.plot(spc_dop[2],'r')
+                ax2=ax.twinx()
+                ax2.plot(10.0*numpy.log10(spc_dop[0]),'k')
+                ax2.axis('auto')
                 plt.show()
-                #print 'spc_dop', spc_dop
-                #print 'spc dop len', len(spc_dop)
                 threshv=0.1
                 L= data_a_matrix.shape[0] # DECLARACION DE PERFILES 3 = 100
                 linearfactor=L//100
@@ -475,8 +475,6 @@ for each_ch in glob.glob(doypath+"sp%s1_f%s/"%(code,freqidx)):
 
                 queue[icount]=layer
                 m=7
-
-                #print "icount: ",self.icount
                 for i in range(7):
                     tmp[i]=queue[i]
                 bubbleSort(tmp)
@@ -491,7 +489,10 @@ for each_ch in glob.glob(doypath+"sp%s1_f%s/"%(code,freqidx)):
                 # Extracting radialVelocity from spectral moments.
                 #self.data_tmp_doppler=data_param[numpy.array(self.dataOut.channel_img),parameterIndex,:]
                 #self.data_doppler=self.data_tmp_doppler[int(self.data_genaro/1.5)]# debe ser entre 1.5 porque los 1500 alturas e indices.
-                outd.append(spc_dop[int(data_img_genaro)])
+                #print 'int(data_img_genaro)>',int(data_img_genaro)
+                #print 'spc_dop[int(data_img_genaro)]:',spc_dop[2,int(data_img_genaro)]
+                #print 'what?'
+                outd.append(spc_dop[2,int(data_img_genaro)])
                 outt.append(data_time_genaro)
                 outr.append(data_img_genaro*1.5)
             else:
