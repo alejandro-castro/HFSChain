@@ -2,16 +2,7 @@ import os,glob,datetime
 import argparse
 import pexpect #pip install --user  pexpect
 import time
-# En caso no se pueda enviar hacer escribir etas lineas >
-
 #ssh -X -C wmaster@jro-app.igp.gob.pe -p 6633
-
-#Resultado >
-#The authenticity of host '[jro-app.igp.gob.pe]:6633 ([181.177.244.71]:6633)' can't be established.
-#RSA key fingerprint is 24:ea:fe:d5:4e:91:8d:82:d5:7d:1f:bf:e2:0c:36:70.
-#Are you sure you want to continue connecting (yes/no)? yes
-
-
 
 debugg = True
 
@@ -70,7 +61,6 @@ dlist.append(yesterday)
 
 
 # EL PATH CORRESPONDE A LA ESTACION HFA
-
 PATH='/home/hfuser1204/RTDI/graphics_schain/'
 graph_freq0=PATH+'sp'+str(code)+'1_f0'
 graph_freq1=PATH+'sp'+str(code)+'1_f1'
@@ -92,17 +82,17 @@ for file in dlist:
     doy=before+str(file)
     '''
     doy = 'd'+file
-    jpg_files = glob.glob("%s/%s/*.jpeg"%(graph_freq1, doy))
+    jpg_files = glob.glob("%s/%s/*.out"%(graph_freq1, doy))
     jpg_files.sort()
-    print "%s/%s/*.jpeg"%(graph_freq1, doy)
+    print "%s/%s/*.out"%(graph_freq1, doy)
     if len(jpg_files) is 0:
         print 'No hay RESULTADOS en la carpeta!!!'
         continue
     file_1=os.path.basename(jpg_files[0])
 
-    YEAR=int (file_1[0:4])
-    DAYOFYEAR= int(file_1[4:7])
-    DAYOFYEAR_str = file_1[4:7]
+    YEAR=int (file_1[1:5])
+    DAYOFYEAR= int(file_1[5:8])
+    DAYOFYEAR_str = file_1[5:8]
     d = datetime.date(YEAR, 1, 1) + datetime.timedelta(DAYOFYEAR - 1)
     print "(1) Determinando dia a enviar."
     print 'd.strftime("%Y/%m/%d")>', d.strftime("%Y/%m/%d")
@@ -139,7 +129,7 @@ for file in dlist:
         station_name="HFBTXICA"
 
     #remote_folder="/home/wmaster/web2/web_rtdi/data/JRO/%s/%s/%s/%s/figures/"%(station_name, YEAR, MONTH,DAY)
-    remote_folder="/home/wmaster/web2/web_rtdi/data/%s/%s/%s/%s/%s/figures/"%(rxname,station_name, YEAR, MONTH,DAY)
+    remote_folder="/home/wmaster/web2/web_rtdi/data/%s/%s/%s/%s/%s/out/"%(rxname,station_name, YEAR, MONTH,DAY)
     print "(2) Direccion de llegada de datos."
     print "Remote_folder: %s"%(remote_folder)
     #Primer Comando, generar carpeta de destino.
@@ -152,13 +142,13 @@ for file in dlist:
 
     #Segundo comando, pasar las imagenes necesarias para la freq 0
     print "(3) Enviando resultados frecuencia 0"
-    temp_command = "scp -r -P 6633 %s/%s/%s%s%s*.jpeg wmaster@jro-app.igp.gob.pe:%s"%(graph_freq0,doy,YEAR,DAYOFYEAR_str,rxcode,remote_folder)
+    temp_command = "scp -r -P 6633 %s/%s/H%s%s%s*.out wmaster@jro-app.igp.gob.pe:%s"%(graph_freq0,doy,YEAR,DAYOFYEAR_str,rxcode,remote_folder)
     if sendBySCP(temp_command):
         print ' -- Datos Enviados F0'
     #Segundo comando, pasar las imagenes necesarias para la freq 1                    AQUI
     #temp_command = "scp -r -P 6633 %s/%s/*.jpeg wmaster@jro-app.igp.gob.pe:%s"%(graph_freq1,doy,remote_folder)
     print "(4) Enviando resultados frencuencia 1"
-    temp_command = "scp -r -P 6633 %s/%s/%s%s%s*.jpeg wmaster@jro-app.igp.gob.pe:%s"%(graph_freq1,doy,YEAR,DAYOFYEAR_str,rxcode,remote_folder)
+    temp_command = "scp -r -P 6633 %s/%s/H%s%s%s*.out wmaster@jro-app.igp.gob.pe:%s"%(graph_freq1,doy,YEAR,DAYOFYEAR_str,rxcode,remote_folder)
     if sendBySCP(temp_command):
        print ' -- Datos enviados F1 '
 '''
