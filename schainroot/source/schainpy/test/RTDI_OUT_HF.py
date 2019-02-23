@@ -393,6 +393,7 @@ for each_ch in glob.glob(doypath+"sp%s1_f%s/"%(code,freqidx)):
                 #print velrange
                 #print 'len(velrange):',len(velrange)
                 spc_dop=GetMoments(data_a_matrix,velrange,noiselvl)
+                '''
                 fig = plt.figure(figsize=(5,3))
                 ax=fig.add_subplot(111)
                 ax.plot(spc_dop[2],'r')
@@ -400,6 +401,7 @@ for each_ch in glob.glob(doypath+"sp%s1_f%s/"%(code,freqidx)):
                 ax2.plot(10.0*numpy.log10(spc_dop[0]),'k')
                 ax2.axis('auto')
                 plt.show()
+                '''
                 threshv=0.1
                 L= data_a_matrix.shape[0] # DECLARACION DE PERFILES 3 = 100
                 linearfactor=L//100

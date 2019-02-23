@@ -55,33 +55,22 @@ def getDataTypeCode(numpyDtype):
 def hildebrand_sekhon(data, navg):
 
     data = data.copy()
-
     sortdata = numpy.sort(data,axis=None)
     '''
     lenOfData = len(sortdata)
     nums_min = lenOfData/10
-
     if (lenOfData/10) > 2:
         nums_min = lenOfData/10
     else:
         nums_min = 2
-
     sump = 0.
-
     sumq = 0.
-
     j = 0
-
     cont = 1
-
     while((cont==1)and(j<lenOfData)):
-
         sump += sortdata[j]
-
         sumq += sortdata[j]**2
-
         j += 1
-
         if j > nums_min:
             rtest = float(j)/(j-1) + 1.0/navg
             if ((sumq*j) > (rtest*sump**2)):
@@ -89,7 +78,6 @@ def hildebrand_sekhon(data, navg):
                 sump  = sump - sortdata[j]
                 sumq =  sumq - sortdata[j]**2
                 cont = 0
-
     lnoise = sump /j
     stdv = numpy.sqrt((sumq - lnoise**2)/(j - 1))
     return lnoise

@@ -187,6 +187,7 @@ class ParametersProc(ProcessingUnit):
 
         self.dataOut.ippFactor = 1
         self.dataOut.nFFTPoints = nFFTPoints
+        #print 'self.dataOut.nFFTPoints:',self.dataOut.nFFTPoints
         self.dataOut.pairsList = pairsList
         self.dataOut.nCohInt = 6
         self.dataOut.abscissaList = self.dataOut.getVelRange(1)

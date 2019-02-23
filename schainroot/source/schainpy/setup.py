@@ -1,4 +1,12 @@
 '''
+
+Commands :
+
+python setup.py build
+python setup.py install
+
+
+
 Created on Jul 16, 2014
 
 @author: Miguel Urco

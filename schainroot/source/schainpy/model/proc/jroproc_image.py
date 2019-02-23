@@ -64,8 +64,7 @@ class ImageProc(ProcessingUnit):
         Convierte valores de Spectra a RGB
         """
         t=self.dataOut.utctime
-        ch= self.dataOut.channel_img#ch es desde 0 a 5 si hubieran 6 canales
-        #print 'mira humano: ',t
+        ch= self.dataOut.channel_img#ch es desde 0 a 5 si hubieran 6 canal
         s=self.data_spc[ch]
         s=numpy.fft.fftshift(s,axes=0)
         #plt.set_cmap('seismic')
