@@ -485,6 +485,25 @@ class Spectra(JROData):
         self.noise_estimation = None
 
 
+    def getNoisebyHildebrandVector(self):
+        """
+        Determino el nivel de ruido usando el metodo Hildebrand-Sekhon
+
+        Return:
+            noiselevel
+        """
+
+        noise = numpy.zeros(self.nChannels)
+        for channel in range(self.nChannels):
+            daux = self.data_spc[channel,:,:]
+            noise[channel] = hildebrand_sekhon(daux, self.nIncohInt)
+
+        #print 'self.nIncohInt>',self.nIncohInt
+        #print 'ch0 noise> ',10.0*numpy.log10(noise[0])
+        #print 'ch1 noise> ',10.0*numpy.log10(noise[1])
+        #raw_input('Check noise')
+        return noise
+
     def getNoisebyHildebrand(self):
         """
         Determino el nivel de ruido usando el metodo Hildebrand-Sekhon
@@ -504,11 +523,31 @@ class Spectra(JROData):
         #raw_input('Check noise')
         return noise
 
-    def getNoise(self):
+    def getNoisebyHeights(self):
+        """
+        Determino el nivel de ruido usando el metodo Hildebrand-Sekhon
+        Return:
+            noiselevel pero Slice or height
+        """
+        noise = numpy.zeros((self.nChannels,len(self.heightList)))
+        for channel in range(self.nChannels):
+            daux = self.data_spc[channel,:,:]
+            for height in range(0,daux.shape[1]):
+                noise[channel][height] = hildebrand_sekhon(daux[:,height], self.nCohInt)
+
+        return noise
+
+    def getNoise(self, mode = None):
         if self.noise_estimation != None:
             return self.noise_estimation #this was estimated by getNoise Operation defined in jroproc_spectra.py
         else:
-            noise = self.getNoisebyHildebrand()
+
+            if mode == 1:
+                noise = self.getNoisebyHildebrand()
+            print 'type>', type
+            if mode == 2:
+                noise = self.getNoisebyHeights()
+
             return noise
 
 

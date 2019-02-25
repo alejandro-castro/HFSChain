@@ -124,6 +124,7 @@ time.sleep(1)
 
 figpath=    '/home/jm/Pictures/graphics_schain/sp'+str(code)+'1_f'+str(ngraph)+'/'
 parampath = '/home/jm/Pictures/graphics_schain/sp'+str(code)+'1_f'+str(ngraph)+'/param/'
+
 print "figpath",figpath
 print "paramPath", parampath
 #---------------------------------------------------------------------------#

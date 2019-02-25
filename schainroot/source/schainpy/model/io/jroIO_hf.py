@@ -934,10 +934,10 @@ class HFReader(ProcessingUnit):
         name0='pw0_C'+str(self.code)
         name1='pw1_C'+str(self.code)
         name2='cspec01_C'+str(self.code)
-        #name3='image0_C'+str(self.code)
-        #name4='image1_C'+str(self.code)
-        name3='image0_c'+str(self.code)
-        name4='image1_c'+str(self.code)
+        name3='image0_C'+str(self.code)
+        name4='image1_C'+str(self.code)
+        #name3='image0_c'+str(self.code)
+        #name4='image1_c'+str(self.code)
 
         ch0=(fp[name0]).value    #Primer canal (100,1000)--(perfiles,alturas)
         ch1=(fp[name1]).value    #Segundo canal (100,1000)--(perfiles,alturas)
@@ -1148,7 +1148,7 @@ class HFParamReader(HFReader):
         '''
         toextract = self.filenameList[0].split('/')[-2]
         filename = self.filenameList[0].replace(toextract,'').replace('//','/').replace('D','M')
-        #print 'Metadata de ParamReader en : ',filename
+        print 'Metadata de ParamReader en : ',filename
 
         fp = h5py.File(filename,'r')
         gp = fp['Metadata']

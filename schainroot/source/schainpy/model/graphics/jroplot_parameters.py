@@ -157,7 +157,7 @@ class MomentsPlot(Figure):
 
         for i in range(self.nplots):
             str_datetime = '%s %s'%(thisDatetime.strftime("%Y/%m/%d"),thisDatetime.strftime("%H:%M:%S"))
-            title = "Channel %d: %4.2fdB: %s" %(dataOut.channelList[i]+1, noisedB[i], str_datetime)
+            title = "Channel %d: %4.2fdB: %s" %(dataOut.channelList[i]+1, numpy.mean(noisedB[i]), str_datetime)
             axes = self.axesList[i*self.__nsubplots]
             axes.pcolor(x, y, zdB[i,:,:],
                         xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, zmin=zmin, zmax=zmax,
@@ -165,8 +165,8 @@ class MomentsPlot(Figure):
                         ticksize=9, cblabel='')
                         #Mean Line
             radialvelocity = dataOut.data_param[i, 1, :]
-            axes.addpline(radialvelocity, y, idline=0, color="black", linestyle="dashed", lw=1)
-
+            #axes.addpline(radialvelocity, y, idline=0, color="black", linestyle="dashed", lw=1)
+            axes.addpline(radialvelocity, y, idline=0, color='w', linestyle="solid", lw=2)
             #SpectralWidth = dataOut.data_param[i, 2, :]
             #axes.addpline(SpectralWidth+radialvelocity, y, idline=1, color="red", linestyle="solid", lw=1)
             #axes.addpline(radialvelocity-SpectralWidth, y, idline=2, color="red", linestyle="solid", lw=1)
@@ -186,8 +186,10 @@ class MomentsPlot(Figure):
                         ytick_visible=False,
                         grid='x')
 
-                noiseline = numpy.repeat(noisedB[i], len(y))
-                axes.addpline(noiseline, y, idline=1, color="black", linestyle="dashed", lw=2)
+                noiseline = numpy.repeat(numpy.mean(noisedB[i]), len(y))
+                axes.addpline(noiseline, y, idline=1, color="black", linestyle="solid", lw=2)
+                if dataOut.noiseMode == 2:
+                    axes.addpline(noisedB[i], y, idline=2, color="red", linestyle="dashed", lw=1)
 
         self.draw()
 

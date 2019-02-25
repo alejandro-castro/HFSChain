@@ -142,7 +142,7 @@ class SpectraProc(ProcessingUnit):
         self.dataOut.blockSize = blocksize
         self.dataOut.flagShiftFFT = False
 
-    def run(self, nProfiles=None, nFFTPoints=None, pairsList=[], ippFactor=None):
+    def run(self, nProfiles=None, nFFTPoints=None, pairsList=[], ippFactor=None,noiseMode = None):
 
         self.dataOut.flagNoData = True
 
@@ -164,6 +164,8 @@ class SpectraProc(ProcessingUnit):
             self.dataOut.ippFactor = ippFactor
             self.dataOut.nFFTPoints = nFFTPoints
             self.dataOut.pairsList = pairsList
+            #22/02/19 tbm declarar como argumento
+            self.dataOut.noiseMode = noiseMode
         #print "wtf",str(self.buffer)
             if str(self.buffer) == "None":
                 self.buffer = numpy.zeros((self.dataIn.nChannels,

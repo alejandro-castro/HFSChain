@@ -108,10 +108,13 @@ class ParametersProc(ProcessingUnit):
             #self.dataOut.abscissaList = self.dataIn.getVelRange(0)
             self.dataOut.abscissaList = self.dataIn.getVelRange(1)
 	    #print "CALCULO DEL RUIDO"
-            self.dataOut.noise = self.dataIn.getNoise()
+            #self.dataOut.noise = self.dataIn.getNoise()
+            self.dataOut.noiseMode = self.dataIn.noiseMode
+            self.dataOut.noise = self.dataIn.getNoise(mode = self.dataIn.noiseMode)
             self.dataOut.normFactor = self.dataIn.normFactor
             self.dataOut.groupList = self.dataIn.pairsList
             self.dataOut.flagNoData = False
+
 
         #----------------------    Correlation Data    ---------------------------
         if self.dataIn.type == "Correlation":
@@ -192,7 +195,7 @@ class ParametersProc(ProcessingUnit):
         self.dataOut.nCohInt = 6
         self.dataOut.abscissaList = self.dataOut.getVelRange(1)
     #-------------------    Get Moments    ----------------------------------
-    def GetMoments(self, channelList = None):
+    def GetMoments(self, noiseMode = None , channelList = None):
         '''
         Function GetMoments()
 
@@ -221,12 +224,15 @@ class ParametersProc(ProcessingUnit):
         #plt.plot(10.0*numpy.log10(data[0,:,:][500,:][-201:-1]))
         #plt.imshow(10.0*numpy.log10(data[0,:,:]),vmin=-110,vmax=-75,cmap='jet')
         #plt.show()
-
-        for ind in channelList:
-            data_param[ind,:,:] = self.__calculateMoments(data[ind,:,:], absc, noise[ind])
+        if self.dataIn.noiseMode == 2:
+            for ind in channelList:
+                data_param[ind,:,:] = self.__calculateMoments(data[ind,:,:], absc, noise[ind,:])
+        else :
+            for ind in channelList:
+                data_param[ind,:,:] = self.__calculateMoments(data[ind,:,:], absc, noise[ind])
 
         #print 'spc_dop>',data_param[0,0,:]
-        print 'noises:',10.0*numpy.log10(noise[0])
+        #print 'noises:',10.0*numpy.log10(noise[0])
         #print 'absc:',absc
 
         #import matplotlib.pyplot as plt
@@ -252,74 +258,155 @@ class ParametersProc(ProcessingUnit):
         if (aliasing == None): aliasing = 0
         if (oldfd == None): oldfd = 0
         if (wwauto == None): wwauto = 0
+        if self.dataOut.noiseMode == 1:
 
-        if (n0 < 1.e-20):   n0 = 1.e-20
+            if (n0 < 1.e-20):   n0 = 1.e-20
+            freq = oldfreq # Doppler velocity values
+            vec_power = numpy.zeros(oldspec.shape[1])
+            vec_fd = numpy.zeros(oldspec.shape[1])
+            vec_w = numpy.zeros(oldspec.shape[1])
+            vec_snr = numpy.zeros(oldspec.shape[1])
+            vec_fv = numpy.zeros(oldspec.shape[1])#First Valid frequency
+            vec_lv = numpy.zeros(oldspec.shape[1])#Last Valid Frequency
 
-        freq = oldfreq # Doppler velocity values
-        vec_power = numpy.zeros(oldspec.shape[1])
-        vec_fd = numpy.zeros(oldspec.shape[1])
-        vec_w = numpy.zeros(oldspec.shape[1])
-        vec_snr = numpy.zeros(oldspec.shape[1])
-        vec_fv = numpy.zeros(oldspec.shape[1])#First Valid frequency
-        vec_lv = numpy.zeros(oldspec.shape[1])#Last Valid Frequency
+            for ind in range(oldspec.shape[1]):
 
-        for ind in range(oldspec.shape[1]):
+                spec = oldspec[:,ind]
+                #TODO : hacer un noise special para el slice metodo privado de ParametersProc
+                aux = spec*fwindow[0:len(spec)] #Jm:hardcoded to match with lenghts
+                max_spec = aux.max()
+                m = list(aux).index(max_spec)
 
-            spec = oldspec[:,ind]
-            #TODO : if snr = (spec2.mean()-n0)/n0 SNR es menor que 0.3dB no hagas el resto.
-            #TODO : hacer un noise special para el slice metodo privado de ParametersProc
-            aux = spec*fwindow[0:len(spec)] #Jm:hardcoded to match with lenghts
-            max_spec = aux.max()
-            m = list(aux).index(max_spec)
+                #Smooth
+                #TODO : probar el whitenning smooth que dio Juha
+                if (smooth == 0):   spec2 = spec
+                else:   spec2 = scipy.ndimage.filters.uniform_filter1d(spec,size=smooth)
 
-            #Smooth
-            #TODO : probar el whitenning smooth que dio Juha
-            if (smooth == 0):   spec2 = spec
-            else:   spec2 = scipy.ndimage.filters.uniform_filter1d(spec,size=smooth)
+                #    Calculo de Momentos
+                bb = spec2[range(m,spec2.size)]
+                bb = (bb<n0).nonzero()
+                bb = bb[0]
 
-            #    Calculo de Momentos
-            bb = spec2[range(m,spec2.size)]
-            bb = (bb<n0).nonzero()
-            bb = bb[0]
+                ss = spec2[range(0,m + 1)]
+                ss = (ss<n0).nonzero()
+                ss = ss[0]
 
-            ss = spec2[range(0,m + 1)]
-            ss = (ss<n0).nonzero()
-            ss = ss[0]
+                if (bb.size == 0):
+                    bb0 = spec.size - 1 - m
+                else:
+                    bb0 = bb[0] - 1
+                    if (bb0 < 0):
+                        bb0 = 0
 
-            if (bb.size == 0):
-                bb0 = spec.size - 1 - m
-            else:
-                bb0 = bb[0] - 1
-                if (bb0 < 0):
-                    bb0 = 0
+                if (ss.size == 0):   ss1 = 1
+                else: ss1 = max(ss) + 1
 
-            if (ss.size == 0):   ss1 = 1
-            else: ss1 = max(ss) + 1
+                if (ss1 > m):   ss1 = m
+                snr = (spec2.mean()-n0)/n0
+                if 10.0*numpy.log10(snr)>1.0:
+                    valid = numpy.asarray(range(int(m + bb0 - ss1 + 1))) + ss1
+                    #print 'valid[0]:',freq[valid[0]]
+                    #print 'valid[-1]:',freq[valid[-1]]
+                    power = ((spec2[valid] - n0)*fwindow[valid]).sum() # m_0 = first moments
+                    fd = ((spec2[valid]- n0)*freq[valid]*fwindow[valid]).sum()/power # m_1=radial velocity = frequecy doppler?
+                    w = math.sqrt((  (spec2[valid] - n0)*fwindow[valid]  *(freq[valid]- fd)**2   ).sum()/power)
+                else :
+                    valid=[0,0]
+                    power = 0.0
+                    fd = 0.0
+                    w = 0.0
 
-            if (ss1 > m):   ss1 = m
+                if (snr < 1.e-20) :
+                    snr = 1.e-20
 
-            valid = numpy.asarray(range(int(m + bb0 - ss1 + 1))) + ss1
-            #print 'valid[0]:',freq[valid[0]]
-            #print 'valid[-1]:',freq[valid[-1]]
-            power = ((spec2[valid] - n0)*fwindow[valid]).sum() # m_0 = first moments
-            #TODO probar la estimacion de fd con el calculo de ruido por perfil.
-            fd = ((spec2[valid]- n0)*freq[valid]*fwindow[valid]).sum()/power # m_1=radial velocity = frequecy doppler?
-            w = math.sqrt((  (spec2[valid] - n0)*fwindow[valid]  *(freq[valid]- fd)**2   ).sum()/power)
-            snr = (spec2.mean()-n0)/n0
+                vec_power[ind] = power
+                vec_fd[ind] = fd
+                vec_w[ind] = w
+                vec_snr[ind] = snr
+                vec_fv[ind]=freq[valid[0]]
+                vec_lv[ind]=freq[valid[-1]]
+                #vec_sw[ind] = sw
 
-            if (snr < 1.e-20) :
-                snr = 1.e-20
+                #else : vec_power[ind] = un numero x, fd , w y snr igual.
+            moments = numpy.vstack((vec_snr, vec_power, vec_fd, vec_w,vec_fv,vec_lv))
+        else :
+            for ind in range(0,len(n0)):
+                if (n0[ind] < 1.e-20):   n0[ind] = 1.e-20
 
-            vec_power[ind] = power
-            vec_fd[ind] = fd
-            vec_w[ind] = w
-            vec_snr[ind] = snr
-            vec_fv[ind]=freq[valid[0]]
-            vec_lv[ind]=freq[valid[-1]]
-            #vec_sw[ind] = sw
+            freq = oldfreq # Doppler velocity values
+            vec_power = numpy.zeros(oldspec.shape[1])
+            vec_fd = numpy.zeros(oldspec.shape[1])
+            vec_w = numpy.zeros(oldspec.shape[1])
+            vec_snr = numpy.zeros(oldspec.shape[1])
+            vec_fv = numpy.zeros(oldspec.shape[1])#First Valid frequency
+            vec_lv = numpy.zeros(oldspec.shape[1])#Last Valid Frequency
 
-            #else : vec_power[ind] = un numero x, fd , w y snr igual.
-        moments = numpy.vstack((vec_snr, vec_power, vec_fd, vec_w,vec_fv,vec_lv))
+            for ind in range(oldspec.shape[1]):
+
+                spec = oldspec[:,ind]
+                #TODO : hacer un noise special para el slice metodo privado de ParametersProc
+                aux = spec*fwindow[0:len(spec)] #Jm:hardcoded to match with lenghts
+                max_spec = aux.max()
+                m = list(aux).index(max_spec)
+
+                #Smooth
+                #TODO : probar el whitenning smooth que dio Juha
+                if (smooth == 0):   spec2 = spec
+                else:   spec2 = scipy.ndimage.filters.uniform_filter1d(spec,size=smooth)
+
+                #    Calculo de Momentos
+                bb = spec2[range(m,spec2.size)]
+                bb = (bb<n0[ind]).nonzero()
+                bb = bb[0]
+
+                ss = spec2[range(0,m + 1)]
+                ss = (ss<n0[ind]).nonzero()
+                ss = ss[0]
+
+                if (bb.size == 0):
+                    bb0 = spec.size - 1 - m
+                else:
+                    bb0 = bb[0] - 1
+                    if (bb0 < 0):
+                        bb0 = 0
+
+                if (ss.size == 0):   ss1 = 1
+                else: ss1 = max(ss) + 1
+
+                if (ss1 > m):   ss1 = m
+
+                #Cambio para que no calcule todos los momentos en caso SNR sea demasiado baja
+                snr = (spec2.mean()-n0[ind])/n0[ind]
+                #TODO Put threshold in parameterName
+                if 10.0*numpy.log10(snr)>-3.0:
+                    valid = numpy.asarray(range(int(m + bb0 - ss1 + 1))) + ss1
+                    #print 'valid[0]:',freq[valid[0]]
+                    #print 'valid[-1]:',freq[valid[-1]]
+                    power = ((spec2[valid] - n0[ind])*fwindow[valid]).sum() # m_0 = first moments
+                    #TODO probar la estimacion de fd con el calculo de ruido por perfil.
+                    fd = ((spec2[valid]- n0[ind])*freq[valid]*fwindow[valid]).sum()/power # m_1=radial velocity = frequecy doppler?
+                    w = math.sqrt((  (spec2[valid] - n0[ind])*fwindow[valid]  *(freq[valid]- fd)**2   ).sum()/power)
+                else :
+                    valid=[0,0]
+                    power = 0.0
+                    fd = 0.0
+                    w = 0.0
+
+                if (snr < 1.e-20) :
+                    snr = 1.e-20
+
+                vec_power[ind] = power
+                vec_fd[ind] = fd
+                vec_w[ind] = w
+                vec_snr[ind] = snr
+                vec_fv[ind]=freq[valid[0]]
+                vec_lv[ind]=freq[valid[-1]]
+                #vec_sw[ind] = sw
+
+                #else : vec_power[ind] = un numero x, fd , w y snr igual.
+            moments = numpy.vstack((vec_snr, vec_power, vec_fd, vec_w,vec_fv,vec_lv))
+
+
         return moments
 
     #------------------    Get SA Parameters    --------------------------
