@@ -245,7 +245,11 @@ class ParametersProc(ProcessingUnit):
         return
 
     def __calculateMoments(self, oldspec, oldfreq, n0, nicoh = None, graph = None, smooth = None, type1 = None, fwindow = None, snrth = None, dc = None, aliasing = None, oldfd = None, wwauto = None):
-
+        #TODO : Hacer un spetral whitenning para suavizar los espectros y sacar la velocidad radial de la potencia maxima.
+        # En vez del calculo  Doppler-Radial.
+        # Mejorar el calculo de velocidad radial con direccionamiento y apunte.
+        # Enviar los datos a un servidor para que este lo modele en tiempo real. pronostique de donde viene la Spread F y la antena cambie el apunte.
+        
         if (nicoh == None): nicoh = 1
         if (graph == None): graph = 0
         if (smooth == None): smooth = 0

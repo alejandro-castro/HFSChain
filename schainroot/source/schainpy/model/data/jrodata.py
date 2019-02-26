@@ -544,7 +544,7 @@ class Spectra(JROData):
 
             if mode == 1:
                 noise = self.getNoisebyHildebrand()
-            print 'type>', type
+
             if mode == 2:
                 noise = self.getNoisebyHeights()
 

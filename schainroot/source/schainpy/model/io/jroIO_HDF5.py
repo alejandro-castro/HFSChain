@@ -490,7 +490,7 @@ class HDF5Reader(ProcessingUnit):
 
         for i in range(len(listMeta)):
             setattr(self.dataOut,listMetaname[i],listMeta[i])
-
+        raw_input(listData)
         for j in range(len(listData)):
             if listDataname[j]=='utctime':
 #                 setattr(self.dataOut,listDataname[j],listData[j][blockList[blockIndex]])
@@ -612,6 +612,7 @@ class HDF5Writer(Operation):
         self.dataList = kwargs['dataList'] # Jm : all data that we want put in the file
 
         self.dataOut = dataOut
+        #print 'self.dataOut.last_block:',self.dataOut.last_block
 
         if kwargs.has_key('mode'):
             mode = kwargs['mode']
@@ -841,7 +842,7 @@ class HDF5Writer(Operation):
         self.setBlock()
         #Just for testing
         self.writeBlock()
-
+        #If file is the last file  writeBlockF!
         if self.blockIndex == self.blocksPerFile:
             self.writeBlockF() # this function is the only one that write data in hdf5 files
             self.setNextFile()
@@ -897,7 +898,6 @@ class HDF5Writer(Operation):
         '''
         Saves the block in the HDF5 file
         '''
-        #raw_input("before put one minute of data...cancel")
         #for i in range(len(self.ds)):
         for i in range(len(self.ds_aux)):
             self.ds_aux[i].resize(self.data[i].shape)#Prepare the dataset to put the data
@@ -959,5 +959,7 @@ class HDF5Writer(Operation):
             self.setNextFile()
 
         self.putData()
+        print 'dataOut.last_block:',dataOut.last_block
+        raw_input("HI!")
         #TODO : IF the HDF5 file is the last one, call writeBlockF and close the file.
         return
