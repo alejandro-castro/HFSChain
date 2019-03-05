@@ -226,6 +226,7 @@ class HFReader(ProcessingUnit):
 
         self.flagNoMoreFiles= False
 
+
         self.__waitForNewFile = 45
 
         self.__inc_int = 0
@@ -604,12 +605,21 @@ class HFReader(ProcessingUnit):
 
     def __setNextFileOffline(self):
         idFile= self.fileIndex
-        while(True):
+        while(True): #No entiendo porque se puso un while aqui..
             idFile += 1
+            if (idFile == len(self.filenameList)-1 ):
+                self.dataOut.flagLastFile = True
+                print "Last File, put flag."
+            else:
+                self.dataOut.flagLastFile = False
+
             if not (idFile < len(self.filenameList)):
                 self.flagNoMoreFiles = 1
-                print "No more Files"
+                print "No more Files!!"
                 return 0
+
+
+
             filename = self.filenameList[idFile]
             hfFilePointer =h5py.File(filename,'r')
             epoc=hfFilePointer['t'].value
@@ -934,10 +944,10 @@ class HFReader(ProcessingUnit):
         name0='pw0_C'+str(self.code)
         name1='pw1_C'+str(self.code)
         name2='cspec01_C'+str(self.code)
-        name3='image0_C'+str(self.code)
-        name4='image1_C'+str(self.code)
-        #name3='image0_c'+str(self.code)
-        #name4='image1_c'+str(self.code)
+        #name3='image0_C'+str(self.code)
+        #name4='image1_C'+str(self.code)
+        name3='image0_c'+str(self.code)
+        name4='image1_c'+str(self.code)
 
         ch0=(fp[name0]).value    #Primer canal (100,1000)--(perfiles,alturas)
         ch1=(fp[name1]).value    #Segundo canal (100,1000)--(perfiles,alturas)
@@ -961,7 +971,17 @@ class HFReader(ProcessingUnit):
         if self.flagNoMoreFiles:
             self.dataOut.flagNoData = True
             print 'Process finished'
+            raw_input("1. No hay mas archivos FlagLastBlock = 1")
+            '''
+            No more Files
+            Process finished
+            1. No hay mas archivos FlagLastBlock = 1
+
+            '''
             return 0
+        else:
+            self.dataOut.flagNoData = False
+
 
         if self.__hasNotDataInBuffer():
             if not(self.readNextBlock()):
@@ -975,7 +995,7 @@ class HFReader(ProcessingUnit):
         self.dataOut.utctime = self.__t0 + self.dataOut.ippSeconds*self.profileIndex
         self.dataOut.Image = self.dataImage
         self.dataOut.profileIndex= self.profileIndex
-        self.dataOut.flagNoData=False
+        #self.dataOut.flagNoData=False
         self.profileIndex +=1
 
         return self.dataOut.data
@@ -1086,7 +1106,7 @@ class HFParamReader(HFReader):
         idFile = self.fileIndex
 
         if not(idFile < len(self.filenameList)):
-            print("No more Files")
+            print("No more Files!")
             return 0
 
         filename = self.filenameList[idFile]
@@ -1530,7 +1550,7 @@ class HFParamReader(HFReader):
 
         #self.dataOut.channelIndexList = None
 
-        self.dataOut.flagNoData = True
+        self.dataOut.flagNoData = None
 
         #Set to TRUE if the data is discontinuous
         self.dataOut.flagDiscontinuousBlock = False

@@ -202,13 +202,13 @@ opObj11.addParameter(name='save', value='0', format='bool')
 ##opObj11.addParameter(name='sub_exp_code', value='2720', format='int')
 ##opObj11.addParameter(name='plot_pos', value='1', format='int')
 ##opObj11.addParameter(name='ext', value='.jpeg', format='str')
-'''
+
 opObj11 = procUnitConfObj1.addOperation(name='CoherenceMap', optype='other')
 opObj11.addParameter(name='id', value='3000', format='int')
 opObj11.addParameter(name='wintitle', value='HF_Jicamarca', format='str')
 opObj11.addParameter(name='COH', value='0', format='bool')
 opObj11.addParameter(name='PHASE', value='1', format='bool')
-opObj11.addParameter(name='show', value='0', format='bool')
+opObj11.addParameter(name='show', value='1', format='bool')
 opObj11.addParameter(name='xmin', value='0', format='float')
 opObj11.addParameter(name='xmax', value='24', format='float')
 # # opObj11.addParameter(name='channelList', value='0', format='intlist')
@@ -227,7 +227,7 @@ opObj11.addParameter(name='ext', value='.jpeg', format='str')
 opObj11 = procUnitConfObj1.addOperation(name='CoherenceMap', optype='other')
 opObj11.addParameter(name='id', value='3002', format='int')
 opObj11.addParameter(name='wintitle', value='HF_Jicamarca', format='str')
-opObj11.addParameter(name='show', value='0', format='bool')
+opObj11.addParameter(name='show', value='1', format='bool')
 opObj11.addParameter(name='COH', value='1', format='bool')
 opObj11.addParameter(name='PHASE', value='0', format='bool')
 opObj11.addParameter(name='xmin', value='0', format='float')
@@ -244,10 +244,22 @@ opObj11.addParameter(name='exp_code', value='999', format='int')
 opObj11.addParameter(name='sub_exp_code', value=number, format='int')
 opObj11.addParameter(name='plot_pos', value='1', format='int')
 opObj11.addParameter(name='ext', value='.jpeg', format='str')
-'''
+
 procUnitConfObj2 = controllerObj.addProcUnit(datatype='ParametersProc', inputId=procUnitConfObj1.getId())
 opObj20 = procUnitConfObj2.addOperation(name='GetMoments')
-'''
+opObj20 = procUnitConfObj2.addOperation(name='GetCrossData')#Change Doit for HF
+#opObj20 = procUnitConfObj2.addOperation(name='GetRGBData')#Change Doit for HF
+
+opObj25 = procUnitConfObj2.addOperation(name='HDF5Writer', optype='other')
+opObj25.addParameter(name='path', value=figpath+'/param')
+opObj25.addParameter(name='blocksPerFile', value='10', format='int')
+#opObj25.addParameter(name='metadataList',value='type,inputUnit,heightList',format='list')
+opObj25.addParameter(name='metadataList',value='type,inputUnit,heightList,frequency',format='list')#,RxInfo,TxInfo /*RxInfo = lat,long,alt,type double or simple, etc...
+#opObj25.addParameter(name='dataList',value='data_param,data_SNR,utctime',format='list')CrossData
+opObj25.addParameter(name='dataList',value='data_param,data_SNR,data_RGB,CrossData,utctime',format='list')#AvgCohModuledata_DC,data_Coherence
+opObj25.addParameter(name='mode',value='0',format='int')#call channels
+
+
 opObj21 = procUnitConfObj2.addOperation(name='ParametersPlot', optype='other')
 opObj21.addParameter(name='id', value='4000', format='int')
 opObj21.addParameter(name='wintitle', value='Doppler-Radial Velocity Plot0', format='str')
@@ -300,12 +312,11 @@ opObj21.addParameter(name='sub_exp_code', value=number, format='int')
 opObj21.addParameter(name='plot_pos', value='1', format='int')
 opObj21.addParameter(name='ext', value='.jpeg', format='str')
 #  # # # # #
-'''
 
 opObj21 = procUnitConfObj2.addOperation(name='ParametersPlot', optype='other')
 opObj21.addParameter(name='id', value='4005', format='int')
 opObj21.addParameter(name='wintitle', value='Doppler-Radial Velocity Plot0', format='str')
-opObj21.addParameter(name='show', value='0', format='bool')
+opObj21.addParameter(name='show', value='1', format='bool')
 opObj21.addParameter(name='channelList', value='1', format='intlist')
 opObj21.addParameter(name='SNR', value='0', format='bool')
 #opObj21.addParameter(name='SNRmin', value='-50', format='int')
@@ -330,7 +341,7 @@ opObj21 = procUnitConfObj2.addOperation(name='ParametersPlot', optype='other')
 opObj21.addParameter(name='id', value='8000', format='int')
 opObj21.addParameter(name='wintitle', value='SNR_1', format='str')
 opObj21.addParameter(name='channelList', value='1', format='intlist')
-opObj21.addParameter(name='show', value='0', format='bool')
+opObj21.addParameter(name='show', value='1', format='bool')
 opObj21.addParameter(name='SNR', value='1', format='bool')
 opObj21.addParameter(name='DOP', value='0', format='bool')
 opObj21.addParameter(name='SNRdBmin', value='-9', format='int')

@@ -145,9 +145,14 @@ class SpectraProc(ProcessingUnit):
     def run(self, nProfiles=None, nFFTPoints=None, pairsList=[], ippFactor=None,noiseMode = None):
 
         self.dataOut.flagNoData = True
+        self.dataOut.noiseMode = noiseMode
+        #print self.dataOut.noiseMode
+        #raw_input("Loco")
 
         if self.dataIn.type == "Spectra":
             self.dataOut.copy(self.dataIn)
+            #22/02/19 Falto para modo Spectra
+            #self.dataOut.noiseMode = noiseMode
             return True
 
         if self.dataIn.type == "Voltage":
@@ -165,7 +170,7 @@ class SpectraProc(ProcessingUnit):
             self.dataOut.nFFTPoints = nFFTPoints
             self.dataOut.pairsList = pairsList
             #22/02/19 tbm declarar como argumento
-            self.dataOut.noiseMode = noiseMode
+            #self.dataOut.noiseMode = noiseMode
         #print "wtf",str(self.buffer)
             if str(self.buffer) == "None":
                 self.buffer = numpy.zeros((self.dataIn.nChannels,

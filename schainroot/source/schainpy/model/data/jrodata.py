@@ -541,13 +541,10 @@ class Spectra(JROData):
         if self.noise_estimation != None:
             return self.noise_estimation #this was estimated by getNoise Operation defined in jroproc_spectra.py
         else:
-
             if mode == 1:
                 noise = self.getNoisebyHildebrand()
-
             if mode == 2:
                 noise = self.getNoisebyHeights()
-
             return noise
 
 

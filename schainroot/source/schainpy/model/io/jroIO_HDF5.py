@@ -846,6 +846,9 @@ class HDF5Writer(Operation):
         if self.blockIndex == self.blocksPerFile:
             self.writeBlockF() # this function is the only one that write data in hdf5 files
             self.setNextFile()
+        print 'self.dataOut.flagNoData:', self.dataOut.flagLastFile
+        #raw_input("2. Si existe el Flag de last file entonces writeBlockF, hay q traerlo por dataOut.")
+        #Hay q acomodar los datos que van a entrar para ver si se puede grabar asi sin 10 bloques.
         return
 
     def setBlock(self):
@@ -959,7 +962,5 @@ class HDF5Writer(Operation):
             self.setNextFile()
 
         self.putData()
-        print 'dataOut.last_block:',dataOut.last_block
-        raw_input("HI!")
         #TODO : IF the HDF5 file is the last one, call writeBlockF and close the file.
         return
