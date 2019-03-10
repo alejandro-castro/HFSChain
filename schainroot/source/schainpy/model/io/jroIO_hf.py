@@ -225,6 +225,7 @@ class HFReader(ProcessingUnit):
         self.status=True
 
         self.flagNoMoreFiles= False
+        self.flagLastFile = None
 
 
         self.__waitForNewFile = 45
@@ -517,6 +518,7 @@ class HFReader(ProcessingUnit):
         self.__setParameters(path,frequency,startDate, endDate, startTime, endTime, walk)
         self.__checkPath()
         pathList,filenameList=self.__findDataForDates()
+        self.dataOut.last_block = len(self.filenameList)
         return
 
     def __searchFilesOnline(self,
@@ -607,15 +609,16 @@ class HFReader(ProcessingUnit):
         idFile= self.fileIndex
         while(True): #No entiendo porque se puso un while aqui..
             idFile += 1
-            if (idFile == len(self.filenameList)-1 ):
-                self.dataOut.flagLastFile = True
+            if (idFile == (len(self.filenameList)-1) ):
+                self.flagLastFile = True
+                
                 print "Last File, put flag."
             else:
-                self.dataOut.flagLastFile = False
+                self.flagLastFile = False
 
             if not (idFile < len(self.filenameList)):
                 self.flagNoMoreFiles = 1
-                print "No more Files!!"
+                print "No more Files - Last Update 8/03/19"
                 return 0
 
 
@@ -846,6 +849,7 @@ class HFReader(ProcessingUnit):
         #self.dataOut.channelIndexList = None
 
         self.dataOut.flagNoData = True
+        self.dataOut.flagLastFile = self.flagLastFile
 
         #Set to TRUE if the data is discontinuous
         self.dataOut.flagDiscontinuousBlock = False
@@ -970,15 +974,10 @@ class HFReader(ProcessingUnit):
     def getData(self):
         if self.flagNoMoreFiles:
             self.dataOut.flagNoData = True
-            print 'Process finished'
-            raw_input("1. No hay mas archivos FlagLastBlock = 1")
-            '''
-            No more Files
-            Process finished
-            1. No hay mas archivos FlagLastBlock = 1
-
-            '''
+            print 'Process finished.'
             return 0
+        elif self.flagLastFile:
+            self.dataOut.flagLastFile = True
         else:
             self.dataOut.flagNoData = False
 
@@ -1039,7 +1038,6 @@ class HFParamReader(HFReader):
         self.isConfig = False
         self.dataOut = self.createObjByDefault()
         #self.searchFilesOffLine2()
-        print 'Usando ParamReader'
 
     def __checkPath(self):
         if os.path.exists(self.path):
@@ -1436,11 +1434,13 @@ class HFParamReader(HFReader):
 
                 filename = os.path.join(thisPath,file)
                 sizeoffile= verifyFile(filename,size=self.sizeofHF_File)#9650368 en 600
-                if not (sizeoffile):
-                    continue
-                #Linea provenia de la version anterior.
-                #thisDatetime = isFileinThisTime(filename, self.startDate,self.endDate,self.startTime, self.endTime,self.timezone)
-                #isFileInTimeRange(self,filename, startDate, endDate, startTime, endTime):
+                #*************************************************************
+                #if not (sizeoffile):
+                #    continue
+                
+                #TODO by Jm: Verificar de otro modo si el archivo esta bien.
+                # Porque puede ser un archivo de menos files.
+                #**************************************************************
                 thisDatetime = self.isFileInTimeRange(filename, self.startDate,self.endDate,self.startTime, self.endTime)
 
                 if not(thisDatetime):
@@ -1487,8 +1487,6 @@ class HFParamReader(HFReader):
         self.filenameList = []
         self.datetimeList = []
         pathList = []
-        '''
-        '''
         self.__setParameters(path,frequency,startDate, endDate, startTime, endTime, walk)
         self.__checkPath()
         pathList,filenameList=self.__findDataForDates()
@@ -1551,7 +1549,6 @@ class HFParamReader(HFReader):
         #self.dataOut.channelIndexList = None
 
         self.dataOut.flagNoData = None
-
         #Set to TRUE if the data is discontinuous
         self.dataOut.flagDiscontinuousBlock = False
 

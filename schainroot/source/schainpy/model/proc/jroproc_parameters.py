@@ -65,6 +65,8 @@ class ParametersProc(ProcessingUnit):
                                                 2,
                                                 self.dataIn.nHeights),
                                                 dtype='f')
+        #print 'comes from jroProcSpectra flagLastFile'
+        self.dataOut.flagLastFile = self.dataIn.flagLastFile
 
     def run(self, nSeconds = None, nProfiles = None):
         #raw_input("self.dataIn.type: %s"%(self.dataIn.type))
@@ -133,6 +135,7 @@ class ParametersProc(ProcessingUnit):
 
         if self.dataIn.type == "Parameters":
             self.dataOut.copy(self.dataIn)
+            #la flagLastFile deberia venir en el datain
             self.dataOut.flagNoData = False
 
             #Just for HF - its hardcoded
@@ -160,9 +163,12 @@ class ParametersProc(ProcessingUnit):
             powa = numpy.average(self.dataIn.data_spc[0,:,:],axis=0)
             powb = numpy.average(self.dataIn.data_spc[1,:,:],axis=0)
             avgcoherenceComplex = ccf/numpy.sqrt(powa*powb)
-            #Array dimensions fails when the array is 1x1000, why?
+  
             self.dataOut.CrossData[:,0,:] = numpy.abs(avgcoherenceComplex)
-            self.dataOut.CrossData[:,1,:] = numpy.arctan2(avgcoherenceComplex.imag, avgcoherenceComplex.real)*180/numpy.pi
+            self.dataOut.CrossData[:,1,:] = numpy.arctan2(avgcoherenceComplex.imag, avgcoherenceComplex.real)/numpy.pi
+            #self.dataOut.CrossData[:,1,:] = numpy.arctan2(avgcoherenceComplex.imag, avgcoherenceComplex.real)*180/numpy.pi
+            
+            #***********TOOLs
             #self.dataOut.AvgCoh[0,:] = numpy.abs(avgcoherenceComplex)
             #self.dataOut.AvgCoh[1,:] = numpy.arctan2(avgcoherenceComplex.imag, avgcoherenceComplex.real)*180/numpy.pi
             #print 'self.dataOut.AvgCohModule.shape:',(numpy.abs(avgcoherenceComplex)).shape
@@ -171,7 +177,7 @@ class ParametersProc(ProcessingUnit):
             #self.dataOut.CohModule = numpy.abs(coherenceComplex)
             #phase = numpy.arctan(-1*coherenceComplex.imag/coherenceComplex.real)*180/numpy.pi
             #self.dataOut.CohPhase = numpy.arctan2(coherenceComplex.imag, coherenceComplex.real)*180/numpy.pi
-
+            #***********+
     #Defini los argumentos de entrara para que sean posibles parametros de entrada.
 
     def GetRGBData(self):

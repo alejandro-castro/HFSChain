@@ -508,6 +508,9 @@ class HDF5Reader(ProcessingUnit):
 #             print 'Process finished'
 #             return 0
 #
+        if self.dataOut.flagLastFile == True:
+            print 'flagLastFile:',self.dataOut.flagLastFile
+
         if self.blockIndex==self.blocksPerFile:
              if not( self.__setNextFileOffline() ):
                 self.dataOut.flagNoData = True
@@ -612,8 +615,6 @@ class HDF5Writer(Operation):
         self.dataList = kwargs['dataList'] # Jm : all data that we want put in the file
 
         self.dataOut = dataOut
-        #print 'self.dataOut.last_block:',self.dataOut.last_block
-
         if kwargs.has_key('mode'):
             mode = kwargs['mode']
 
@@ -678,6 +679,12 @@ class HDF5Writer(Operation):
         return
 
     def createMetadataFile(self):
+        #TODO by Jm : El archivo de Metadata no deberia tener un contador de seteo.
+        #Deberia ser MYYYYDDD000.hdf5
+        #TODO by Jm : Aqui agregar todos los atributos de la estacion por ejemplo:
+        #LAT,LONG,ALT,NOMBRE,UBICACION,TIPO DE USRP Y DE DAUGTHERBOARD, TIPO DE ANTENA
+        #NUMERO DE CANALES, ORIENTACION, ENTRADA DE REFERENCIA PARA CALIBRACION, etc.
+        #Que son los datos, por ejemplo explicar de donde viene la data RGB, o la CrossData, etc.
         ext = self.ext
         path = self.path
         setFile = self.setFile
@@ -709,7 +716,7 @@ class HDF5Writer(Operation):
         filex = '%s%4.4d%3.3d%3.3d%s' % (self.metaoptchar,
                                         timeTuple.tm_year,
                                         timeTuple.tm_yday,
-                                        setFile,
+                                        0,
                                         ext )
 
         filename = os.path.join( path, subfolder, filex )
@@ -773,8 +780,7 @@ class HDF5Writer(Operation):
         fp = h5py.File(filename,'w')
         #grp = fp.create_group("Data")
         #grp.attrs['metadata'] = self.metaFile
-
-#         grp.attrs['blocksPerFile'] = 0
+        #grp.attrs['blocksPerFile'] = 0
 
         ds_aux = []
         ds= []
@@ -844,9 +850,20 @@ class HDF5Writer(Operation):
         self.writeBlock()
         #If file is the last file  writeBlockF!
         if self.blockIndex == self.blocksPerFile:
+            #print 'Debugg : Se llega a igualar el numero de archivos por bloque'
             self.writeBlockF() # this function is the only one that write data in hdf5 files
             self.setNextFile()
-        print 'self.dataOut.flagNoData:', self.dataOut.flagLastFile
+
+        #Viene de jroproc_parameters, deberia ser true
+        if self.dataOut.flagLastFile: #This case occurs when the files are no NumberBlocks multipler.
+            self.writeBlockF()
+            self.fp.close()
+            #self.setNextFile()
+
+        #from pprint import pprint
+        #print 'dataOut objects:'
+        #pprint(self.dataOut.__dict__)
+
         #raw_input("2. Si existe el Flag de last file entonces writeBlockF, hay q traerlo por dataOut.")
         #Hay q acomodar los datos que van a entrar para ver si se puede grabar asi sin 10 bloques.
         return

@@ -65,6 +65,8 @@ class SpectraProc(ProcessingUnit):
         self.dataOut.beam.azimuthList = self.dataIn.beam.azimuthList
         self.dataOut.beam.zenithList = self.dataIn.beam.zenithList
         self.dataOut.last_block = self.dataIn.last_block
+        #print 'flagLastFile comes from jroIO_hf'
+        self.dataOut.flagLastFile = self.dataIn.flagLastFile
 
 
     def __getPapu(self):
