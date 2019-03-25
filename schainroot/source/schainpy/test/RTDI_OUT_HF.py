@@ -311,10 +311,11 @@ initTimeXaxisValue=datatime
 #print 'time.strptime(date,time_start):',time.strptime(time_start,"%H:%M:%S")
 #6) time end will reduce the colmsnumber
 offsetValue=int(math.floor( (time.mktime(datatime) - time.mktime(zerodatatime)) / 60.0))
-print offsetValue
+print offsetValue, doypath, code, freqidx
 start=0
 
 #sp21_f1 cambie para ver el otro tx
+print doypath+"sp%s1_f%s/"%(code,freqidx)
 for each_ch in glob.glob(doypath+"sp%s1_f%s/"%(code,freqidx)):
     print each_ch
 
@@ -349,7 +350,7 @@ for each_ch in glob.glob(doypath+"sp%s1_f%s/"%(code,freqidx)):
     count_filename=0
     XaxisValue=0
     setup = "doit"
-
+    print "alv", Ntimespec, step
     for filename in numpy.arange(0,Ntimespec//step):
         try:
             f = h5py.File(filesspec[filename*step], 'r')
@@ -532,4 +533,4 @@ for each_ch in glob.glob(doypath+"sp%s1_f%s/"%(code,freqidx)):
         #write("%f %f  %f\n" %(data_timege,data_genaro,data_doppler))
         write_buf = "%f %f %f\n"%(outt[ip],outr[ip],outd[ip])
         f_out1.write(write_buf)
-    f_out1.close
+    f_out1.close()

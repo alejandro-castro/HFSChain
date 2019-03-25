@@ -19,7 +19,7 @@ import argparse
 parser = argparse.ArgumentParser()
 ########################## PATH- DATA  ###################################################################################################
 parser.add_argument('-path',action='store',dest='path_lectura',help='Directorio de Datos \
-					.Por defecto, se esta ingresando entre comillas /media/igp-114/PROCDATA/',default='/media/igp-114/PROCDATA/')
+					.Por defecto, se esta ingresando entre comillas /media/igp-114/PROCDATA/',default='/home/ci-81/Documents/La Merced')
 ########################## FRECUENCIA ####################################################################################################
 parser.add_argument('-f',action='store',dest='f_freq',type=float,help='Frecuencia en Mhz 2.72 y 3.64. Por defecto, se esta ingresando 2.72 ',default=2.72)
 ########################## CAMPAIGN ### 600 o 100 perfiles ###############################################################################
@@ -48,30 +48,30 @@ parser.add_argument('-lo',action='store',dest='lo_seleccionado',type=int,help='P
 										Example: XA   ----- X: Es el primer valor determina la ubicacion de la estacion. A: Es \
 										  el segundo valor determina la orientacion N45O o N45E.  \
 										11: JRO-N450, 12: JRO-N45E \
-										        21: HYO-N45O, 22: HYO-N45E',default=11)
+												21: HYO-N45O, 22: HYO-N45E',default=11)
 ###########################################################################################################################################
-results    = parser.parse_args()
-path       = str(results.path_lectura)
-freq       = results.f_freq
+results	= parser.parse_args()
+path	   = str(results.path_lectura)
+freq	   = results.f_freq
 campaign   = results.c_campaign
-inc_int    = results.i_integration
-online       = (results.online)
-code       = int(results.code_seleccionado)
-date       = results.date_seleccionado
+inc_int	= results.i_integration
+online	   = (results.online)
+code	   = int(results.code_seleccionado)
+date	   = results.date_seleccionado
 time_start = results.time_start
 time_end   = results.time_end
-lo         = results.lo_seleccionado
+lo		 = results.lo_seleccionado
 
 nProfiles = 100
-nFFT      = 100
-set       = 0
+nFFT	  = 100
+set	   = 0
 
 if campaign == 1:
 	nProfiles=600
-   	nFFT     =600
+   	nFFT	 =600
 	inc_int= 0
 if online == 1:
-        date      = today
+	date	  = today
 	time_start= "00:00:00"
 	time_end  = "23:59:59"
 	set = None
@@ -112,25 +112,25 @@ time.sleep(0.1)
 #-------------------------PATH-PDATA-------------------------------------
 #path='/media/igp-114/PROCDATA/'
 #-----------------------------PATH-graficos-----------------------------------#
-figpath='/home/jm/Pictures/graphics_schain/sp'+str(code)+'1_f'+str(ngraph)+'/'
+figpath='/home/ci-81/Pictures/graphics_schain/sp'+str(code)+'1_f'+str(ngraph)+'/'
 print "figpath",figpath
 #---------------------------------------------------------------------------#
 readUnitConfObj = controllerObj.addReadUnit(datatype = 'HFReader',
-                                            path     = path,
-                                            startDate= date,   #'2017/12/31',# 2017/11/14 date
-                                            endDate  = date,   #'2017/12/31',#date 2017/11/14
-                                            code     = code,
-                                            frequency= setupF,
+											path	 = path,
+											startDate= date,   #'2017/12/31',# 2017/11/14 date
+											endDate  = date,   #'2017/12/31',#date 2017/11/14
+											code	 = code,
+											frequency= setupF,
 											campaign = campaign,
 											inc_int  = inc_int,
-                                            startTime= time_start,
-                                            endTime  = time_end,
-                                            online   = online,
-                                            set      = 0,
-                                            delay    = 0,
-                                            walk     = 1,
-                                            timezone = -5*3600
-                                            )
+											startTime= time_start,
+											endTime  = time_end,
+											online   = online,
+											set	  = 0,
+											delay	= 0,
+											walk	 = 1,
+											timezone = -5*3600
+											)
 
 procUnitConfObj0 = controllerObj.addProcUnit(datatype='VoltageProc', inputId=readUnitConfObj.getId())
 
@@ -375,9 +375,9 @@ opObj31.addParameter(name='ymax', value='450', format='float')
 opObj31.addParameter(name='show', value='1', format='bool')
 
 print "Escribiendo el archivo XML"
-controllerObj.writeXml(filename)
+#controllerObj.writeXml(filename)
 print "Leyendo el archivo XML"
-controllerObj.readXml(filename)
+#controllerObj.readXml(filename)
 
 controllerObj.createObjects()
 controllerObj.connectObjects()
