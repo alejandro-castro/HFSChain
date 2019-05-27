@@ -16,6 +16,8 @@ from model.data.jrodata import Parameters
 
 
 class ParametersProc(ProcessingUnit):
+	nSeconds = None
+
 	def __init__(self):
 		ProcessingUnit.__init__(self)
 		#self.objectDict = {}
@@ -48,14 +50,17 @@ class ParametersProc(ProcessingUnit):
 		self.dataOut.heightList = self.dataIn.getHeiRange()
 		#Jm: TODO merge : This changes has been done for HF proccesing
 		self.dataOut.data_RGB = self.dataIn.Image
-		self.dataOut.CrossData = numpy.zeros((2, self.dataIn.nHeights),
+		self.dataOut.CrossData = numpy.zeros((self.dataIn.nChannels,
+												2,
+												self.dataIn.nHeights),
 												dtype='f')
 		#print 'comes from jroProcSpectra flagLastFile'
 		self.dataOut.flagLastFile = self.dataIn.flagLastFile
 
-	def run(self, nSeconds = None, nProfiles = None , ippFactor = 1, pairsList = None):
+	def run(self, nSeconds = None, nProfiles = None):
 		if self.firstdatatime == None:
 			self.firstdatatime = self.dataIn.utctime
+
 		#----------------------	Voltage Data	---------------------------
 
 		if self.dataIn.type == "Voltage":
@@ -66,9 +71,9 @@ class ParametersProc(ProcessingUnit):
 
 			if self.buffer == None:
 					self.buffer = numpy.zeros((self.dataIn.nChannels,
-												self.nProfiles,
-												self.dataIn.nHeights),
-												dtype='complex')
+											   self.nProfiles,
+											   self.dataIn.nHeights),
+											   dtype='complex')
 
 			self.buffer[:,self.profIndex,:] = self.dataIn.data.copy()
 			self.profIndex += 1
@@ -124,12 +129,7 @@ class ParametersProc(ProcessingUnit):
 			self.dataOut.outputInterval = 60
 			self.dataOut.timeInterval = 60
 			self.dataOut.ippSeconds= 0.1
-			#hardcoded by Alejandro
-			self.dataOut.ippFactor = ippFactor
-			self.dataOut.nFFTPoints = nProfiles
-			self.dataOut.pairsList = pairsList
-
-			self.dataOut.abscissaList = self.dataOut.getVelRange(1)
+			#self.dataOut.abscissaList = self.dataOut.getVelRange(1)
 
 			return True
 
@@ -140,27 +140,31 @@ class ParametersProc(ProcessingUnit):
 
 	def GetCrossData(self):
 		#Jm: TODO merge : This changes has been done for HF proccesing
+		pairsIndexList = []
 
-		ccf = numpy.average(self.dataIn.data_cspc[:,:],axis=0)
-		powa = numpy.average(self.dataIn.data_spc[0,:,:],axis=0)
-		powb = numpy.average(self.dataIn.data_spc[1,:,:],axis=0)
-		avgcoherenceComplex = ccf/numpy.sqrt(powa*powb)
+		for pair in self.dataIn.pairsList:
+			pairsIndexList.append(self.dataIn.pairsList.index(pair))
 
-		# En ambos canales se repite la fase y la coherencia
-		self.dataOut.CrossData[0,:] = numpy.abs(avgcoherenceComplex)
-		self.dataOut.CrossData[1,:] = numpy.arctan2(avgcoherenceComplex.imag, avgcoherenceComplex.real)/numpy.pi
-		#self.dataOut.CrossData[:,1,:] = numpy.arctan2(avgcoherenceComplex.imag, avgcoherenceComplex.real)*180/numpy.pi
+		for i in range(0,len(pairsIndexList)):
+			ccf = numpy.average(self.dataIn.data_cspc[pairsIndexList[i],:,:],axis=0)
+			powa = numpy.average(self.dataIn.data_spc[0,:,:],axis=0)
+			powb = numpy.average(self.dataIn.data_spc[1,:,:],axis=0)
+			avgcoherenceComplex = ccf/numpy.sqrt(powa*powb)
 
-		#***********TOOLs
-		#self.dataOut.AvgCoh[0,:] = numpy.abs(avgcoherenceComplex)
-		#self.dataOut.AvgCoh[1,:] = numpy.arctan2(avgcoherenceComplex.imag, avgcoherenceComplex.real)*180/numpy.pi
-		#print 'self.dataOut.AvgCohModule.shape:',(numpy.abs(avgcoherenceComplex)).shape
-		#print 'self.dataOut.AvgCohPhase.shape:',(self.dataOut.AvgCohPhase).shape
-		#coherenceComplex = self.dataIn.data_cspc[pairsIndexList[i],:,:]/numpy.sqrt(self.dataIn.data_spc[0,:,:]*self.dataIn.data_spc[1,:,:])
-		#self.dataOut.CohModule = numpy.abs(coherenceComplex)
-		#phase = numpy.arctan(-1*coherenceComplex.imag/coherenceComplex.real)*180/numpy.pi
-		#self.dataOut.CohPhase = numpy.arctan2(coherenceComplex.imag, coherenceComplex.real)*180/numpy.pi
-		#***********+
+			self.dataOut.CrossData[:,0,:] = numpy.abs(avgcoherenceComplex)
+			self.dataOut.CrossData[:,1,:] = numpy.arctan2(avgcoherenceComplex.imag, avgcoherenceComplex.real)/numpy.pi
+			#self.dataOut.CrossData[:,1,:] = numpy.arctan2(avgcoherenceComplex.imag, avgcoherenceComplex.real)*180/numpy.pi
+
+			#***********TOOLs
+			#self.dataOut.AvgCoh[0,:] = numpy.abs(avgcoherenceComplex)
+			#self.dataOut.AvgCoh[1,:] = numpy.arctan2(avgcoherenceComplex.imag, avgcoherenceComplex.real)*180/numpy.pi
+			#print 'self.dataOut.AvgCohModule.shape:',(numpy.abs(avgcoherenceComplex)).shape
+			#print 'self.dataOut.AvgCohPhase.shape:',(self.dataOut.AvgCohPhase).shape
+			#coherenceComplex = self.dataIn.data_cspc[pairsIndexList[i],:,:]/numpy.sqrt(self.dataIn.data_spc[0,:,:]*self.dataIn.data_spc[1,:,:])
+			#self.dataOut.CohModule = numpy.abs(coherenceComplex)
+			#phase = numpy.arctan(-1*coherenceComplex.imag/coherenceComplex.real)*180/numpy.pi
+			#self.dataOut.CohPhase = numpy.arctan2(coherenceComplex.imag, coherenceComplex.real)*180/numpy.pi
+			#***********+
 	#Defini los argumentos de entrara para que sean posibles parametros de entrada.
 
 	def GetRGBData(self):
@@ -217,152 +221,25 @@ class ParametersProc(ProcessingUnit):
 		self.dataOut.data_param = data_param[:,1:,:]#drop first colm
 		self.dataOut.data_SNR = data_param[:,0,:]
 
-	# def __calculateMoments(self, oldspec, oldfreq, n0, smooth = None, fwindow = None):
-	# 	#TODO : Hacer un spetral whitenning para suavizar los espectros y sacar la velocidad radial de la potencia maxima.
-	# 	# En vez del calculo  Doppler-Radial.
-	# 	# Mejorar el calculo de velocidad radial con direccionamiento y apunte.
-	# 	# Enviar los datos a un servidor para que este lo modele en tiempo real. pronostique de donde viene la Spread F y la antena cambie el apunte.
-	# 	#print "oldspec", oldspec.shape, oldspec,"oldfreq","noise", n0.shape,n0
-	# 	#print "El tiempo es", self.dataOut.utctime
-	# 	if (smooth == None): smooth = 0
-	# 	elif (self.smooth < 3): smooth = 0
-	#
-	# 	if (fwindow == None): fwindow = numpy.ones(oldfreq.size)
-	#
-	#
-	# 	freq = oldfreq # Doppler velocity values
-	# 	vec_power = numpy.zeros(oldspec.shape[1])
-	# 	vec_fd = numpy.zeros(oldspec.shape[1])
-	# 	vec_w = numpy.zeros(oldspec.shape[1])
-	# 	vec_snr = numpy.zeros(oldspec.shape[1])
-	#
-	# 	vec_max = [] #This array is going to store the information of the previous spectrum so the next one can follow it
-	# 	vec_ss1 = []
-	# 	vec_bb0 = []
-	#
-	# 	if self.dataOut.noiseMode != 1 and self.dataOut.noiseMode != 2:
-	# 		raise ValueError, "Noise Mode %s not supported"%(self.dataOut.noiseMode)
-	#
-	# 	if self.dataOut.noiseMode == 1:
-	# 		if (n0 < 1.e-20):   n0 = 1.e-20
-	#
-	# 		for ind in range(oldspec.shape[1]):
-	# 			#TODO : hacer un noise special para el slice metodo privado de ParametersProc
-	# 			spec = oldspec[:,ind]
-	# 			aux = spec*fwindow[len(spec)]# #Jm:hardcoded to match with lenghts
-	#
-	# 			#Smooth
-	# 			#TODO : probar el whitenning smooth que dio Juha
-	# 			if (smooth == 0):   spec2 = aux
-	# 			else:   spec2 = scipy.ndimage.filters.uniform_filter1d(aux,size=smooth)
-	#
-	# 			self.DetectSpectrumInSpectrogram(vec_max, vec_ss1, vec_bb0, spec, fwindow, smooth, n0, ind)
-	# 			ss1 = vec_ss1[-1]
-	# 			bb0 = vec_bb0[-1]
-	# 			m = vec_max[-1]
-	# 			#Cambio para que no calcule todos los momentos en caso SNR sea demasiado baja
-	# 			snr = (spec2.mean()-n0)/n0
-	# 			#TODO Put threshold in parameterName
-	# 			#if 10.0*numpy.log10(snr)>-3.0:
-	# 			valid = numpy.asarray(range(ss1, bb0 + 1)) # it had a +m factor, Alejandro
-	#
-	# 			power = ((spec2[valid] - n0)*fwindow[valid]).sum() # m_0 = first moments
-	#
-	# 			#TODO probar la estimacion de fd con el calculo de ruido por perfil.
-	# 			fd = ((spec2[valid]- n0)*freq[valid]*fwindow[valid]).sum()/power # m_1=radial velocity = frequecy doppler?
-	# 			w = math.sqrt((  (spec2[valid] - n0)*fwindow[valid]  *(freq[valid]- fd)**2   ).sum()/power)
-	# 			# else :
-	# 			#	 valid=[0,0]
-	# 			#	 power = 0.0
-	# 			#	 fd = 0.0
-	# 			#	 w = 0.0
-	#
-	# 			if (snr < 1.e-20) :
-	# 				snr = 1.e-20
-	#
-	# 			vec_power[ind] = power
-	# 			vec_fd[ind] = fd
-	# 			vec_w[ind] = w
-	# 			vec_snr[ind] = snr
-	#
-	# 			#else : vec_power[ind] = un numero x, fd , w y snr igual.
-	# 	elif self.dataOut.noiseMode == 2 :
-	#
-	# 		for ind in range(len(n0)):
-	# 			if (n0[ind] < 1.e-20):   n0[ind] = 1.e-20
-	#
-	# 		for ind in range(oldspec.shape[1]):
-	# 			#TODO : hacer un noise special para el slice metodo privado de ParametersProc
-	# 			spec = oldspec[:,ind]
-	# 			aux = spec*fwindow[len(spec)]# #Jm:hardcoded to match with lenghts
-	#
-	# 			#Smooth
-	# 			#TODO : probar el whitenning smooth que dio Juha
-	# 			if (smooth == 0):   spec2 = aux
-	# 			else:   spec2 = scipy.ndimage.filters.uniform_filter1d(aux,size=smooth)
-	#
-	# 			# The copy is necessary because this method change the values of spec2 to perform well, and all the parameters need the original spectrum
-	# 			self.DetectSpectrumInSpectrogram(vec_max, vec_ss1, vec_bb0, spec2.copy(), fwindow, smooth, n0[ind], ind)
-	# 			ss1 = vec_ss1[-1]
-	# 			bb0 = vec_bb0[-1]
-	# 			m = vec_max[-1]
-	# 			#Cambio para que no calcule todos los momentos en caso SNR sea demasiado baja
-	# 			snr = (spec2.mean()-n0[ind])/n0[ind]
-	# 			#TODO Put threshold in parameterName
-	# 			#if 10.0*numpy.log10(snr)>-3.0:
-	# 			valid = numpy.asarray(range(ss1, bb0 + 1)) # it had a +m factor, Alejandro
-	#
-	# 			power = ((spec2[valid] - n0[ind])*fwindow[valid]).sum() # m_0 = first moments
-	#
-	# 			#TODO probar la estimacion de fd con el calculo de ruido por perfil.
-	# 			fd = ((spec2[valid]- n0[ind])*freq[valid]*fwindow[valid]).sum()/power # m_1=radial velocity = frequecy doppler?
-	# 			w = math.sqrt((  (spec2[valid] - n0[ind])*fwindow[valid]  *(freq[valid]- fd)**2   ).sum()/power)
-	# 			# else :
-	# 			#	 valid=[0,0]
-	# 			#	 power = 0.0
-	# 			#	 fd = 0.0
-	# 			#	 w = 0.0
-	#
-	# 			if (snr < 1.e-20) :
-	# 				snr = 1.e-20
-	#
-	# 			vec_power[ind] = power
-	# 			vec_fd[ind] = fd
-	# 			vec_w[ind] = w
-	# 			vec_snr[ind] = snr
-	# 			#else : vec_power[ind] = un numero x, fd , w y snr igual.
-	#
-	# 	moments = numpy.vstack((vec_snr, vec_power, vec_fd, vec_w))
-	# 	return moments
-
-	def __calculateMoments(self, oldspec, oldfreq, n0, nicoh = None, graph = None, smooth = None, type1 = None, fwindow = None, snrth = None, dc = None, aliasing = None, oldfd = None, wwauto = None):
+	def __calculateMoments(self, oldspec, oldfreq, n0, smooth = None, fwindow = None):
 		#TODO : Hacer un spetral whitenning para suavizar los espectros y sacar la velocidad radial de la potencia maxima.
 		# En vez del calculo  Doppler-Radial.
 		# Mejorar el calculo de velocidad radial con direccionamiento y apunte.
 		# Enviar los datos a un servidor para que este lo modele en tiempo real. pronostique de donde viene la Spread F y la antena cambie el apunte.
-
-		if (nicoh == None): nicoh = 1
-		if (graph == None): graph = 0
+		#print "oldspec", oldspec.shape, oldspec,"oldfreq","noise", n0.shape,n0
+		#print "El tiempo es", self.dataOut.utctime
 		if (smooth == None): smooth = 0
 		elif (self.smooth < 3): smooth = 0
 
-		if (type1 == None): type1 = 0
-		if (fwindow == None): fwindow = numpy.zeros(oldfreq.size) + 1
-		if (snrth == None): snrth = -3
-		if (dc == None): dc = 0
-		if (aliasing == None): aliasing = 0
-		if (oldfd == None): oldfd = 0
-		if (wwauto == None): wwauto = 0
-		if self.dataOut.noiseMode == 1:
+		if (fwindow == None): fwindow = numpy.ones(oldfreq.size)
 
+		if self.dataOut.noiseMode == 1:
 			if (n0 < 1.e-20):   n0 = 1.e-20
 			freq = oldfreq # Doppler velocity values
 			vec_power = numpy.zeros(oldspec.shape[1])
 			vec_fd = numpy.zeros(oldspec.shape[1])
 			vec_w = numpy.zeros(oldspec.shape[1])
 			vec_snr = numpy.zeros(oldspec.shape[1])
-			vec_fv = numpy.zeros(oldspec.shape[1])#First Valid frequency
-			vec_lv = numpy.zeros(oldspec.shape[1])#Last Valid Frequency
 
 			for ind in range(oldspec.shape[1]):
 
@@ -398,18 +275,18 @@ class ParametersProc(ProcessingUnit):
 
 				if (ss1 > m):   ss1 = m
 				snr = (spec2.mean()-n0)/n0
-				if 10.0*numpy.log10(snr)>1.0:
-					valid = numpy.asarray(range(int(m + bb0 - ss1 + 1))) + ss1
-					#print 'valid[0]:',freq[valid[0]]
-					#print 'valid[-1]:',freq[valid[-1]]
-					power = ((spec2[valid] - n0)*fwindow[valid]).sum() # m_0 = first moments
-					fd = ((spec2[valid]- n0)*freq[valid]*fwindow[valid]).sum()/power # m_1=radial velocity = frequecy doppler?
-					w = math.sqrt((  (spec2[valid] - n0)*fwindow[valid]  *(freq[valid]- fd)**2   ).sum()/power)
-				else :
-					valid=[0,0]
-					power = 0.0
-					fd = 0.0
-					w = 0.0
+				#if 10.0*numpy.log10(snr)>1.0:
+				valid = numpy.asarray(range(int(m + bb0 - ss1 + 1))) + ss1
+				#print 'valid[0]:',freq[valid[0]]
+				#print 'valid[-1]:',freq[valid[-1]]
+				power = ((spec2[valid] - n0)*fwindow[valid]).sum() # m_0 = first moments
+				fd = ((spec2[valid]- n0)*freq[valid]*fwindow[valid]).sum()/power # m_1=radial velocity = frequecy doppler?
+				w = math.sqrt((  (spec2[valid] - n0)*fwindow[valid]  *(freq[valid]- fd)**2   ).sum()/power)
+				# else :
+				#	 valid=[0,0]
+				#	 power = 0.0
+				#	 fd = 0.0
+				#	 w = 0.0
 
 				if (snr < 1.e-20) :
 					snr = 1.e-20
@@ -418,11 +295,13 @@ class ParametersProc(ProcessingUnit):
 				vec_fd[ind] = fd
 				vec_w[ind] = w
 				vec_snr[ind] = snr
-				#vec_sw[ind] = sw
+				vec_fv[ind]=freq[valid[0]]
+				vec_lv[ind]=freq[valid[-1]]
 
 				#else : vec_power[ind] = un numero x, fd , w y snr igual.
 			moments = numpy.vstack((vec_snr, vec_power, vec_fd, vec_w))
-		else :
+
+		elif self.dataOut.noiseMode == 2 :
 			for ind in range(0,len(n0)):
 				if (n0[ind] < 1.e-20):   n0[ind] = 1.e-20
 
@@ -434,56 +313,134 @@ class ParametersProc(ProcessingUnit):
 			vec_fv = numpy.zeros(oldspec.shape[1])#First Valid frequency
 			vec_lv = numpy.zeros(oldspec.shape[1])#Last Valid Frequency
 
+			vec_max = [] #This array is going to store the previous spectrum so the next one can follow it
+			vec_ss1 = []
+			vec_bb0 = []
+
 			for ind in range(oldspec.shape[1]):
 
-				spec = oldspec[:,ind]
 				#TODO : hacer un noise special para el slice metodo privado de ParametersProc
-				aux = spec*fwindow[0:len(spec)] #Jm:hardcoded to match with lenghts
-				max_spec = aux.max()
-				m = list(aux).index(max_spec)
+				spec = oldspec[:,ind]
+				aux = spec*fwindow[0:len(spec)]# #Jm:hardcoded to match with lenghts
 
-				#Smooth
-				#TODO : probar el whitenning smooth que dio Juha
-				if (smooth == 0):   spec2 = spec
-				else:   spec2 = scipy.ndimage.filters.uniform_filter1d(spec,size=smooth)
+				posible_signal = []
+				cond = None
+				cond2 = None
+				while(True):
 
-				#	Calculo de Momentos
-				bb = spec2[range(m,spec2.size)]
-				bb = (bb<n0[ind]).nonzero()
-				bb = bb[0]
+					max_spec = aux.max()
+					m = list(aux).index(max_spec)
 
-				ss = spec2[range(0,m + 1)]
-				ss = (ss<n0[ind]).nonzero()
-				ss = ss[0]
 
-				if (bb.size == 0):
-					bb0 = spec.size - 1 - m
+					#Smooth
+					#TODO : probar el whitenning smooth que dio Juha
+					if (smooth == 0):   spec2 = spec
+					else:   spec2 = scipy.ndimage.filters.uniform_filter1d(spec,size=smooth)
+
+					#	Calculo de Momentos
+					bb = spec2[range(m,spec2.size)]
+					bb = (bb<n0[ind]).nonzero()
+					bb = bb[0]
+
+					ss = spec2[range(0,m + 1)]
+					ss = (ss<n0[ind]).nonzero()
+					ss = ss[0]
+
+					if (bb.size == 0):
+						bb0 = spec.size - 1 #was spec.size - 1 - m, Alejandro
+					else:
+						bb0 = bb[0] - 1
+						if (bb0 < 0):
+							bb0 = 0
+						bb0 += m #Because it started looking for index with a m being 0 index in the bb portion of spectre, Alejandro
+						bb0 = min(spec.size - 1, bb0)
+
+					if (ss.size == 0):   ss1 = 0 #was 1, Alejandro
+					else: ss1 = max(ss) + 1
+
+					if (ss1 > m):   ss1 = m
+
+
+					if ind != 0: # If ind not 0 then vec_max should have data about previous spectrums
+						cond = (m > 1.05 * (vec_max[ind-1])) or (m < 0.95*(vec_max[ind-1]))
+						cond2 = aux[m] <= n0[ind]
+						if not cond2:
+							posible_signal.append((m, ss1, bb0))
+						aux[range(ss1, bb0 + 1)]= 0.0
+
+					if ind == 0 or not cond or cond2:
+						break
+
+				#Decision depending on what happened
+				#
+				#if ind == 0:
+				#	pass
+				#elif cond2:
+				#	m, ss1, bb0 = posible_signal[0]
+				#elif not cond:
+				#	m, ss1, bb0 = posible_signal[-1]
+
+				if ind == 0:
+					pass
 				else:
-					bb0 = bb[0] - 1
-					if (bb0 < 0):
-						bb0 = 0
+					max_index = None
+					max_heuristic=-1
+					continuar_linea = True
+					for i in range(len(posible_signal)):
+						m, ss1, bb0 = posible_signal[i]
+						area = abs(spec[range(ss1, bb0+1)].sum()-(spec[ss1]+spec[bb0])/2)
 
-				if (ss.size == 0):   ss1 = 1
-				else: ss1 = max(ss) + 1
+						area_noise = abs((bb0-ss1)*n0[ind])
+						#print("Las areas son:", area, area_noise)
+						if area < 15*area_noise:
+							area = 1e-15
+						else:
+						   continuar_linea = False
 
-				if (ss1 > m):   ss1 = m
+						dist = abs(m - vec_max[-1])
+						if dist == 0 :
+							heuristic = numpy.inf
+						else:
+							#print (area/dist, 5e-11/dist)
+							heuristic  = area/dist# + 1e-12/dist
+
+						if heuristic > max_heuristic:
+							max_heuristic = heuristic
+							max_index = i
+
+
+					if continuar_linea:
+						diff = 1000
+						for i in range(len(posible_signal)):
+							m = posible_signal[i][0]
+							if  abs(m-vec_max[-1]) < diff:
+								max_index = i
+								diff = abs(m-vec_max[-1])
+
+					m, ss1, bb0 = posible_signal[max_index]
+				vec_max.append(m)
+				vec_bb0.append(bb0)
+				vec_ss1.append(ss1)
+
 
 				#Cambio para que no calcule todos los momentos en caso SNR sea demasiado baja
 				snr = (spec2.mean()-n0[ind])/n0[ind]
 				#TODO Put threshold in parameterName
-				if 10.0*numpy.log10(snr)>-3.0:
-					valid = numpy.asarray(range(int(m + bb0 - ss1 + 1))) + ss1
-					#print 'valid[0]:',freq[valid[0]]
-					#print 'valid[-1]:',freq[valid[-1]]
-					power = ((spec2[valid] - n0[ind])*fwindow[valid]).sum() # m_0 = first moments
-					#TODO probar la estimacion de fd con el calculo de ruido por perfil.
-					fd = ((spec2[valid]- n0[ind])*freq[valid]*fwindow[valid]).sum()/power # m_1=radial velocity = frequecy doppler?
-					w = math.sqrt((  (spec2[valid] - n0[ind])*fwindow[valid]  *(freq[valid]- fd)**2   ).sum()/power)
-				else :
-					valid=[0,0]
-					power = 0.0
-					fd = 0.0
-					w = 0.0
+				#if 10.0*numpy.log10(snr)>-3.0:
+				valid = numpy.asarray(range(ss1, bb0 + 1)) # it had a +m factor, Alejandro
+				#print 'valid[0]:',freq[valid[0]]
+				#print 'valid[-1]:',freq[valid[-1]]
+
+				power = ((spec2[valid] - n0[ind])*fwindow[valid]).sum() # m_0 = first moments
+
+				#TODO probar la estimacion de fd con el calculo de ruido por perfil.
+				fd = ((spec2[valid]- n0[ind])*freq[valid]*fwindow[valid]).sum()/power # m_1=radial velocity = frequecy doppler?
+				w = math.sqrt((  (spec2[valid] - n0[ind])*fwindow[valid]  *(freq[valid]- fd)**2   ).sum()/power)
+				# else :
+				#	 valid=[0,0]
+				#	 power = 0.0
+				#	 fd = 0.0
+				#	 w = 0.0
 
 				if (snr < 1.e-20) :
 					snr = 1.e-20
@@ -492,112 +449,14 @@ class ParametersProc(ProcessingUnit):
 				vec_fd[ind] = fd
 				vec_w[ind] = w
 				vec_snr[ind] = snr
-				#vec_sw[ind] = sw
+				vec_fv[ind]=freq[valid[0]]
+				vec_lv[ind]=freq[valid[-1]]
 
 				#else : vec_power[ind] = un numero x, fd , w y snr igual.
 			moments = numpy.vstack((vec_snr, vec_power, vec_fd, vec_w))
-
-
-		return moments
-
-
-	def DetectSpectrumInSpectrogram(self, vec_max, vec_ss1, vec_bb0, spec2, fwindow, smooth, n0, ind):
-		possible_signal = []
-		cond = None
-		cond2 = None
-		while(True):
-			#Calculo de Momentos
-			max_spec = spec2.max()
-			m = list(spec2).index(max_spec)
-
-			bb = spec2[range(m,spec2.size)]
-			bb = (bb<n0).nonzero()
-			bb = bb[0]
-
-			ss = spec2[range(m + 1)]
-			ss = (ss<n0).nonzero()
-			ss = ss[0]
-
-			if (bb.size == 0):
-				bb0 = spec2.size - 1 #was spec2.size - 1 - m, Alejandro
-			else:
-				bb0 = bb[0] - 1
-				if (bb0 < 0):
-					bb0 = 0
-				bb0 += m #Because it started looking for index with a m being 0 index in the bb portion of spectre, Alejandro
-				bb0 = min(spec2.size - 1, bb0)
-
-			if (ss.size == 0):   ss1 = 0 #was 1, Alejandro
-			else: ss1 = max(ss) + 1
-
-			if (ss1 > m):   ss1 = m
-
-
-			if ind != 0: # If ind not 0 then vec_max should have data about previous spectrums
-				cond = (m > 1.05 * (vec_max[ind-1])) or (m < 0.95*(vec_max[ind-1]))
-				cond2 = spec2[m] <= n0
-				if not cond2:
-					possible_signal.append((m, ss1, bb0))
-				spec2[range(ss1, bb0 + 1)]= 0.0
-
-			if ind == 0 or not cond or cond2:
-				break
-
-		#Decision depending on what happened
-		#
-		#if ind == 0:
-		#	pass
-		#elif cond2:
-		#	m, ss1, bb0 = possible_signal[0]
-		#elif not cond:
-		#	m, ss1, bb0 = possible_signal[-1]
-		if ind == 0:
-			pass
 		else:
-			max_index = None
-			max_heuristic=-1
-			continuar_linea = True
-			for i in range(len(possible_signal)):
-				m, ss1, bb0 = possible_signal[i]
-				area = abs(spec2[range(ss1, bb0+1)].sum()-(spec2[ss1]+spec2[bb0])/2)
-
-				area_noise = abs((bb0-ss1)*n0)
-				#print("Las areas son:", area, area_noise)
-				if area < 15*area_noise:
-					area = 1e-15
-				else:
-					continuar_linea = False
-
-				dist = abs(m - vec_max[-1])
-				if dist == 0 :
-					heuristic = numpy.inf
-				else:
-					#print (area/dist, 5e-11/dist)
-					heuristic  = area/dist# + 1e-12/dist
-
-				if heuristic > max_heuristic:
-					max_heuristic = heuristic
-					max_index = i
-
-
-			if continuar_linea:
-				diff = 1000
-				for i in range(len(possible_signal)):
-					m = possible_signal[i][0]
-					if  abs(m-vec_max[-1]) < diff:
-						max_index = i
-						diff = abs(m-vec_max[-1])
-
-
-			if not possible_signal:
-				m = vec_max[-1]
-				ss1 = vec_ss1[-1]
-				bb0 = vec_bb0[-1]
-			else:
-				m, ss1, bb0 = possible_signal[max_index]
-		vec_max.append(m)
-		vec_bb0.append(bb0)
-		vec_ss1.append(ss1)
+			raise ValueError, "Noise Mode %s not supported"%(self.noiseMode)
+		return moments
 
 	#------------------	Get SA Parameters	--------------------------
 	def GetSAParameters(self):

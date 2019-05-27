@@ -327,7 +327,7 @@ class CrossSpectraPlot(Figure):
         x = dataOut.getVelRange(1)
         y = dataOut.getHeiRange()
         z = dataOut.data_spc[:,:,:]/factor
-#        z = numpy.where(numpy.isfinite(z), z, numpy.NAN)
+        #z = numpy.where(numpy.isfinite(z), z, numpy.NAN)
         avg = numpy.abs(numpy.average(z, axis=1))
         noise = dataOut.noise/factor
 
@@ -389,7 +389,7 @@ class CrossSpectraPlot(Figure):
 
             coherenceComplex = dataOut.data_cspc[pairsIndexList[i],:,:]/numpy.sqrt(dataOut.data_spc[pair[0],:,:]*dataOut.data_spc[pair[1],:,:])
             coherence = numpy.abs(coherenceComplex)
-#            phase = numpy.arctan(-1*coherenceComplex.imag/coherenceComplex.real)*180/numpy.pi
+            #phase = numpy.arctan(-1*coherenceComplex.imag/coherenceComplex.real)*180/numpy.pi
             phase = numpy.arctan2(coherenceComplex.imag, coherenceComplex.real)*180/numpy.pi
 
             title = "Coherence %d%d" %(pair[0], pair[1])
@@ -549,7 +549,7 @@ class RTIPlot(Figure):
         avgdB = 10.*numpy.log10(avg)
 
 
-#        thisDatetime = dataOut.datatime
+        #thisDatetime = dataOut.datatime
         thisDatetime = datetime.datetime.utcfromtimestamp(dataOut.getTimeRange()[1])
         title = wintitle + " RTI" #: %s" %(thisDatetime.strftime("%d-%b-%Y"))
         xlabel = ""
@@ -567,9 +567,9 @@ class RTIPlot(Figure):
 
             self.xmin, self.xmax = self.getTimeLim(x, xmin, xmax, timerange)
 
-#             if timerange != None:
-#                 self.timerange = timerange
-#                 self.xmin, self.tmax = self.getTimeLim(x, xmin, xmax, timerange)
+            #if timerange != None:
+            #    self.timerange = timerange
+            #    self.xmin, self.tmax = self.getTimeLim(x, xmin, xmax, timerange)
 
 
 
@@ -752,8 +752,8 @@ class CoherenceMap(Figure):
         if len(pairsIndexList) > 4:
             pairsIndexList = pairsIndexList[0:4]
 
-#         tmin = None
-#         tmax = None
+        #tmin = None
+        #tmax = None
         x = dataOut.getTimeRange()
         y = dataOut.getHeiRange()
 
@@ -1467,8 +1467,8 @@ class BeaconPhase(Figure):
         if pairsIndexList == []:
             return
 
-#         if len(pairsIndexList) > 4:
-#             pairsIndexList = pairsIndexList[0:4]
+        #if len(pairsIndexList) > 4:
+        #    pairsIndexList = pairsIndexList[0:4]
 
         if timerange != None:
             self.timerange = timerange

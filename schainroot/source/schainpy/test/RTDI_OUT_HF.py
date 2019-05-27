@@ -55,9 +55,10 @@ results    = parser.parse_args()
 pathin       = str(results.path_lectura)
 pathout     = str(results.path_escritura)
 pathout=pathout[0:-1]
+pathout = pathin+"/Figures"
 
 freq       = results.f_freq
-if freq == 2.72 :
+if int(freq*100)/100.0 == 2.72 :
     freqstr= 272
     freqidx=0
 else :

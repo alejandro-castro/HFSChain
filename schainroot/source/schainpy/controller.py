@@ -5,782 +5,603 @@ Created on September , 2012
 from xml.etree.ElementTree import Element, SubElement, ElementTree
 from xml.etree import ElementTree as ET
 from xml.dom import minidom
-
-import datetime
 from model import *
+import datetime
 
 import ast
 
 def prettify(elem):
-    """Return a pretty-printed XML string for the Element.
-    """
-    rough_string = ET.tostring(elem, 'utf-8')
-    reparsed = minidom.parseString(rough_string)
-    return reparsed.toprettyxml(indent="  ")
+	"""Return a pretty-printed XML string for the Element.
+	"""
+	rough_string = ET.tostring(elem, 'utf-8')
+	reparsed = minidom.parseString(rough_string)
+	return reparsed.toprettyxml(indent="  ")
 
-class ParameterConf():
+############################################################################################
+############################################################################################
+#ParameterConf Definition
+############################################################################################
+############################################################################################
 
-    id = None
-    name = None
-    value = None
-    format = None
+class ParameterConf(object):
 
-    __formated_value = None
+	ELEMENTNAME = 'Parameter'
 
-    ELEMENTNAME = 'Parameter'
+	def __init__(self):
+		self.format = 'str'
+		self.id = None
+		self.name = None
+		self.value = None
+		self.format = None
+		self.__formated_value = None
 
-    def __init__(self):
 
-        self.format = 'str'
+	def getElementName(self):
+		return self.ELEMENTNAME
 
-    def getElementName(self):
 
-        return self.ELEMENTNAME
+	def getValue(self):
 
-    def getValue(self):
+		if self.__formated_value != None:
+			return self.__formated_value
 
-        if self.__formated_value != None:
+		value = self.value
 
-            return self.__formated_value
+		if self.format == 'bool':
+			value = int(value)
 
-        value = self.value
+		if self.format == 'list':
+			strList = value.split(',')
 
-        if self.format == 'bool':
-            value = int(value)
+			self.__formated_value = strList
 
-        if self.format == 'list':
-            strList = value.split(',')
+			return self.__formated_value
 
-            self.__formated_value = strList
+		if self.format == 'intlist':
+			"""
+			Example:
+				value = (0,1,2)
+			"""
+			strList = value.split(',')
+			intList = [int(x) for x in strList]
 
-            return self.__formated_value
+			self.__formated_value = intList
 
-        if self.format == 'intlist':
-            """
-            Example:
-                value = (0,1,2)
-            """
-            strList = value.split(',')
-            intList = [int(x) for x in strList]
+			return self.__formated_value
 
-            self.__formated_value = intList
+		if self.format == 'floatlist':
+			"""
+			Example:
+				value = (0.5, 1.4, 2.7)
+			"""
+			strList = value.split(',')
+			floatList = [float(x) for x in strList]
 
-            return self.__formated_value
+			self.__formated_value = floatList
 
-        if self.format == 'floatlist':
-            """
-            Example:
-                value = (0.5, 1.4, 2.7)
-            """
-            strList = value.split(',')
-            floatList = [float(x) for x in strList]
+			return self.__formated_value
 
-            self.__formated_value = floatList
+		if self.format == 'date':
+			strList = value.split('/')
+			intList = [int(x) for x in strList]
+			date = datetime.date(intList[0], intList[1], intList[2])
 
-            return self.__formated_value
+			self.__formated_value = date
 
-        if self.format == 'date':
-            strList = value.split('/')
-            intList = [int(x) for x in strList]
-            date = datetime.date(intList[0], intList[1], intList[2])
+			return self.__formated_value
 
-            self.__formated_value = date
+		if self.format == 'time':
+			strList = value.split(':')
+			intList = [int(x) for x in strList]
+			time = datetime.time(intList[0], intList[1], intList[2])
 
-            return self.__formated_value
+			self.__formated_value = time
 
-        if self.format == 'time':
-            strList = value.split(':')
-            intList = [int(x) for x in strList]
-            time = datetime.time(intList[0], intList[1], intList[2])
+			return self.__formated_value
 
-            self.__formated_value = time
+		if self.format == 'pairslist':
+			"""
+			Example:
+				value = (0,1),(1,2)
+			"""
 
-            return self.__formated_value
+			value = value.replace('(', '')
+			value = value.replace(')', '')
 
-        if self.format == 'pairslist':
-            """
-            Example:
-                value = (0,1),(1,2)
-            """
+			strList = value.split(',')
+			intList = [int(item) for item in strList]
+			pairList = []
+			for i in range(len(intList)/2):
+				pairList.append((intList[i*2], intList[i*2 + 1]))
 
-            value = value.replace('(', '')
-            value = value.replace(')', '')
+			self.__formated_value = pairList
 
-            strList = value.split(',')
-            intList = [int(item) for item in strList]
-            pairList = []
-            for i in range(len(intList)/2):
-                pairList.append((intList[i*2], intList[i*2 + 1]))
+			return self.__formated_value
 
-            self.__formated_value = pairList
+		if self.format == 'multilist':
+			"""
+			Example:
+				value = (0,1,2),(3,4,5)
+			"""
+			multiList = ast.literal_eval(value)
 
-            return self.__formated_value
+			self.__formated_value = multiList
 
-        if self.format == 'multilist':
-            """
-            Example:
-                value = (0,1,2),(3,4,5)
-            """
-            multiList = ast.literal_eval(value)
+			return self.__formated_value
 
-            self.__formated_value = multiList
+		format_func = eval(self.format)
 
-            return self.__formated_value
+		self.__formated_value = format_func(value)
 
-        format_func = eval(self.format)
+		return self.__formated_value
 
-        self.__formated_value = format_func(value)
 
-        return self.__formated_value
+	def setup(self, id, name, value, format='str'):
+		self.id = id
+		self.name = name
+		self.value = str(value)
+		self.format = str.lower(format)
 
-    def setup(self, id, name, value, format='str'):
 
-        self.id = id
-        self.name = name
-        self.value = str(value)
-        self.format = str.lower(format)
+	def makeXml(self, opElement):
+		parmElement = SubElement(opElement, self.ELEMENTNAME)
+		parmElement.set('id', str(self.id))
+		parmElement.set('name', self.name)
+		parmElement.set('value', self.value)
+		parmElement.set('format', self.format)
 
-    def makeXml(self, opElement):
 
-        parmElement = SubElement(opElement, self.ELEMENTNAME)
-        parmElement.set('id', str(self.id))
-        parmElement.set('name', self.name)
-        parmElement.set('value', self.value)
-        parmElement.set('format', self.format)
+	def readXml(self, parmElement):
+		self.id = parmElement.get('id')
+		self.name = parmElement.get('name')
+		self.value = parmElement.get('value')
+		self.format = parmElement.get('format')
 
-    def readXml(self, parmElement):
 
-        self.id = parmElement.get('id')
-        self.name = parmElement.get('name')
-        self.value = parmElement.get('value')
-        self.format = parmElement.get('format')
+	def __str__(self):
+		return "Parameter[%s]: name = %s, value = %s, format = %s" %(self.id, self.name, self.value, self.format)
 
-    def printattr(self):
 
-        print "Parameter[%s]: name = %s, value = %s, format = %s" %(self.id, self.name, self.value, self.format)
+############################################################################################
+############################################################################################
+#OperationConf Definition
+############################################################################################
+############################################################################################
 
-class OperationConf():
+class OperationConf(object):
+	ELEMENTNAME = 'Operation'
 
-    id = None
-    name = None
-    priority = None
-    type = None
+	def __init__(self):
+		self.id = 0
+		self.name = None
+		self.priority = None
+		self.type = 'self'
 
-    parmConfObjList = []
 
-    ELEMENTNAME = 'Operation'
+	def __getNewId(self):
+		return int(self.id)*10 + len(self.parmConfObjList) + 1
 
-    def __init__(self):
 
-        id = 0
-        name = None
-        priority = None
-        type = 'self'
+	def getElementName(self):
+		return self.ELEMENTNAME
 
 
-    def __getNewId(self):
+	def getParameterObjList(self):
+		return self.parmConfObjList
 
-        return int(self.id)*10 + len(self.parmConfObjList) + 1
 
-    def getElementName(self):
+	def setup(self, id, name, priority, type):
+		self.id = id
+		self.name = name
+		self.type = type
+		self.priority = priority
+		self.parmConfObjList = []
 
-        return self.ELEMENTNAME
 
-    def getParameterObjList(self):
+	def addParameter(self, name, value, format='str'):
+		id = self.__getNewId()
+		parmConfObj = ParameterConf()
+		parmConfObj.setup(id, name, value, format)
+		self.parmConfObjList.append(parmConfObj)
 
-        return self.parmConfObjList
+		return parmConfObj
 
-    def setup(self, id, name, priority, type):
 
-        self.id = id
-        self.name = name
-        self.type = type
-        self.priority = priority
+	def makeXml(self, upElement):
+		opElement = SubElement(upElement, self.ELEMENTNAME)
+		opElement.set('id', str(self.id))
+		opElement.set('name', self.name)
+		opElement.set('type', self.type)
+		opElement.set('priority', str(self.priority))
 
-        self.parmConfObjList = []
+		for parmConfObj in self.parmConfObjList:
+			parmConfObj.makeXml(opElement)
 
-    def addParameter(self, name, value, format='str'):
 
-        id = self.__getNewId()
+	def readXml(self, opElement):
+		self.id = opElement.get('id')
+		self.name = opElement.get('name')
+		self.type = opElement.get('type')
+		self.priority = opElement.get('priority')
 
-        parmConfObj = ParameterConf()
-        parmConfObj.setup(id, name, value, format)
+		self.parmConfObjList = []
 
-        self.parmConfObjList.append(parmConfObj)
+		parmElementList = opElement.getiterator(ParameterConf().getElementName())
 
-        return parmConfObj
+		for parmElement in parmElementList:
+			parmConfObj = ParameterConf()
+			parmConfObj.readXml(parmElement)
+			self.parmConfObjList.append(parmConfObj)
 
-    def makeXml(self, upElement):
 
-        opElement = SubElement(upElement, self.ELEMENTNAME)
-        opElement.set('id', str(self.id))
-        opElement.set('name', self.name)
-        opElement.set('type', self.type)
-        opElement.set('priority', str(self.priority))
+	def __str__(self):
+		return "%s[%s]: name = %s, type = %s, priority = %s" %(self.ELEMENTNAME,
+															self.id,
+															self.name,
+															self.type,
+															self.priority) + "\n"+\
+		"\n".join([parmConfObj.__str__() for parmConfObj in self.parmConfObjList ])
 
-        for parmConfObj in self.parmConfObjList:
-            parmConfObj.makeXml(opElement)
 
-    def readXml(self, opElement):
+	def createObject(self):
+		if self.type == 'self':
+			raise ValueError, "This operation type cannot be created"
 
-        self.id = opElement.get('id')
-        self.name = opElement.get('name')
-        self.type = opElement.get('type')
-        self.priority = opElement.get('priority')
+		if self.type == 'external' or self.type == 'other':
+			className = eval(self.name)
+			opObj = className()
 
-        self.parmConfObjList = []
+		return opObj
 
-        parmElementList = opElement.getiterator(ParameterConf().getElementName())
 
-        for parmElement in parmElementList:
-            parmConfObj = ParameterConf()
-            parmConfObj.readXml(parmElement)
-            self.parmConfObjList.append(parmConfObj)
+############################################################################################
+############################################################################################
+#ProcUnitConf Definition
+############################################################################################
+############################################################################################
 
-    def printattr(self):
+class ProcUnitConf(object):
+	ELEMENTNAME = 'ProcUnit'
 
-        print "%s[%s]: name = %s, type = %s, priority = %s" %(self.ELEMENTNAME,
-                                                              self.id,
-                                                              self.name,
-                                                              self.type,
-                                                              self.priority)
 
-        for parmConfObj in self.parmConfObjList:
-            parmConfObj.printattr()
+	def __init__(self):
+		self.id = None
+		self.datatype = None
+		self.name = None
+		self.inputId = None
+		self.opConfObjList = []
+		self.procUnitObj = None
 
-    def createObject(self):
 
-        if self.type == 'self':
-            raise ValueError, "This operation type cannot be created"
+	def __getPriority(self):
+		return len(self.opConfObjList)+1
 
-        if self.type == 'external' or self.type == 'other':
-            className = eval(self.name)
-            opObj = className()
 
-        return opObj
+	def __getNewId(self):
+		return int(self.id)*10 + len(self.opConfObjList) + 1
 
-class ProcUnitConf():
 
-    id = None
-    name = None
-    datatype = None
-    inputId = None
+	def getElementName(self):
+		return self.ELEMENTNAME
 
-    opConfObjList = []
 
-    procUnitObj = None
-    opObjList = []
+	def getId(self):
+		return str(self.id)
 
-    ELEMENTNAME = 'ProcUnit'
 
-    def __init__(self):
+	def getInputId(self):
+		return str(self.inputId)
 
-        self.id = None
-        self.datatype = None
-        self.name = None
-        self.inputId = None
-        self.opConfObjList = []
-        self.procUnitObj = None
-        self.opObjDict = {}
 
-    def __getPriority(self):
+	def getOperationObjList(self):
+		return self.opConfObjList
 
-        return len(self.opConfObjList)+1
 
-    def __getNewId(self):
+	def getProcUnitObj(self):
+		return self.procUnitObj
 
-        return int(self.id)*10 + len(self.opConfObjList) + 1
 
-    def getElementName(self):
+	def setup(self, id, name, datatype, inputId):
+		self.id = id
+		self.name = name
+		self.datatype = datatype
+		self.inputId = inputId
 
-        return self.ELEMENTNAME
+		self.opConfObjList = []
 
-    def getId(self):
+		self.addOperation(name='run', optype='self')
 
-        return str(self.id)
 
-    def getInputId(self):
+	def addParameter(self, **kwargs):
+		opObj = self.opConfObjList[0]
+		opObj.addParameter(**kwargs)
+		return opObj
 
-        return str(self.inputId)
 
-    def getOperationObjList(self):
+	def addOperation(self, name, optype='self'):
+		id = self.__getNewId()
+		priority = self.__getPriority()
 
-        return self.opConfObjList
+		opConfObj = OperationConf()
+		opConfObj.setup(id, name=name, priority=priority, type=optype)
 
-    def getProcUnitObj(self):
+		self.opConfObjList.append(opConfObj)
 
-        return self.procUnitObj
+		return opConfObj
 
-    def setup(self, id, name, datatype, inputId):
 
-        self.id = id
-        self.name = name
-        self.datatype = datatype
-        self.inputId = inputId
+	def makeXml(self, procUnitElement):
+		upElement = SubElement(procUnitElement, self.ELEMENTNAME)
+		upElement.set('id', str(self.id))
+		upElement.set('name', self.name)
+		upElement.set('datatype', self.datatype)
+		upElement.set('inputId', str(self.inputId))
 
-        self.opConfObjList = []
+		for opConfObj in self.opConfObjList:
+			opConfObj.makeXml(upElement)
 
-        self.addOperation(name='run', optype='self')
 
-    def addParameter(self, **kwargs):
+	def readXml(self, upElement):
+		self.id = upElement.get('id')
+		self.name = upElement.get('name')
+		self.datatype = upElement.get('datatype')
+		self.inputId = upElement.get('inputId')
 
-        opObj = self.opConfObjList[0]
+		self.opConfObjList = []
 
-        opObj.addParameter(**kwargs)
+		opElementList = upElement.getiterator(OperationConf().getElementName())
 
-        return opObj
+		for opElement in opElementList:
+			opConfObj = OperationConf()
+			opConfObj.readXml(opElement)
+			self.opConfObjList.append(opConfObj)
 
-    def addOperation(self, name, optype='self'):
 
-        id = self.__getNewId()
-        priority = self.__getPriority()
+	def __str__(self):
+		return "%s[%s]: name = %s, datatype = %s, inputId = %s" %(self.ELEMENTNAME,
+															self.id,
+															self.name,
+															self.datatype,
+															self.inputId)+"\n"+\
+		"\n".join([opConfObj.__str__() for opConfObj in self.opConfObjList])
 
-        opConfObj = OperationConf()
-        opConfObj.setup(id, name=name, priority=priority, type=optype)
 
-        self.opConfObjList.append(opConfObj)
+	def createObjects(self):
+		className = eval(self.name)
+		procUnitObj = className()
+		for opConfObj in self.opConfObjList:
+			if opConfObj.type == 'self':
+				continue
 
-        return opConfObj
+			opObj = opConfObj.createObject()
+			procUnitObj.addOperation(opObj, opConfObj.id)
 
-    def makeXml(self, procUnitElement):
+		self.procUnitObj = procUnitObj
 
-        upElement = SubElement(procUnitElement, self.ELEMENTNAME)
-        upElement.set('id', str(self.id))
-        upElement.set('name', self.name)
-        upElement.set('datatype', self.datatype)
-        upElement.set('inputId', str(self.inputId))
+		return procUnitObj
 
-        for opConfObj in self.opConfObjList:
-            opConfObj.makeXml(upElement)
 
-    def readXml(self, upElement):
+	def run(self):
+		finalSts = False
 
-        self.id = upElement.get('id')
-        self.name = upElement.get('name')
-        self.datatype = upElement.get('datatype')
-        self.inputId = upElement.get('inputId')
+		for opConfObj in self.opConfObjList:
 
-        self.opConfObjList = []
+			kwargs = {}
+			for parmConfObj in opConfObj.getParameterObjList():
+				kwargs[parmConfObj.name] = parmConfObj.getValue()
 
-        opElementList = upElement.getiterator(OperationConf().getElementName())
+			#print "\tRunning the '%s' operation with %s" %(opConfObj.name, opConfObj.id)
+			sts = self.procUnitObj.call(opType = opConfObj.type,
+										opName = opConfObj.name,
+										opId = opConfObj.id,
+										 **kwargs)
+			finalSts = finalSts or sts
 
-        for opElement in opElementList:
-            opConfObj = OperationConf()
-            opConfObj.readXml(opElement)
-            self.opConfObjList.append(opConfObj)
+		return finalSts
 
-    def printattr(self):
-
-        print "%s[%s]: name = %s, datatype = %s, inputId = %s" %(self.ELEMENTNAME,
-                                                             self.id,
-                                                             self.name,
-                                                             self.datatype,
-                                                             self.inputId)
-
-        for opConfObj in self.opConfObjList:
-            opConfObj.printattr()
-
-    def createObjects(self):
-
-        className = eval(self.name)
-        procUnitObj = className()
-
-        for opConfObj in self.opConfObjList:
-
-            if opConfObj.type == 'self':
-                continue
-
-            opObj = opConfObj.createObject()
-
-            self.opObjDict[opConfObj.id] = opObj
-            procUnitObj.addOperation(opObj, opConfObj.id)
-
-        self.procUnitObj = procUnitObj
-
-        return procUnitObj
-
-    def run(self):
-
-        finalSts = False
-
-        for opConfObj in self.opConfObjList:
-
-            kwargs = {}
-            for parmConfObj in opConfObj.getParameterObjList():
-                kwargs[parmConfObj.name] = parmConfObj.getValue()
-
-            #print "\tRunning the '%s' operation with %s" %(opConfObj.name, opConfObj.id)
-            sts = self.procUnitObj.call(opType = opConfObj.type,
-                                        opName = opConfObj.name,
-                                        opId = opConfObj.id,
-                                         **kwargs)
-            finalSts = finalSts or sts
-
-        return finalSts
+############################################################################################
+############################################################################################
+#ReadUnitConf Definition
+############################################################################################
+############################################################################################
 
 class ReadUnitConf(ProcUnitConf):
 
-    path = None
-    startDate = None
-    endDate = None
-    startTime = None
-    endTime = None
+	path = None
+	startDate = None
+	endDate = None
+	startTime = None
+	endTime = None
 
-    ELEMENTNAME = 'ReadUnit'
-    #Acordarse que un init puede reemplazar al de la herencia.
+	ELEMENTNAME = 'ReadUnit'
 
-    def __init__(self):
+	def __init__(self):
+		super(ReadUnitConf, self).__init__()
+		self.inputId = 0
 
-        self.id = None
-        self.datatype = None
-        self.name = None
-        self.inputId = 0
+	def getElementName(self):
+		return self.ELEMENTNAME
 
-        self.opConfObjList = []
-        self.opObjList = []
+	def setup(self, id, name, datatype, path="", startDate="", endDate="", startTime="", endTime="", **kwargs):
+		self.id = id
+		self.name = name
+		self.datatype = datatype
 
-    def getElementName(self):
+		self.path = path
+		self.startDate = startDate
+		self.endDate = endDate
+		self.startTime = startTime
+		self.endTime = endTime
 
-        return self.ELEMENTNAME
+		self.addRunOperation(**kwargs)
 
-    def setup(self, id, name, datatype, path="", startDate="", endDate="", startTime="", endTime="", **kwargs):
+	def addRunOperation(self, **kwargs):
+		opObj = self.addOperation(name = 'run', optype = 'self')
 
-        self.id = id
-        self.name = name
-        self.datatype = datatype
+		opObj.addParameter(name='path'	 , value=self.path, format='str')
+		opObj.addParameter(name='startDate' , value=self.startDate, format='date')
+		opObj.addParameter(name='endDate'   , value=self.endDate, format='date')
+		opObj.addParameter(name='startTime' , value=self.startTime, format='time')
+		opObj.addParameter(name='endTime'   , value=self.endTime, format='time')
 
-        self.path = path
-        self.startDate = startDate
-        self.endDate = endDate
-        self.startTime = startTime
-        self.endTime = endTime
+		for key, value in kwargs.items():
+			opObj.addParameter(name=key, value=value, format=type(value).__name__)
 
-        self.addRunOperation(**kwargs)
+		return opObj
 
-    def addRunOperation(self, **kwargs):
 
-        opObj = self.addOperation(name = 'run', optype = 'self')
+############################################################################################
+############################################################################################
+#Project Definition
+############################################################################################
+############################################################################################
 
-        opObj.addParameter(name='path'     , value=self.path, format='str')
-        opObj.addParameter(name='startDate' , value=self.startDate, format='date')
-        opObj.addParameter(name='endDate'   , value=self.endDate, format='date')
-        opObj.addParameter(name='startTime' , value=self.startTime, format='time')
-        opObj.addParameter(name='endTime'   , value=self.endTime, format='time')
+class Project(object):
+	ELEMENTNAME = 'Project'
 
-        for key, value in kwargs.items():
-            opObj.addParameter(name=key, value=value, format=type(value).__name__)
 
-        return opObj
+	def __init__(self):
+		self.id = None
+		self.name = None
+		self.description = None
+		self.procUnitConfObjDict = {}
 
 
-class Project():
+	def __getNewId(self):
+		id = int(self.id)*10 + len(self.procUnitConfObjDict) + 1
+		return str(id)
 
-    id = None
-    name = None
-    description = None
-#    readUnitConfObjList = None
-    procUnitConfObjDict = None
 
-    ELEMENTNAME = 'Project'
+	def getElementName(self):
+		return self.ELEMENTNAME
 
-    def __init__(self):
 
-        self.id = None
-        self.name = None
-        self.description = None
-        #Declaracion de un Diccionario.
-        self.procUnitConfObjDict = {}
+	def setup(self, id, name, description):
+		self.id = id
+		self.name = name
+		self.description = description
+		print "Setup done:"
+		print "Project ID: ", self.id
+		print "Project Name: ", self.name
+		print "Project Description: ", self.description
 
-    def __getNewId(self):
 
-        id = int(self.id)*10 + len(self.procUnitConfObjDict) + 1
+	def addReadUnit(self, datatype, **kwargs):
+		id = self.__getNewId()
+		name = str(datatype)
 
-        return str(id)
+		readUnitConfObj = ReadUnitConf()
+		readUnitConfObj.setup(id, name, datatype, **kwargs)
 
-    def getElementName(self):
+		self.procUnitConfObjDict[id] = readUnitConfObj
 
-        return self.ELEMENTNAME
+		return readUnitConfObj
 
-    def setup(self, id, name, description):
 
-        self.id = id
-        self.name = name
-        self.description = description
-        print "Setup done:"
-        print "Project ID: ", self.id
-        print "Project Name: ", self.name
-        print "Project Description: ", self.description
+	def addProcUnit(self, datatype, inputId):
+		id = self.__getNewId()
+		name = str(datatype)
 
-    def addReadUnit(self, datatype, **kwargs):
-        #Funcion que viene de controllerObj
-        #Como es que controllerObj tiene este metodo?
-        #   R: controllerObj se inicializa con = Project(),
-        #Entonces que es Project?
-        #   R: Project viene de la libreria controller.py xq es lo unico que se importa
+		procUnitConfObj = ProcUnitConf()
+		procUnitConfObj.setup(id, name, datatype, inputId)
 
-        id = self.__getNewId()
-        name = '%s' %(datatype)
+		self.procUnitConfObjDict[id] = procUnitConfObj
 
-        readUnitConfObj = ReadUnitConf()
-        readUnitConfObj.setup(id, name, datatype, **kwargs)
+		return procUnitConfObj
 
-        self.procUnitConfObjDict[readUnitConfObj.getId()] = readUnitConfObj
 
-        return readUnitConfObj
+	def makeXml(self):
+		projectElement = Element('Project')
+		projectElement.set('id', str(self.id))
+		projectElement.set('name', self.name)
+		projectElement.set('description', self.description)
 
-    def addProcUnit(self, datatype, inputId):
+		for procUnitConfObj in self.procUnitConfObjDict.values():
+			procUnitConfObj.makeXml(projectElement)
 
-        id = self.__getNewId()
-        name = '%s' %(datatype)
+		self.projectElement = projectElement
 
-        procUnitConfObj = ProcUnitConf()
-        procUnitConfObj.setup(id, name, datatype, inputId)
 
-        self.procUnitConfObjDict[procUnitConfObj.getId()] = procUnitConfObj
+	def writeXml(self, filename):
+		self.makeXml()
+		print prettify(self.projectElement)
+		ElementTree(self.projectElement).write(filename, method='xml')
 
-        return procUnitConfObj
 
-    def makeXml(self):
+	def readXml(self, filename):
 
-        projectElement = Element('Project')
-        projectElement.set('id', str(self.id))
-        projectElement.set('name', self.name)
-        projectElement.set('description', self.description)
+		#tree = ET.parse(filename)
+		self.projectElement = None
+		self.procUnitConfObjDict = {}
 
-#        for readUnitConfObj in self.readUnitConfObjList:
-#            readUnitConfObj.makeXml(projectElement)
+		self.projectElement = ElementTree().parse(filename)
 
-        for procUnitConfObj in self.procUnitConfObjDict.values():
-            procUnitConfObj.makeXml(projectElement)
+		self.project = self.projectElement.tag
 
-        self.projectElement = projectElement
+		self.id = self.projectElement.get('id')
+		self.name = self.projectElement.get('name')
+		self.description = self.projectElement.get('description')
 
-    def writeXml(self, filename):
+		readUnitElementList = self.projectElement.getiterator(ReadUnitConf().getElementName())
 
-        self.makeXml()
+		for readUnitElement in readUnitElementList:
+			readUnitConfObj = ReadUnitConf()
+			readUnitConfObj.readXml(readUnitElement)
 
-        print prettify(self.projectElement)
+			self.procUnitConfObjDict[readUnitConfObj.getId()] = readUnitConfObj
 
-        ElementTree(self.projectElement).write(filename, method='xml')
+		procUnitElementList = self.projectElement.getiterator(ProcUnitConf().getElementName())
 
-    def readXml(self, filename):
+		for procUnitElement in procUnitElementList:
+			procUnitConfObj = ProcUnitConf()
+			procUnitConfObj.readXml(procUnitElement)
 
-        #tree = ET.parse(filename)
-        self.projectElement = None
-#        self.readUnitConfObjList = []
-        self.procUnitConfObjDict = {}
+			self.procUnitConfObjDict[procUnitConfObj.getId()] = procUnitConfObj
 
-        self.projectElement = ElementTree().parse(filename)
 
-        self.project = self.projectElement.tag
+	def __str__(self):
+		return "Project[%s]: name = %s, description = %s" %(self.id,
+															self.name,
+															self.description)+"\n"+\
+		"\n".join([procUnitConfObj.__str__() for procUnitConfObj in self.procUnitConfObjDict.values()])
 
-        self.id = self.projectElement.get('id')
-        self.name = self.projectElement.get('name')
-        self.description = self.projectElement.get('description')
 
-        readUnitElementList = self.projectElement.getiterator(ReadUnitConf().getElementName())
+	def createObjects(self):
+		for procUnitConfObj in self.procUnitConfObjDict.values():
+			procUnitConfObj.createObjects()
 
-        for readUnitElement in readUnitElementList:
-            readUnitConfObj = ReadUnitConf()
-            readUnitConfObj.readXml(readUnitElement)
+	def __connect(self, objIN, thisObj):
+		thisObj.setInput(objIN.getOutputObj())
 
-            self.procUnitConfObjDict[readUnitConfObj.getId()] = readUnitConfObj
+	def connectObjects(self):
+		for thisPUConfObj in self.procUnitConfObjDict.values():
+			inputId = thisPUConfObj.getInputId()
 
-        procUnitElementList = self.projectElement.getiterator(ProcUnitConf().getElementName())
+			if int(inputId) == 0:
+				continue
 
-        for procUnitElement in procUnitElementList:
-            procUnitConfObj = ProcUnitConf()
-            procUnitConfObj.readXml(procUnitElement)
+			#Get input object
+			puConfINObj = self.procUnitConfObjDict[inputId]
+			puObjIN = puConfINObj.getProcUnitObj()
 
-            self.procUnitConfObjDict[procUnitConfObj.getId()] = procUnitConfObj
+			#Get current object
+			thisPUObj = thisPUConfObj.getProcUnitObj()
 
-    def printattr(self):
+			self.__connect(puObjIN, thisPUObj)
 
-        print "Project[%s]: name = %s, description = %s" %(self.id,
-                                                              self.name,
-                                                              self.description)
+	def run(self):
+		finalSts = True
+		while(finalSts):
+			finalSts = False
 
-#        for readUnitConfObj in self.readUnitConfObjList:
-#            readUnitConfObj.printattr()
+			ordered_procUnitsIDs = self.procUnitConfObjDict.keys()
+			ordered_procUnitsIDs.sort()
 
-        for procUnitConfObj in self.procUnitConfObjDict.values():
-            procUnitConfObj.printattr()
+			for id in ordered_procUnitsIDs:
+				procUnitConfObj = self.procUnitConfObjDict[id]
+				#print "Running the '%s' process with %s" %(procUnitConfObj.name, procUnitConfObj.id)
+				sts = procUnitConfObj.run()
+				finalSts = finalSts or sts
 
-    def createObjects(self):
-
-#        for readUnitConfObj in self.readUnitConfObjList:
-#            readUnitConfObj.createObjects()
-
-        for procUnitConfObj in self.procUnitConfObjDict.values():
-            procUnitConfObj.createObjects()
-
-    def __connect(self, objIN, thisObj):
-
-        thisObj.setInput(objIN.getOutputObj())
-
-    def connectObjects(self):
-
-        for thisPUConfObj in self.procUnitConfObjDict.values():
-
-            inputId = thisPUConfObj.getInputId()
-
-            if int(inputId) == 0:
-                continue
-
-            #Get input object
-            puConfINObj = self.procUnitConfObjDict[inputId]
-            puObjIN = puConfINObj.getProcUnitObj()
-
-            #Get current object
-            thisPUObj = thisPUConfObj.getProcUnitObj()
-
-            self.__connect(puObjIN, thisPUObj)
-
-    def run(self):
-
-        while(True):
-
-            finalSts = False
-
-            for procUnitConfObj in self.procUnitConfObjDict.values():
-                #print "Running the '%s' process with %s" %(procUnitConfObj.name, procUnitConfObj.id)
-                sts = procUnitConfObj.run()
-                finalSts = finalSts or sts
-
-            #If every process unit finished so end process
-            if not(finalSts):
-                print "Every process units have finished."
-                break
-
-if __name__ == '__main__':
-
-    desc = "Segundo Test"
-    filename = "schain.xml"
-
-    controllerObj = Project()
-
-    controllerObj.setup(id = '191', name='test01', description=desc)
-
-    readUnitConfObj = controllerObj.addReadUnit(datatype='Voltage',
-                                                path='data/rawdata/',
-                                                startDate='2011/01/01',
-                                                endDate='2012/12/31',
-                                                startTime='00:00:00',
-                                                endTime='23:59:59',
-                                                online=1,
-                                                walk=1)
-
-#    opObj00 = readUnitConfObj.addOperation(name='printInfo')
-
-    procUnitConfObj0 = controllerObj.addProcUnit(datatype='Voltage', inputId=readUnitConfObj.getId())
-
-    opObj10 = procUnitConfObj0.addOperation(name='selectChannels')
-    opObj10.addParameter(name='channelList', value='3,4,5', format='intlist')
-
-    opObj10 = procUnitConfObj0.addOperation(name='selectHeights')
-    opObj10.addParameter(name='minHei', value='90', format='float')
-    opObj10.addParameter(name='maxHei', value='180', format='float')
-
-    opObj12 = procUnitConfObj0.addOperation(name='CohInt', optype='external')
-    opObj12.addParameter(name='n', value='10', format='int')
-
-    procUnitConfObj1 = controllerObj.addProcUnit(datatype='Spectra', inputId=procUnitConfObj0.getId())
-    procUnitConfObj1.addParameter(name='nFFTPoints', value='32', format='int')
-#    procUnitConfObj1.addParameter(name='pairList', value='(0,1),(0,2),(1,2)', format='')
-
-
-    opObj11 = procUnitConfObj1.addOperation(name='SpectraPlot', optype='external')
-    opObj11.addParameter(name='idfigure', value='1', format='int')
-    opObj11.addParameter(name='wintitle', value='SpectraPlot0', format='str')
-    opObj11.addParameter(name='zmin', value='40', format='int')
-    opObj11.addParameter(name='zmax', value='90', format='int')
-    opObj11.addParameter(name='showprofile', value='1', format='int')
-
-#    opObj11 = procUnitConfObj1.addOperation(name='CrossSpectraPlot', optype='external')
-#    opObj11.addParameter(name='idfigure', value='2', format='int')
-#    opObj11.addParameter(name='wintitle', value='CrossSpectraPlot', format='str')
-#    opObj11.addParameter(name='zmin', value='40', format='int')
-#    opObj11.addParameter(name='zmax', value='90', format='int')
-
-
-#    procUnitConfObj2 = controllerObj.addProcUnit(datatype='Voltage', inputId=procUnitConfObj0.getId())
-#
-#    opObj12 = procUnitConfObj2.addOperation(name='CohInt', optype='external')
-#    opObj12.addParameter(name='n', value='2', format='int')
-#    opObj12.addParameter(name='overlapping', value='1', format='int')
-#
-#    procUnitConfObj3 = controllerObj.addProcUnit(datatype='Spectra', inputId=procUnitConfObj2.getId())
-#    procUnitConfObj3.addParameter(name='nFFTPoints', value='32', format='int')
-#
-#    opObj11 = procUnitConfObj3.addOperation(name='SpectraPlot', optype='external')
-#    opObj11.addParameter(name='idfigure', value='2', format='int')
-#    opObj11.addParameter(name='wintitle', value='SpectraPlot1', format='str')
-#    opObj11.addParameter(name='zmin', value='40', format='int')
-#    opObj11.addParameter(name='zmax', value='90', format='int')
-#    opObj11.addParameter(name='showprofile', value='1', format='int')
-
-#    opObj11 = procUnitConfObj1.addOperation(name='RTIPlot', optype='external')
-#    opObj11.addParameter(name='idfigure', value='10', format='int')
-#    opObj11.addParameter(name='wintitle', value='RTI', format='str')
-##    opObj11.addParameter(name='xmin', value='21', format='float')
-##    opObj11.addParameter(name='xmax', value='22', format='float')
-#    opObj11.addParameter(name='zmin', value='40', format='int')
-#    opObj11.addParameter(name='zmax', value='90', format='int')
-#    opObj11.addParameter(name='showprofile', value='1', format='int')
-#    opObj11.addParameter(name='timerange', value=str(60), format='int')
-
-#    opObj10 = procUnitConfObj1.addOperation(name='selectChannels')
-#    opObj10.addParameter(name='channelList', value='0,2,4,6', format='intlist')
-#
-#    opObj12 = procUnitConfObj1.addOperation(name='IncohInt', optype='external')
-#    opObj12.addParameter(name='n', value='2', format='int')
-#
-#    opObj11 = procUnitConfObj1.addOperation(name='SpectraPlot', optype='external')
-#    opObj11.addParameter(name='idfigure', value='2', format='int')
-#    opObj11.addParameter(name='wintitle', value='SpectraPlot10', format='str')
-#    opObj11.addParameter(name='zmin', value='70', format='int')
-#    opObj11.addParameter(name='zmax', value='90', format='int')
-#
-#    opObj10 = procUnitConfObj1.addOperation(name='selectChannels')
-#    opObj10.addParameter(name='channelList', value='2,6', format='intlist')
-#
-#    opObj12 = procUnitConfObj1.addOperation(name='IncohInt', optype='external')
-#    opObj12.addParameter(name='n', value='2', format='int')
-#
-#    opObj11 = procUnitConfObj1.addOperation(name='SpectraPlot', optype='external')
-#    opObj11.addParameter(name='idfigure', value='3', format='int')
-#    opObj11.addParameter(name='wintitle', value='SpectraPlot10', format='str')
-#    opObj11.addParameter(name='zmin', value='70', format='int')
-#    opObj11.addParameter(name='zmax', value='90', format='int')
-
-
-#    opObj12 = procUnitConfObj1.addOperation(name='decoder')
-#    opObj12.addParameter(name='ncode', value='2', format='int')
-#    opObj12.addParameter(name='nbauds', value='8', format='int')
-#    opObj12.addParameter(name='code0', value='001110011', format='int')
-#    opObj12.addParameter(name='code1', value='001110011', format='int')
-
-
-
-#    procUnitConfObj2 = controllerObj.addProcUnit(datatype='Spectra', inputId=procUnitConfObj1.getId())
-#
-#    opObj21 = procUnitConfObj2.addOperation(name='IncohInt', optype='external')
-#    opObj21.addParameter(name='n', value='2', format='int')
-#
-#    opObj11 = procUnitConfObj2.addOperation(name='SpectraPlot', optype='external')
-#    opObj11.addParameter(name='idfigure', value='4', format='int')
-#    opObj11.addParameter(name='wintitle', value='SpectraPlot OBJ 2', format='str')
-#    opObj11.addParameter(name='zmin', value='70', format='int')
-#    opObj11.addParameter(name='zmax', value='90', format='int')
-
-    print "Escribiendo el archivo XML"
-
-    controllerObj.writeXml(filename)
-
-    print "Leyendo el archivo XML"
-    controllerObj.readXml(filename)
-    #controllerObj.printattr()
-
-    controllerObj.createObjects()
-    controllerObj.connectObjects()
-    controllerObj.run()
+		#If every process unit finished so end process
+		print "Every process units have finished."
