@@ -1,6 +1,0 @@
-extensions.c
-setup.py
-schainpy.egg-info/PKG-INFO
-schainpy.egg-info/SOURCES.txt
-schainpy.egg-info/dependency_links.txt
-schainpy.egg-info/top_level.txt

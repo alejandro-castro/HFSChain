@@ -76,7 +76,7 @@ else:
 		time_start = "00:01:50"
 
 if online == 1:
-        date      = today
+	date      = today
 	time_start= "00:00:00"
 	time_end  = "23:59:59"
 	set = None
@@ -118,7 +118,7 @@ time.sleep(4)
 #path='/media/igp-114/PROCDATA/'
 #-----------------------------PATH-graficos-----------------------------------#
 #figpath='/media/igp-114/graphics_schain/sp'+str(code)+'1_f'+str(ngraph)+'/'
-figpath="/home/ci-81/Documents/JRO_CAMPAIGN_ALEJANDRO/Refactor/sp"+str(code)+'1_f'+str(ngraph)+'/'
+figpath="/home/ci-81/Documents/JRO_CAMPAIGN_ALEJANDRO/DebugCmap/sp"+str(code)+'1_f'+str(ngraph)+'/'
 print "figpath",figpath
 #---------------------------------------------------------------------------#
 readUnitConfObj = controllerObj.addReadUnit(datatype = 'HFReader',
@@ -149,102 +149,47 @@ procUnitConfObj1.addParameter(name='nProfiles', value=nProfiles, format='int')
 procUnitConfObj1.addParameter(name='pairsList', value='(0,1)', format='pairsList')
 procUnitConfObj1.addParameter(name='noiseMode', value=2, format='int')
 
-#opObj12 = procUnitConfObj1.addOperation(name='removeInterference')Commented by Alejandro
-opObj12 = procUnitConfObj1.addOperation(name='removeDC')
-
-# opObj11 = procUnitConfObj1.addOperation(name='IncohInt', optype='other')
-# opObj11.addParameter(name='n', value='6', format='float')
-
-
-#opObj11 = procUnitConfObj1.addOperation(name='SpectraPlot', optype='other')
-#opObj11.addParameter(name='id', value='1000', format='int')
-#opObj11.addParameter(name='wintitle', value='HF_Jicamarca_Spc', format='str')
-##opObj11.addParameter(name='channelList', value='1', format='intlist')
-#opObj11.addParameter(name='xmin', value='-50', format='float')
-#opObj11.addParameter(name='xmax', value='50', format='float')
-####opObj11.addParameter(name='ymin', value='1485', format='float')
-####opObj11.addParameter(name='ymax', value='1500', format='float')
-#opObj11.addParameter(name='zmin', value='-145', format='float')
-#opObj11.addParameter(name='zmax', value='-105', format='float')#-105
-#opObj11.addParameter(name='save', value='1', format='int')
-##opObj11.addParameter(name='figpath', value=figpath, format='str')
-
-
-# # opObj11.addParameter(name='figfile', value=figfile_spectra_name, format='str')
-# # opObj11.addParameter(name='wr_period', value='5', format='int')
-# #opObj11.addParameter(name='ftp_wei', value='0', format='int')
-# #opObj11.addParameter(name='exp_code', value='20', format='int')
-# #opObj11.addParameter(name='sub_exp_code', value='0', format='int')
-# #opObj11.addParameter(name='plot_pos', value='0', format='int')
-
-##opObj11 = procUnitConfObj1.addOperation(name='RTIPlot', optype='other')
-##opObj11.addParameter(name='id', value='2000', format='int')
-##opObj11.addParameter(name='wintitle', value='HF_Jicamarca', format='str')
-##opObj11.addParameter(name='showprofile', value='0', format='int')
-###opObj11.addParameter(name='channelList', value='0', format='intlist')
-##opObj11.addParameter(name='xmin', value='0', format='float')
-##opObj11.addParameter(name='xmax', value='24', format='float')
-##opObj11.addParameter(name='zmin', value='-145', format='float')
-##opObj11.addParameter(name='zmax', value='-105', format='float')
-##opObj11.addParameter(name='save', value='1', format='bool')
-##opObj11.addParameter(name='figpath', value=figpath, format='str')
-### # # # opObj11.addParameter(name='figfile', value=figfile_power_name, format='str')
-##opObj11.addParameter(name='data_time_save',value='1',format='bool')
-##opObj11.addParameter(name='wr_period', value='10', format='int')
-##opObj11.addParameter(name='ftp_wei', value='1', format='int')
-##opObj11.addParameter(name='exp_code', value='444', format='int')
-##opObj11.addParameter(name='sub_exp_code', value='2720', format='int')
-##opObj11.addParameter(name='plot_pos', value='1', format='int')
-##opObj11.addParameter(name='ext', value='.jpeg', format='str')
-
-
+opObj12 = procUnitConfObj1.addOperation(name='removeInterference') #Commented by Alejandro
+#opObj12 = procUnitConfObj1.addOperation(name='removeDC')
 
 #####Commented by Alejandro
-# opObj11 = procUnitConfObj1.addOperation(name='CoherenceMap', optype='other')
-# opObj11.addParameter(name='id', value='3000', format='int')
-# opObj11.addParameter(name='wintitle', value='HF_Jicamarca', format='str')
-# opObj11.addParameter(name='COH', value='0', format='bool')
-# opObj11.addParameter(name='PHASE', value='1', format='bool')
-# opObj11.addParameter(name='show', value='0', format='bool')
-# opObj11.addParameter(name='xmin', value='0', format='float')
-# opObj11.addParameter(name='xmax', value='24', format='float')
-# # # opObj11.addParameter(name='channelList', value='0', format='intlist')
-# opObj11.addParameter(name='save', value='1', format='bool')
-# opObj11.addParameter(name='pairsList', value='(0,1)', format='pairsList')
-# # # opObj11.addParameter(name='figfile', value="Phase_2.72Mhz.jpg", format='str')
-# opObj11.addParameter(name='figpath', value=figpath, format='str')
-# opObj11.addParameter(name='data_time_save',value='1',format='bool')
-# opObj11.addParameter(name='wr_period', value='10', format='int')
-# opObj11.addParameter(name='ftp_wei', value=str(lo_0), format='int')
-# opObj11.addParameter(name='exp_code', value='888', format='int')
-# opObj11.addParameter(name='sub_exp_code', value=number, format='int')
-# opObj11.addParameter(name='plot_pos', value='1', format='int')
-# opObj11.addParameter(name='ext', value='.jpeg', format='str')
-#
-# opObj11 = procUnitConfObj1.addOperation(name='CoherenceMap', optype='other')
-# opObj11.addParameter(name='id', value='3002', format='int')
-# opObj11.addParameter(name='wintitle', value='HF_Jicamarca', format='str')
-# opObj11.addParameter(name='show', value='0', format='bool')
-# opObj11.addParameter(name='COH', value='1', format='bool')
-# opObj11.addParameter(name='PHASE', value='0', format='bool')
-# opObj11.addParameter(name='xmin', value='0', format='float')
-# opObj11.addParameter(name='xmax', value='24', format='float')
-# ####opObj11.addParameter(name='channelList', value='0', format='intlist')
-# opObj11.addParameter(name='save', value='1', format='bool')
-# opObj11.addParameter(name='pairsList', value='(0,1)', format='pairsList')
-# ####opObj11.addParameter(name='figfile', value="Coherencia_2.72Mhz.jpg", format='str')
-# opObj11.addParameter(name='figpath', value=figpath, format='str')
-# opObj11.addParameter(name='data_time_save',value='1',format='bool')
-# opObj11.addParameter(name='wr_period', value='10', format='int')
-# opObj11.addParameter(name='ftp_wei', value=str(lo_0), format='int')
-# opObj11.addParameter(name='exp_code', value='999', format='int')
-# opObj11.addParameter(name='sub_exp_code', value=number, format='int')
-# opObj11.addParameter(name='plot_pos', value='1', format='int')
-# opObj11.addParameter(name='ext', value='.jpeg', format='str')
-#####End of Commented by Alejandro
 
 procUnitConfObj2 = controllerObj.addProcUnit(datatype='ParametersProc', inputId=procUnitConfObj1.getId())
+procUnitConfObj2.addParameter(name='nProfiles', value=nFFT, format='int')
+procUnitConfObj2.addParameter(name='pairsList', value='(0,1)', format='pairsList')
+
+opObj20 = procUnitConfObj2.addOperation(name='GetCrossData')
 opObj20 = procUnitConfObj2.addOperation(name='GetMoments')
+
+
+opObj11 = procUnitConfObj2.addOperation(name='CoherenceMap', optype='other')
+opObj11.addParameter(name='id', value='3000', format='int')
+opObj11.addParameter(name='wintitle', value='HF_Jicamarca', format='str')
+opObj11.addParameter(name='COH', value='0', format='bool')
+opObj11.addParameter(name='PHASE', value='1', format='bool')
+opObj11.addParameter(name='show', value='0', format='bool')
+opObj11.addParameter(name='xmin', value='0', format='float')
+opObj11.addParameter(name='xmax', value='24', format='float')
+opObj11.addParameter(name='save', value='1', format='bool')
+opObj11.addParameter(name='pairsList', value='(0,1)', format='pairsList')
+opObj11.addParameter(name='figpath', value=figpath, format='str')
+opObj11.addParameter(name='data_time_save',value='1',format='bool')
+opObj11.addParameter(name='ext', value='.jpeg', format='str')
+
+opObj11 = procUnitConfObj2.addOperation(name='CoherenceMap', optype='other')
+opObj11.addParameter(name='id', value='3002', format='int')
+opObj11.addParameter(name='wintitle', value='HF_Jicamarca', format='str')
+opObj11.addParameter(name='show', value='0', format='bool')
+opObj11.addParameter(name='COH', value='1', format='bool')
+opObj11.addParameter(name='PHASE', value='0', format='bool')
+opObj11.addParameter(name='xmin', value='0', format='float')
+opObj11.addParameter(name='xmax', value='24', format='float')
+opObj11.addParameter(name='save', value='1', format='bool')
+opObj11.addParameter(name='pairsList', value='(0,1)', format='pairsList')
+opObj11.addParameter(name='figpath', value=figpath, format='str')
+opObj11.addParameter(name='data_time_save',value='1',format='bool')
+opObj11.addParameter(name='ext', value='.jpeg', format='str')
+
 
 opObj21 = procUnitConfObj2.addOperation(name='ParametersPlot', optype='other')
 opObj21.addParameter(name='id', value='4000', format='int')
@@ -265,7 +210,7 @@ opObj21.addParameter(name='figpath', value=figpath, format='str')
 opObj21.addParameter(name='data_time_save',value='1',format='bool')
 opObj21.addParameter(name='ext', value='.jpeg', format='str')
 ############
-'''
+
 opObj21 = procUnitConfObj2.addOperation(name='ParametersPlot', optype='other')
 opObj21.addParameter(name='id', value='4005', format='int')
 opObj21.addParameter(name='wintitle', value='Doppler-Radial Velocity Plot0', format='str')
@@ -283,13 +228,8 @@ opObj21.addParameter(name='zmax', value=50, format='float')
 opObj21.addParameter(name='save', value='1', format='bool')
 opObj21.addParameter(name='figpath', value=figpath, format='str')
 opObj21.addParameter(name='data_time_save',value='1',format='bool')
-opObj21.addParameter(name='wr_period', value='10', format='int')
-opObj21.addParameter(name='ftp_wei', value=str(lo_0), format='int')
-opObj21.addParameter(name='exp_code', value='777', format='int')
-opObj21.addParameter(name='sub_exp_code', value=number, format='int')
-opObj21.addParameter(name='plot_pos', value='1', format='int')
 opObj21.addParameter(name='ext', value='.jpeg', format='str')
-'''
+
 ############
 opObj21 = procUnitConfObj2.addOperation(name='ParametersPlot', optype='other')
 opObj21.addParameter(name='id', value='7000', format='int')
@@ -329,7 +269,6 @@ opObj21.addParameter(name='save', value='1', format='bool')
 opObj21.addParameter(name='figpath', value=figpath, format='str')
 opObj21.addParameter(name='data_time_save',value='1',format='bool')
 opObj21.addParameter(name='ext', value='.jpeg', format='str')
-
 # print "Escribiendo el archivo XML"
 # controllerObj.writeXml(filename)
 # print "Leyendo el archivo XML"

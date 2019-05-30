@@ -536,6 +536,7 @@ class HDF5Writer(Operation):
 		self.isConfig = False
 		self.path = None
 		self.location = None
+		self.identifier = None
 		#List of data and metadata to be save_int_data
 		self.dataList = None
 		self.metadataList = None
@@ -579,6 +580,11 @@ class HDF5Writer(Operation):
 			self.dataList.remove('location')
 			if kwargs.has_key('location'):
 				self.location = kwargs['location']
+
+		if 'identifier' in self.dataList:#Only uses the datalist to ensure the identifier is set only when wanted
+			self.dataList.remove('identifier')
+			if kwargs.has_key('identifier'):
+				self.identifier = kwargs['identifier']
 
 
 		self.dataOut = dataOut
@@ -778,6 +784,8 @@ class HDF5Writer(Operation):
 		if "Data" in self.fp.keys():#Means the file exists, so its data should be erased
 			del self.fp["Data"]
 			del self.fp["location"]
+			del self.fp["identifier"]
+
 
 		grp = self.fp.create_group("Data")
 		grp.attrs['metadata'] = self.metaFile
@@ -814,6 +822,9 @@ class HDF5Writer(Operation):
 					k+=1
 		if self.location != None:
 			self.fp['location']= self.location
+
+		if self.identifier != None:
+			self.fp['identifier']= self.identifier
 		print 'Writing the file: %s'%self.fp.filename
 
 	def run(self, dataOut, **kwargs):#dataOut debe ser dataIn ya que es entrada de esta operacion aunque venga de un proc

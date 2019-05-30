@@ -1,2 +1,7 @@
+
 *.pyc
 */build/*
+schainroot/source/schainpy/build/*
+schainroot/source/schainpy/dist/*
+schainroot/source/schainpy/schainpy.egg-info/*
+

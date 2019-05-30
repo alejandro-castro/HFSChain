@@ -14,6 +14,7 @@ import itertools
 from jroproc_base import ProcessingUnit, Operation
 from model.data.jrodata import Parameters
 
+import cDetectSpectrum
 
 class ParametersProc(ProcessingUnit):
 	def __init__(self):
@@ -99,6 +100,10 @@ class ParametersProc(ProcessingUnit):
 			self.dataOut.groupList = self.dataIn.pairsList
 			self.dataOut.flagNoData = False
 
+			#hardcoded by Alejandro
+			self.dataOut.ippFactor = ippFactor
+			self.dataOut.nFFTPoints = self.dataIn.nProfiles
+			self.dataOut.pairsList = self.dataIn.pairsList
 
 		#----------------------	Correlation Data	---------------------------
 		if self.dataIn.type == "Correlation":
@@ -146,10 +151,11 @@ class ParametersProc(ProcessingUnit):
 		powb = numpy.average(self.dataIn.data_spc[1,:,:],axis=0)
 		avgcoherenceComplex = ccf/numpy.sqrt(powa*powb)
 
-		# En ambos canales se repite la fase y la coherencia
+		# En ambos canales se repitia la fase y la coherencia, por eso se elimino una dimension y se quedo en lo actual
 		self.dataOut.CrossData[0,:] = numpy.abs(avgcoherenceComplex)
 		self.dataOut.CrossData[1,:] = numpy.arctan2(avgcoherenceComplex.imag, avgcoherenceComplex.real)/numpy.pi
 		#self.dataOut.CrossData[:,1,:] = numpy.arctan2(avgcoherenceComplex.imag, avgcoherenceComplex.real)*180/numpy.pi
+		#print "averages", ccf[:10], powa[:10], powb[:10]
 
 		#***********TOOLs
 		#self.dataOut.AvgCoh[0,:] = numpy.abs(avgcoherenceComplex)
@@ -217,199 +223,65 @@ class ParametersProc(ProcessingUnit):
 		self.dataOut.data_param = data_param[:,1:,:]#drop first colm
 		self.dataOut.data_SNR = data_param[:,0,:]
 
-	# def __calculateMoments(self, oldspec, oldfreq, n0, smooth = None, fwindow = None):
-	# 	#TODO : Hacer un spetral whitenning para suavizar los espectros y sacar la velocidad radial de la potencia maxima.
-	# 	# En vez del calculo  Doppler-Radial.
-	# 	# Mejorar el calculo de velocidad radial con direccionamiento y apunte.
-	# 	# Enviar los datos a un servidor para que este lo modele en tiempo real. pronostique de donde viene la Spread F y la antena cambie el apunte.
-	# 	#print "oldspec", oldspec.shape, oldspec,"oldfreq","noise", n0.shape,n0
-	# 	#print "El tiempo es", self.dataOut.utctime
-	# 	if (smooth == None): smooth = 0
-	# 	elif (self.smooth < 3): smooth = 0
-	#
-	# 	if (fwindow == None): fwindow = numpy.ones(oldfreq.size)
-	#
-	#
-	# 	freq = oldfreq # Doppler velocity values
-	# 	vec_power = numpy.zeros(oldspec.shape[1])
-	# 	vec_fd = numpy.zeros(oldspec.shape[1])
-	# 	vec_w = numpy.zeros(oldspec.shape[1])
-	# 	vec_snr = numpy.zeros(oldspec.shape[1])
-	#
-	# 	vec_max = [] #This array is going to store the information of the previous spectrum so the next one can follow it
-	# 	vec_ss1 = []
-	# 	vec_bb0 = []
-	#
-	# 	if self.dataOut.noiseMode != 1 and self.dataOut.noiseMode != 2:
-	# 		raise ValueError, "Noise Mode %s not supported"%(self.dataOut.noiseMode)
-	#
-	# 	if self.dataOut.noiseMode == 1:
-	# 		if (n0 < 1.e-20):   n0 = 1.e-20
-	#
-	# 		for ind in range(oldspec.shape[1]):
-	# 			#TODO : hacer un noise special para el slice metodo privado de ParametersProc
-	# 			spec = oldspec[:,ind]
-	# 			aux = spec*fwindow[len(spec)]# #Jm:hardcoded to match with lenghts
-	#
-	# 			#Smooth
-	# 			#TODO : probar el whitenning smooth que dio Juha
-	# 			if (smooth == 0):   spec2 = aux
-	# 			else:   spec2 = scipy.ndimage.filters.uniform_filter1d(aux,size=smooth)
-	#
-	# 			self.DetectSpectrumInSpectrogram(vec_max, vec_ss1, vec_bb0, spec, fwindow, smooth, n0, ind)
-	# 			ss1 = vec_ss1[-1]
-	# 			bb0 = vec_bb0[-1]
-	# 			m = vec_max[-1]
-	# 			#Cambio para que no calcule todos los momentos en caso SNR sea demasiado baja
-	# 			snr = (spec2.mean()-n0)/n0
-	# 			#TODO Put threshold in parameterName
-	# 			#if 10.0*numpy.log10(snr)>-3.0:
-	# 			valid = numpy.asarray(range(ss1, bb0 + 1)) # it had a +m factor, Alejandro
-	#
-	# 			power = ((spec2[valid] - n0)*fwindow[valid]).sum() # m_0 = first moments
-	#
-	# 			#TODO probar la estimacion de fd con el calculo de ruido por perfil.
-	# 			fd = ((spec2[valid]- n0)*freq[valid]*fwindow[valid]).sum()/power # m_1=radial velocity = frequecy doppler?
-	# 			w = math.sqrt((  (spec2[valid] - n0)*fwindow[valid]  *(freq[valid]- fd)**2   ).sum()/power)
-	# 			# else :
-	# 			#	 valid=[0,0]
-	# 			#	 power = 0.0
-	# 			#	 fd = 0.0
-	# 			#	 w = 0.0
-	#
-	# 			if (snr < 1.e-20) :
-	# 				snr = 1.e-20
-	#
-	# 			vec_power[ind] = power
-	# 			vec_fd[ind] = fd
-	# 			vec_w[ind] = w
-	# 			vec_snr[ind] = snr
-	#
-	# 			#else : vec_power[ind] = un numero x, fd , w y snr igual.
-	# 	elif self.dataOut.noiseMode == 2 :
-	#
-	# 		for ind in range(len(n0)):
-	# 			if (n0[ind] < 1.e-20):   n0[ind] = 1.e-20
-	#
-	# 		for ind in range(oldspec.shape[1]):
-	# 			#TODO : hacer un noise special para el slice metodo privado de ParametersProc
-	# 			spec = oldspec[:,ind]
-	# 			aux = spec*fwindow[len(spec)]# #Jm:hardcoded to match with lenghts
-	#
-	# 			#Smooth
-	# 			#TODO : probar el whitenning smooth que dio Juha
-	# 			if (smooth == 0):   spec2 = aux
-	# 			else:   spec2 = scipy.ndimage.filters.uniform_filter1d(aux,size=smooth)
-	#
-	# 			# The copy is necessary because this method change the values of spec2 to perform well, and all the parameters need the original spectrum
-	# 			self.DetectSpectrumInSpectrogram(vec_max, vec_ss1, vec_bb0, spec2.copy(), fwindow, smooth, n0[ind], ind)
-	# 			ss1 = vec_ss1[-1]
-	# 			bb0 = vec_bb0[-1]
-	# 			m = vec_max[-1]
-	# 			#Cambio para que no calcule todos los momentos en caso SNR sea demasiado baja
-	# 			snr = (spec2.mean()-n0[ind])/n0[ind]
-	# 			#TODO Put threshold in parameterName
-	# 			#if 10.0*numpy.log10(snr)>-3.0:
-	# 			valid = numpy.asarray(range(ss1, bb0 + 1)) # it had a +m factor, Alejandro
-	#
-	# 			power = ((spec2[valid] - n0[ind])*fwindow[valid]).sum() # m_0 = first moments
-	#
-	# 			#TODO probar la estimacion de fd con el calculo de ruido por perfil.
-	# 			fd = ((spec2[valid]- n0[ind])*freq[valid]*fwindow[valid]).sum()/power # m_1=radial velocity = frequecy doppler?
-	# 			w = math.sqrt((  (spec2[valid] - n0[ind])*fwindow[valid]  *(freq[valid]- fd)**2   ).sum()/power)
-	# 			# else :
-	# 			#	 valid=[0,0]
-	# 			#	 power = 0.0
-	# 			#	 fd = 0.0
-	# 			#	 w = 0.0
-	#
-	# 			if (snr < 1.e-20) :
-	# 				snr = 1.e-20
-	#
-	# 			vec_power[ind] = power
-	# 			vec_fd[ind] = fd
-	# 			vec_w[ind] = w
-	# 			vec_snr[ind] = snr
-	# 			#else : vec_power[ind] = un numero x, fd , w y snr igual.
-	#
-	# 	moments = numpy.vstack((vec_snr, vec_power, vec_fd, vec_w))
-	# 	return moments
-
-	def __calculateMoments(self, oldspec, oldfreq, n0, nicoh = None, graph = None, smooth = None, type1 = None, fwindow = None, snrth = None, dc = None, aliasing = None, oldfd = None, wwauto = None):
+	def __calculateMoments(self, oldspec, oldfreq, n0, smooth = None, fwindow = None):
 		#TODO : Hacer un spetral whitenning para suavizar los espectros y sacar la velocidad radial de la potencia maxima.
 		# En vez del calculo  Doppler-Radial.
 		# Mejorar el calculo de velocidad radial con direccionamiento y apunte.
 		# Enviar los datos a un servidor para que este lo modele en tiempo real. pronostique de donde viene la Spread F y la antena cambie el apunte.
-
-		if (nicoh == None): nicoh = 1
-		if (graph == None): graph = 0
+		#print "oldspec", oldspec.shape, oldspec,"oldfreq","noise", n0.shape,n0
+		#print "El tiempo es", self.dataOut.utctime
 		if (smooth == None): smooth = 0
 		elif (self.smooth < 3): smooth = 0
 
-		if (type1 == None): type1 = 0
-		if (fwindow == None): fwindow = numpy.zeros(oldfreq.size) + 1
-		if (snrth == None): snrth = -3
-		if (dc == None): dc = 0
-		if (aliasing == None): aliasing = 0
-		if (oldfd == None): oldfd = 0
-		if (wwauto == None): wwauto = 0
-		if self.dataOut.noiseMode == 1:
+		if (fwindow == None): fwindow = numpy.ones(oldfreq.size)
 
+
+		freq = oldfreq # Doppler velocity values
+		vec_power = numpy.zeros(oldspec.shape[1])
+		vec_fd = numpy.zeros(oldspec.shape[1])
+		vec_w = numpy.zeros(oldspec.shape[1])
+		vec_snr = numpy.zeros(oldspec.shape[1])
+
+		vec_max = [] #This array is going to store the information of the previous spectrum so the next one can follow it
+		vec_ss1 = []
+		vec_bb0 = []
+
+		if self.dataOut.noiseMode != 1 and self.dataOut.noiseMode != 2:
+			raise ValueError, "Noise Mode %s not supported"%(self.dataOut.noiseMode)
+
+		if self.dataOut.noiseMode == 1:
 			if (n0 < 1.e-20):   n0 = 1.e-20
-			freq = oldfreq # Doppler velocity values
-			vec_power = numpy.zeros(oldspec.shape[1])
-			vec_fd = numpy.zeros(oldspec.shape[1])
-			vec_w = numpy.zeros(oldspec.shape[1])
-			vec_snr = numpy.zeros(oldspec.shape[1])
-			vec_fv = numpy.zeros(oldspec.shape[1])#First Valid frequency
-			vec_lv = numpy.zeros(oldspec.shape[1])#Last Valid Frequency
 
 			for ind in range(oldspec.shape[1]):
-
-				spec = oldspec[:,ind]
 				#TODO : hacer un noise special para el slice metodo privado de ParametersProc
-				aux = spec*fwindow[0:len(spec)] #Jm:hardcoded to match with lenghts
-				max_spec = aux.max()
-				m = list(aux).index(max_spec)
+				spec = oldspec[:,ind]
+				aux = spec*fwindow[len(spec)]# #Jm:hardcoded to match with lenghts
 
 				#Smooth
 				#TODO : probar el whitenning smooth que dio Juha
-				if (smooth == 0):   spec2 = spec
-				else:   spec2 = scipy.ndimage.filters.uniform_filter1d(spec,size=smooth)
+				if (smooth == 0):   spec2 = aux
+				else:   spec2 = scipy.ndimage.filters.uniform_filter1d(aux,size=smooth)
 
-				#	Calculo de Momentos
-				bb = spec2[range(m,spec2.size)]
-				bb = (bb<n0).nonzero()
-				bb = bb[0]
-
-				ss = spec2[range(0,m + 1)]
-				ss = (ss<n0).nonzero()
-				ss = ss[0]
-
-				if (bb.size == 0):
-					bb0 = spec.size - 1 - m
-				else:
-					bb0 = bb[0] - 1
-					if (bb0 < 0):
-						bb0 = 0
-
-				if (ss.size == 0):   ss1 = 1
-				else: ss1 = max(ss) + 1
-
-				if (ss1 > m):   ss1 = m
+				cDetectSpectrum.DetectInSpectrogram(vec_max, vec_ss1, vec_bb0, spec2.copy(), n0, ind)
+				ss1 = vec_ss1[-1]
+				bb0 = vec_bb0[-1]
+				m = vec_max[-1]
+				#Cambio para que no calcule todos los momentos en caso SNR sea demasiado baja
 				snr = (spec2.mean()-n0)/n0
-				if 10.0*numpy.log10(snr)>1.0:
-					valid = numpy.asarray(range(int(m + bb0 - ss1 + 1))) + ss1
-					#print 'valid[0]:',freq[valid[0]]
-					#print 'valid[-1]:',freq[valid[-1]]
-					power = ((spec2[valid] - n0)*fwindow[valid]).sum() # m_0 = first moments
-					fd = ((spec2[valid]- n0)*freq[valid]*fwindow[valid]).sum()/power # m_1=radial velocity = frequecy doppler?
-					w = math.sqrt((  (spec2[valid] - n0)*fwindow[valid]  *(freq[valid]- fd)**2   ).sum()/power)
-				else :
-					valid=[0,0]
-					power = 0.0
-					fd = 0.0
-					w = 0.0
+				#TODO Put threshold in parameterName
+				#if 10.0*numpy.log10(snr)>-3.0:
+				valid = numpy.asarray(range(ss1, bb0 + 1)) # it had a +m factor, Alejandro
+
+				power = ((spec2[valid] - n0)*fwindow[valid]).sum() # m_0 = first moments
+
+				#TODO probar la estimacion de fd con el calculo de ruido por perfil.
+				fd = ((spec2[valid]- n0)*freq[valid]*fwindow[valid]).sum()/power # m_1=radial velocity = frequecy doppler?
+				w = math.sqrt((  (spec2[valid] - n0)*fwindow[valid]  *(freq[valid]- fd)**2   ).sum()/power)
+				# else :
+				#	 valid=[0,0]
+				#	 power = 0.0
+				#	 fd = 0.0
+				#	 w = 0.0
 
 				if (snr < 1.e-20) :
 					snr = 1.e-20
@@ -418,72 +290,81 @@ class ParametersProc(ProcessingUnit):
 				vec_fd[ind] = fd
 				vec_w[ind] = w
 				vec_snr[ind] = snr
-				#vec_sw[ind] = sw
 
 				#else : vec_power[ind] = un numero x, fd , w y snr igual.
-			moments = numpy.vstack((vec_snr, vec_power, vec_fd, vec_w))
-		else :
-			for ind in range(0,len(n0)):
+		elif self.dataOut.noiseMode == 2 :
+
+			for ind in range(len(n0)):
 				if (n0[ind] < 1.e-20):   n0[ind] = 1.e-20
 
-			freq = oldfreq # Doppler velocity values
-			vec_power = numpy.zeros(oldspec.shape[1])
-			vec_fd = numpy.zeros(oldspec.shape[1])
-			vec_w = numpy.zeros(oldspec.shape[1])
-			vec_snr = numpy.zeros(oldspec.shape[1])
-			vec_fv = numpy.zeros(oldspec.shape[1])#First Valid frequency
-			vec_lv = numpy.zeros(oldspec.shape[1])#Last Valid Frequency
-
 			for ind in range(oldspec.shape[1]):
-
-				spec = oldspec[:,ind]
 				#TODO : hacer un noise special para el slice metodo privado de ParametersProc
-				aux = spec*fwindow[0:len(spec)] #Jm:hardcoded to match with lenghts
-				max_spec = aux.max()
-				m = list(aux).index(max_spec)
+				spec = oldspec[:,ind]
+				aux = spec*fwindow[len(spec)]# #Jm:hardcoded to match with lenghts
 
 				#Smooth
 				#TODO : probar el whitenning smooth que dio Juha
-				if (smooth == 0):   spec2 = spec
-				else:   spec2 = scipy.ndimage.filters.uniform_filter1d(spec,size=smooth)
+				if (smooth == 0):   spec2 = aux
+				else:   spec2 = scipy.ndimage.filters.uniform_filter1d(aux,size=smooth)
 
-				#	Calculo de Momentos
-				bb = spec2[range(m,spec2.size)]
-				bb = (bb<n0[ind]).nonzero()
-				bb = bb[0]
+				aux =spec2.tolist()
 
-				ss = spec2[range(0,m + 1)]
-				ss = (ss<n0[ind]).nonzero()
-				ss = ss[0]
+				# print "reference count aftervec_max", sys.getrefcount(ind);
+				# print "reference count after spec2", sys.getrefcount(aux);
+				# print "Indice", ind
+				# The copy is necessary because this method change the values of spec2 to perform well, and all the parameters need the original spectrum
+				cDetectSpectrum.DetectInSpectrogram(vec_max, vec_ss1, vec_bb0, aux, n0[ind], ind)
+				#self.DetectSpectrumInSpectrogram(vec_max, vec_ss1, vec_bb0, spec2.copy(), n0[ind], ind)
+				# print vec_max, "vec_max"
+				# print vec_ss1, "vec_ss1"
+				# print vec_bb0, "vec_bb0"
+				# print "reference count beforevec_max", sys.getrefcount(ind);
+				# print "reference count beforespec2", sys.getrefcount(aux);
 
-				if (bb.size == 0):
-					bb0 = spec.size - 1 - m
-				else:
-					bb0 = bb[0] - 1
-					if (bb0 < 0):
-						bb0 = 0
+				# if ind == (oldspec.shape[1] -1):
+				# 	raise ValueError
 
-				if (ss.size == 0):   ss1 = 1
-				else: ss1 = max(ss) + 1
+				ss1 = vec_ss1[-1]
+				bb0 = vec_bb0[-1]
+				m = vec_max[-1]
 
-				if (ss1 > m):   ss1 = m
+				valid = numpy.asarray(range(ss1, bb0 + 1)) # it had a +m factor, Alejandro
+
+				tmp = spec2[valid]
+				for k in range(tmp.size):
+					tmp[k] = max(1e-20, tmp[k]-n0[ind])
+
 
 				#Cambio para que no calcule todos los momentos en caso SNR sea demasiado baja
-				snr = (spec2.mean()-n0[ind])/n0[ind]
+				# try:
+				#print spec2
+				try:
+					snr = (spec2.mean()-n0[ind])/n0[ind]
+				except:
+					print valid, "doppler",fd, "potencia", power, "doppler range", freq[valid] , "spec2", spec2[valid]-n0[ind]
+					raise ValueError
+				# except TypeError:
+				# 	print spec2
+				# 	snr = (spec2.mean()-n0[ind])/n0[ind]
+
 				#TODO Put threshold in parameterName
-				if 10.0*numpy.log10(snr)>-3.0:
-					valid = numpy.asarray(range(int(m + bb0 - ss1 + 1))) + ss1
-					#print 'valid[0]:',freq[valid[0]]
-					#print 'valid[-1]:',freq[valid[-1]]
-					power = ((spec2[valid] - n0[ind])*fwindow[valid]).sum() # m_0 = first moments
-					#TODO probar la estimacion de fd con el calculo de ruido por perfil.
-					fd = ((spec2[valid]- n0[ind])*freq[valid]*fwindow[valid]).sum()/power # m_1=radial velocity = frequecy doppler?
-					w = math.sqrt((  (spec2[valid] - n0[ind])*fwindow[valid]  *(freq[valid]- fd)**2   ).sum()/power)
-				else :
-					valid=[0,0]
-					power = 0.0
-					fd = 0.0
-					w = 0.0
+				#if 10.0*numpy.log10(snr)>-3.0:
+
+				power = ((tmp)*fwindow[valid]).sum() # m_0 = first moments
+
+				#TODO probar la estimacion de fd con el calculo de ruido por perfil.
+				fd = (tmp*freq[valid]*fwindow[valid]).sum()/power # m_1=radial velocity = frequecy doppler?
+				try:
+					w = math.sqrt((  tmp*fwindow[valid]  *(freq[valid]- fd)**2   ).sum()/power)
+				except:
+					print ((spec2[valid] - n0[ind])*fwindow[valid]  *(freq[valid]- fd)**2   ).sum()#, power
+					print valid, "doppler",fd, "potencia", power, "doppler range", freq[valid] , "spec2", spec2[valid]-n0[ind]
+					raise ValueError
+				# else :
+				#	 valid=[0,0]
+				#	 power = 0.0
+				#	 fd = 0.0
+				#	 w = 0.0
 
 				if (snr < 1.e-20) :
 					snr = 1.e-20
@@ -492,16 +373,178 @@ class ParametersProc(ProcessingUnit):
 				vec_fd[ind] = fd
 				vec_w[ind] = w
 				vec_snr[ind] = snr
-				#vec_sw[ind] = sw
-
 				#else : vec_power[ind] = un numero x, fd , w y snr igual.
-			moments = numpy.vstack((vec_snr, vec_power, vec_fd, vec_w))
 
-
+		moments = numpy.vstack((vec_snr, vec_power, vec_fd, vec_w))
 		return moments
 
+	# def __calculateMoments(self, oldspec, oldfreq, n0, nicoh = None, graph = None, smooth = None, type1 = None, fwindow = None, snrth = None, dc = None, aliasing = None, oldfd = None, wwauto = None):
+	# 	#TODO : Hacer un spetral whitenning para suavizar los espectros y sacar la velocidad radial de la potencia maxima.
+	# 	# En vez del calculo  Doppler-Radial.
+	# 	# Mejorar el calculo de velocidad radial con direccionamiento y apunte.
+	# 	# Enviar los datos a un servidor para que este lo modele en tiempo real. pronostique de donde viene la Spread F y la antena cambie el apunte.
+	#
+	# 	if (nicoh == None): nicoh = 1
+	# 	if (graph == None): graph = 0
+	# 	if (smooth == None): smooth = 0
+	# 	elif (self.smooth < 3): smooth = 0
+	#
+	# 	if (type1 == None): type1 = 0
+	# 	if (fwindow == None): fwindow = numpy.zeros(oldfreq.size) + 1
+	# 	if (snrth == None): snrth = -3
+	# 	if (dc == None): dc = 0
+	# 	if (aliasing == None): aliasing = 0
+	# 	if (oldfd == None): oldfd = 0
+	# 	if (wwauto == None): wwauto = 0
+	# 	if self.dataOut.noiseMode == 1:
+	#
+	# 		if (n0 < 1.e-20):   n0 = 1.e-20
+	# 		freq = oldfreq # Doppler velocity values
+	# 		vec_power = numpy.zeros(oldspec.shape[1])
+	# 		vec_fd = numpy.zeros(oldspec.shape[1])
+	# 		vec_w = numpy.zeros(oldspec.shape[1])
+	# 		vec_snr = numpy.zeros(oldspec.shape[1])
+	# 		vec_fv = numpy.zeros(oldspec.shape[1])#First Valid frequency
+	# 		vec_lv = numpy.zeros(oldspec.shape[1])#Last Valid Frequency
+	#
+	# 		for ind in range(oldspec.shape[1]):
+	#
+	# 			spec = oldspec[:,ind]
+	# 			#TODO : hacer un noise special para el slice metodo privado de ParametersProc
+	# 			aux = spec*fwindow[0:len(spec)] #Jm:hardcoded to match with lenghts
+	# 			max_spec = aux.max()
+	# 			m = list(aux).index(max_spec)
+	#
+	# 			#Smooth
+	# 			#TODO : probar el whitenning smooth que dio Juha
+	# 			if (smooth == 0):   spec2 = spec
+	# 			else:   spec2 = scipy.ndimage.filters.uniform_filter1d(spec,size=smooth)
+	#
+	# 			#	Calculo de Momentos
+	# 			bb = spec2[range(m,spec2.size)]
+	# 			bb = (bb<n0).nonzero()
+	# 			bb = bb[0]
+	#
+	# 			ss = spec2[range(0,m + 1)]
+	# 			ss = (ss<n0).nonzero()
+	# 			ss = ss[0]
+	#
+	# 			if (bb.size == 0):
+	# 				bb0 = spec.size - 1 - m
+	# 			else:
+	# 				bb0 = bb[0] - 1
+	# 				if (bb0 < 0):
+	# 					bb0 = 0
+	#
+	# 			if (ss.size == 0):   ss1 = 1
+	# 			else: ss1 = max(ss) + 1
+	#
+	# 			if (ss1 > m):   ss1 = m
+	# 			snr = (spec2.mean()-n0)/n0
+	# 			if 10.0*numpy.log10(snr)>1.0:
+	# 				valid = numpy.asarray(range(int(m + bb0 - ss1 + 1))) + ss1
+	# 				#print 'valid[0]:',freq[valid[0]]
+	# 				#print 'valid[-1]:',freq[valid[-1]]
+	# 				power = ((spec2[valid] - n0)*fwindow[valid]).sum() # m_0 = first moments
+	# 				fd = ((spec2[valid]- n0)*freq[valid]*fwindow[valid]).sum()/power # m_1=radial velocity = frequecy doppler?
+	# 				w = math.sqrt((  (spec2[valid] - n0)*fwindow[valid]  *(freq[valid]- fd)**2   ).sum()/power)
+	# 			else :
+	# 				valid=[0,0]
+	# 				power = 0.0
+	# 				fd = 0.0
+	# 				w = 0.0
+	#
+	# 			if (snr < 1.e-20) :
+	# 				snr = 1.e-20
+	#
+	# 			vec_power[ind] = power
+	# 			vec_fd[ind] = fd
+	# 			vec_w[ind] = w
+	# 			vec_snr[ind] = snr
+	# 			#vec_sw[ind] = sw
+	#
+	# 			#else : vec_power[ind] = un numero x, fd , w y snr igual.
+	# 		moments = numpy.vstack((vec_snr, vec_power, vec_fd, vec_w))
+	# 	else :
+	# 		for ind in range(0,len(n0)):
+	# 			if (n0[ind] < 1.e-20):   n0[ind] = 1.e-20
+	#
+	# 		freq = oldfreq # Doppler velocity values
+	# 		vec_power = numpy.zeros(oldspec.shape[1])
+	# 		vec_fd = numpy.zeros(oldspec.shape[1])
+	# 		vec_w = numpy.zeros(oldspec.shape[1])
+	# 		vec_snr = numpy.zeros(oldspec.shape[1])
+	# 		vec_fv = numpy.zeros(oldspec.shape[1])#First Valid frequency
+	# 		vec_lv = numpy.zeros(oldspec.shape[1])#Last Valid Frequency
+	#
+	# 		for ind in range(oldspec.shape[1]):
+	#
+	# 			spec = oldspec[:,ind]
+	# 			#TODO : hacer un noise special para el slice metodo privado de ParametersProc
+	# 			aux = spec*fwindow[0:len(spec)] #Jm:hardcoded to match with lenghts
+	# 			max_spec = aux.max()
+	# 			m = list(aux).index(max_spec)
+	#
+	# 			#Smooth
+	# 			#TODO : probar el whitenning smooth que dio Juha
+	# 			if (smooth == 0):   spec2 = spec
+	# 			else:   spec2 = scipy.ndimage.filters.uniform_filter1d(spec,size=smooth)
+	#
+	# 			#	Calculo de Momentos
+	# 			bb = spec2[range(m,spec2.size)]
+	# 			bb = (bb<n0[ind]).nonzero()
+	# 			bb = bb[0]
+	#
+	# 			ss = spec2[range(0,m + 1)]
+	# 			ss = (ss<n0[ind]).nonzero()
+	# 			ss = ss[0]
+	#
+	# 			if (bb.size == 0):
+	# 				bb0 = spec.size - 1 - m
+	# 			else:
+	# 				bb0 = bb[0] - 1
+	# 				if (bb0 < 0):
+	# 					bb0 = 0
+	#
+	# 			if (ss.size == 0):   ss1 = 1
+	# 			else: ss1 = max(ss) + 1
+	#
+	# 			if (ss1 > m):   ss1 = m
+	#
+	# 			#Cambio para que no calcule todos los momentos en caso SNR sea demasiado baja
+	# 			snr = (spec2.mean()-n0[ind])/n0[ind]
+	# 			#TODO Put threshold in parameterName
+	# 			if 10.0*numpy.log10(snr)>-3.0:
+	# 				valid = numpy.asarray(range(int(m + bb0 - ss1 + 1))) + ss1
+	# 				#print 'valid[0]:',freq[valid[0]]
+	# 				#print 'valid[-1]:',freq[valid[-1]]
+	# 				power = ((spec2[valid] - n0[ind])*fwindow[valid]).sum() # m_0 = first moments
+	# 				#TODO probar la estimacion de fd con el calculo de ruido por perfil.
+	# 				fd = ((spec2[valid]- n0[ind])*freq[valid]*fwindow[valid]).sum()/power # m_1=radial velocity = frequecy doppler?
+	# 				w = math.sqrt((  (spec2[valid] - n0[ind])*fwindow[valid]  *(freq[valid]- fd)**2   ).sum()/power)
+	# 			else :
+	# 				valid=[0,0]
+	# 				power = 0.0
+	# 				fd = 0.0
+	# 				w = 0.0
+	#
+	# 			if (snr < 1.e-20) :
+	# 				snr = 1.e-20
+	#
+	# 			vec_power[ind] = power
+	# 			vec_fd[ind] = fd
+	# 			vec_w[ind] = w
+	# 			vec_snr[ind] = snr
+	# 			#vec_sw[ind] = sw
+	#
+	# 			#else : vec_power[ind] = un numero x, fd , w y snr igual.
+	# 		moments = numpy.vstack((vec_snr, vec_power, vec_fd, vec_w))
+	#
+	#
+	# 	return moments
+	#
 
-	def DetectSpectrumInSpectrogram(self, vec_max, vec_ss1, vec_bb0, spec2, fwindow, smooth, n0, ind):
+	def DetectSpectrumInSpectrogram(self, vec_max, vec_ss1, vec_bb0, spec2, n0, ind):
 		possible_signal = []
 		cond = None
 		cond2 = None
@@ -595,9 +638,12 @@ class ParametersProc(ProcessingUnit):
 				bb0 = vec_bb0[-1]
 			else:
 				m, ss1, bb0 = possible_signal[max_index]
+
+
 		vec_max.append(m)
 		vec_bb0.append(bb0)
 		vec_ss1.append(ss1)
+
 
 	#------------------	Get SA Parameters	--------------------------
 	def GetSAParameters(self):
