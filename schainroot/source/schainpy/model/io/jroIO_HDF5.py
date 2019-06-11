@@ -656,8 +656,7 @@ class HDF5Writer(Operation):
 			else:
 				grp.create_dataset(self.metadataList[i], data=data)
 
-	def setNextFile(self):
-
+	def setNextFileName(self):
 		if self.fp != None:
 			self.fp.close()
 		timeTuple = time.localtime(self.dataOut.utctime)
@@ -675,8 +674,34 @@ class HDF5Writer(Operation):
 		filename = os.path.join(self.path, subfolder, file )
 
 		#Setting HDF5 File
-		fp = h5py.File(filename,'a')#Se cambio de w a a para que asi el ultimo set next file cuando se termina antes de 23:59:59 no elimine la data del prox archivo
+		try:
+			fp = h5py.File(filename,'a')#Se cambio de w a a para que asi el ultimo set next file cuando se termina antes de 23:59:59 no elimine la data del prox archivo
+		except IOError:
+			fp = h5py.File(filename,'w')
+		self.fp = fp
 
+	def setNextFile(self):
+		# if self.fp != None:
+		# 	self.fp.close()
+		# timeTuple = time.localtime(self.dataOut.utctime)
+		# subfolder = 'd%4.4d%3.3d' % (timeTuple.tm_year,timeTuple.tm_yday)
+		#
+		# fullpath = os.path.join(self.path, subfolder )
+		# if not( os.path.exists(fullpath) ):
+		# 	os.mkdir(fullpath)
+		# # Se elimino el uso de setFile flag porque no es util el ver los archivos y luego crear nuevos existentes en la carpeta destino
+		# # Y luego crear nuevos dado que esto hace que el correr dos veces el mismo programa genere mas y mas archivos de data repetidos
+		#
+		# file = '%s%012d%s' % (self.optchar, round(self.dataOut.utctime),
+		# 								self.ext )
+		#
+		# filename = os.path.join(self.path, subfolder, file )
+		#
+		# #Setting HDF5 File
+		# try:
+		# 	fp = h5py.File(filename,'a')#Se cambio de w a a para que asi el ultimo set next file cuando se termina antes de 23:59:59 no elimine la data del prox archivo
+		# except IOError:
+		# 	fp = h5py.File(filename,'w')
 		data = []
 
 		nDatas = numpy.zeros(len(self.dataList))
@@ -702,29 +727,32 @@ class HDF5Writer(Operation):
 		self.nDims = nDims
 
 		#Saving variables
-		self.fp = fp
+		# self.fp = fp
 		self.data = data
 
 		self.firsttime = True
 		self.blockIndex = 0
 
 	def putData(self):
+		if self.blockIndex == 0: # was incremented by 1 by the self.writeBlock method
+			self.setNextFileName()
+
 		self.setBlock()
 		self.writeBlock()
 		#If file is the last file  writeBlockF!
-		if self.blockIndex == self.blocksPerFile:
-			self.writeBlockF() # this function is the only one that write data in hdf5 files
-			self.setNextFile()
-
-
 		#Viene de jroproc_parameters, deberia ser true
 
-		elif self.dataOut.flagLastFile: #This case occurs when the files are no NumberBlocks multipler.
+
+		if self.dataOut.flagLastFile: #This case occurs when the files are no NumberBlocks multipler.
+			#self.setNextFile()# added 06/06/19
 			self.writeBlockF()
 			self.fp.close()
-			#self.setNextFile()
 
-		#raw_input("2. Si existe el Flag de last file entonces writeBlockF, hay q traerlo por dataOut.")
+		elif self.blockIndex == self.blocksPerFile:
+			#self.setNextFile()# added 06/06/19
+			self.writeBlockF() # this function is the only one that write data in hdf5 files
+			self.setNextFile()# it was here uncommented 06/06/19
+
 
 	def setBlock(self):
 		'''
@@ -832,6 +860,6 @@ class HDF5Writer(Operation):
 			self.setup(dataOut, **kwargs)
 			self.isConfig = True # Just do it the first time
 			self.putMetadata()
-			self.setNextFile()
+			self.setNextFile() # it was here uncommented 06/06/19
 
 		self.putData()

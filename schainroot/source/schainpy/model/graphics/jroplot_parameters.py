@@ -149,8 +149,10 @@ class MomentsPlot(Figure):
 						grid='x')
 
 				noiseline = numpy.repeat(numpy.mean(noisedB[i]), len(y))
+				# print len(y), noiseline.shape, noisedB.shape
 				axes.addpline(noiseline, y, idline=1, color="black", linestyle="solid", lw=2)
 				if dataOut.noiseMode == 2:
+
 					axes.addpline(noisedB[i], y, idline=2, color="red", linestyle="dashed", lw=1)
 
 		self.draw()

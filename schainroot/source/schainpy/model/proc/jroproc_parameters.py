@@ -123,7 +123,6 @@ class ParametersProc(ProcessingUnit):
 		if self.dataIn.type == "Parameters":
 			self.dataOut.copy(self.dataIn)
 			#la flagLastFile deberia venir en el datain
-			self.dataOut.flagNoData = False
 
 			#Just for HF - its hardcoded
 			self.dataOut.outputInterval = 60
@@ -135,7 +134,6 @@ class ParametersProc(ProcessingUnit):
 			self.dataOut.pairsList = pairsList
 
 			self.dataOut.abscissaList = self.dataOut.getVelRange(1)
-
 			return True
 
 		self.__updateObjFromInput()
@@ -273,7 +271,6 @@ class ParametersProc(ProcessingUnit):
 				valid = numpy.asarray(range(ss1, bb0 + 1)) # it had a +m factor, Alejandro
 
 				power = ((spec2[valid] - n0)*fwindow[valid]).sum() # m_0 = first moments
-
 				#TODO probar la estimacion de fd con el calculo de ruido por perfil.
 				fd = ((spec2[valid]- n0)*freq[valid]*fwindow[valid]).sum()/power # m_1=radial velocity = frequecy doppler?
 				w = math.sqrt((  (spec2[valid] - n0)*fwindow[valid]  *(freq[valid]- fd)**2   ).sum()/power)
@@ -296,7 +293,6 @@ class ParametersProc(ProcessingUnit):
 
 			for ind in range(len(n0)):
 				if (n0[ind] < 1.e-20):   n0[ind] = 1.e-20
-
 			for ind in range(oldspec.shape[1]):
 				#TODO : hacer un noise special para el slice metodo privado de ParametersProc
 				spec = oldspec[:,ind]
@@ -307,45 +303,29 @@ class ParametersProc(ProcessingUnit):
 				if (smooth == 0):   spec2 = aux
 				else:   spec2 = scipy.ndimage.filters.uniform_filter1d(aux,size=smooth)
 
-				aux =spec2.tolist()
+				aux =spec2.tolist()[:]
 
-				# print "reference count aftervec_max", sys.getrefcount(ind);
-				# print "reference count after spec2", sys.getrefcount(aux);
-				# print "Indice", ind
 				# The copy is necessary because this method change the values of spec2 to perform well, and all the parameters need the original spectrum
 				cDetectSpectrum.DetectInSpectrogram(vec_max, vec_ss1, vec_bb0, aux, n0[ind], ind)
-				#self.DetectSpectrumInSpectrogram(vec_max, vec_ss1, vec_bb0, spec2.copy(), n0[ind], ind)
-				# print vec_max, "vec_max"
-				# print vec_ss1, "vec_ss1"
-				# print vec_bb0, "vec_bb0"
-				# print "reference count beforevec_max", sys.getrefcount(ind);
-				# print "reference count beforespec2", sys.getrefcount(aux);
-
-				# if ind == (oldspec.shape[1] -1):
-				# 	raise ValueError
+				# #self.DetectSpectrumInSpectrogram(vec_max, vec_ss1, vec_bb0, spec2.copy(), n0[ind], ind)
 
 				ss1 = vec_ss1[-1]
 				bb0 = vec_bb0[-1]
 				m = vec_max[-1]
-
+				if (ind >205) and (ind < 209):
+					print "Chosen values", (-278.2708520260 + ss1*5.5103139), (-278.2708520260 + bb0*5.5103139)
 				valid = numpy.asarray(range(ss1, bb0 + 1)) # it had a +m factor, Alejandro
 
 				tmp = spec2[valid]
 				for k in range(tmp.size):
-					tmp[k] = max(1e-20, tmp[k]-n0[ind])
+					tmp[k] = max(min(1e-20, tmp[k]), tmp[k]-n0[ind])
 
 
 				#Cambio para que no calcule todos los momentos en caso SNR sea demasiado baja
-				# try:
-				#print spec2
-				try:
-					snr = (spec2.mean()-n0[ind])/n0[ind]
-				except:
-					print valid, "doppler",fd, "potencia", power, "doppler range", freq[valid] , "spec2", spec2[valid]-n0[ind]
-					raise ValueError
-				# except TypeError:
-				# 	print spec2
-				# 	snr = (spec2.mean()-n0[ind])/n0[ind]
+
+				snr = (spec2.mean()-n0[ind])/n0[ind]
+
+
 
 				#TODO Put threshold in parameterName
 				#if 10.0*numpy.log10(snr)>-3.0:
@@ -354,12 +334,8 @@ class ParametersProc(ProcessingUnit):
 
 				#TODO probar la estimacion de fd con el calculo de ruido por perfil.
 				fd = (tmp*freq[valid]*fwindow[valid]).sum()/power # m_1=radial velocity = frequecy doppler?
-				try:
-					w = math.sqrt((  tmp*fwindow[valid]  *(freq[valid]- fd)**2   ).sum()/power)
-				except:
-					print ((spec2[valid] - n0[ind])*fwindow[valid]  *(freq[valid]- fd)**2   ).sum()#, power
-					print valid, "doppler",fd, "potencia", power, "doppler range", freq[valid] , "spec2", spec2[valid]-n0[ind]
-					raise ValueError
+				w = math.sqrt((  tmp*fwindow[valid]  *(freq[valid]- fd)**2   ).sum()/power)
+
 				# else :
 				#	 valid=[0,0]
 				#	 power = 0.0
@@ -542,7 +518,7 @@ class ParametersProc(ProcessingUnit):
 	#
 	#
 	# 	return moments
-	#
+
 
 	def DetectSpectrumInSpectrogram(self, vec_max, vec_ss1, vec_bb0, spec2, n0, ind):
 		possible_signal = []

@@ -385,12 +385,11 @@ class ProcUnitConf(object):
 		finalSts = False
 
 		for opConfObj in self.opConfObjList:
-
 			kwargs = {}
 			for parmConfObj in opConfObj.getParameterObjList():
 				kwargs[parmConfObj.name] = parmConfObj.getValue()
 
-			#print "\tRunning the '%s' operation with %s" %(opConfObj.name, opConfObj.id)
+			# print "\tRunning the '%s' operation with %s" %(opConfObj.name, opConfObj.id)
 			sts = self.procUnitObj.call(opType = opConfObj.type,
 										opName = opConfObj.name,
 										opId = opConfObj.id,
@@ -599,7 +598,7 @@ class Project(object):
 
 			for id in ordered_procUnitsIDs:
 				procUnitConfObj = self.procUnitConfObjDict[id]
-				#print "Running the '%s' process with %s" %(procUnitConfObj.name, procUnitConfObj.id)
+				# print "Running the '%s' process with %s" %(procUnitConfObj.name, procUnitConfObj.id)
 				sts = procUnitConfObj.run()
 				finalSts = finalSts or sts
 

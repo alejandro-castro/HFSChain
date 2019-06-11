@@ -122,7 +122,6 @@ class SpectraProc(ProcessingUnit):
 
 	def run(self, nProfiles=None, nFFTPoints=None, pairsList=[], ippFactor=1,noiseMode = None):
 		self.dataOut.flagNoData = True
-
 		self.dataOut.noiseMode = noiseMode
 		if self.dataIn.type == "Spectra":
 			self.dataOut.copy(self.dataIn)
@@ -600,10 +599,10 @@ class SpectraProc(ProcessingUnit):
 	# 	return 1
 	#
 
-	def removeInterference(self,  interf = 2,hei_interf = None, nhei_interf = None, offhei_interf = None):
+	def removeInterference(self,  noiseMode = 2,interf = 2,hei_interf = None, nhei_interf = None, offhei_interf = None):
 		jspectra = self.dataOut.data_spc
 		jcspectra = self.dataOut.data_cspc
-		jnoise = self.dataOut.getNoise(2)
+		jnoise = self.dataOut.getNoise(noiseMode)
 		num_incoh = self.dataOut.nIncohInt
 
 		num_channel  = jspectra.shape[0]
@@ -651,10 +650,13 @@ class SpectraProc(ProcessingUnit):
 			#Se estima la interferencia promedio en los Espectros de Potencia empleando
 			aux =hei_interf[psort[range(offhei_interf, nhei_interf + offhei_interf)]]
 			junkspc_interf = jspectra[ich,:,aux]
-	
+
 			if noise_exist:
-			#	tmp_noise = jnoise[ich] / num_prof
-				tmp_noise = jnoise[ich][aux].sum() # The tmp_noise is the sum of the noise that are only in height aux list
+				#tmp_noise = jnoise[ich] / num_prof
+				if noiseMode == 1:
+					tmp_noise = jnoise[ich]
+				elif noiseMode == 2:
+					tmp_noise = numpy.mean(jnoise[ich][aux], dtype=numpy.float64) # The tmp_noise is the sum of the noise that are only in height aux list
 
 			junkspc_interf = junkspc_interf - tmp_noise
 			#junkspc_interf[:,comp_mask_prof] = 0

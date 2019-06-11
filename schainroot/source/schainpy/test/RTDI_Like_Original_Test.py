@@ -152,7 +152,8 @@ else:
 figpath = path + "/Figures/graphics_schain/sp"+str(code)+'1_f'+str(ngraph)+'/'
 print "figpath******************",figpath
 
-parampath = '/home/ci-81/Documents/JRO_CAMPAIGN_ALEJANDRO/Refactor/sp'+str(code)+'1_f'+str(ngraph)+'/param/'
+#parampath = '/home/ci-81/Documents/JRO_CAMPAIGN_ALEJANDRO/Refactor/sp'+str(code)+'1_f'+str(ngraph)+'/param/'
+parampath = '/home/ci-81/Pictures/GRAPHICS_SCHAIN_JRO_A/sp'+str(code)+'1_f'+str(ngraph)+'/MomentData/'
 
 #---------------------------------------------------------------------------#
 readUnitConfObj = controllerObj.addReadUnit(datatype = 'HFParamReader',
@@ -193,8 +194,8 @@ opObj11.addParameter(name='path',value=figpath,format='str')
 
 opObj11 = procUnitConfObj2.addOperation(name='RTDIPlot', optype='other')
 opObj11.addParameter(name='id', value='402', format='int')
-# opObj11.addParameter(name='xmin', value='0', format='int')
-# opObj11.addParameter(name='xmax', value='24', format='int')
+opObj11.addParameter(name='xmin', value='17', format='int')
+opObj11.addParameter(name='xmax', value='22', format='int')
 # opObj11.addParameter(name='ymin', value='500', format='int')
 # opObj11.addParameter(name='ymax', value='1000', format='int')
 #opObj11.addParameter(name='figfile', value="Test", format='str') # Tiene menos importancia que standard, si standard es True, este argumento se ignora

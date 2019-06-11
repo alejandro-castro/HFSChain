@@ -136,7 +136,7 @@ elif lo == 52:
 else:
 	raise ValueError
 
-figpath="/home/ci-81/Documents/JRO_CAMPAIGN_ALEJANDRO/Figures/sp"+str(code)+'1_f'+str(ngraph)+'/'#'/home/ci-81/Documents/TestDopler/Figures/sp'+str(code)+'1_f'+str(ngraph)+'/'
+figpath=path+"/Figures/sp"+str(code)+'1_f'+str(ngraph)+'/'#'/home/ci-81/Documents/TestDopler/Figures/sp'+str(code)+'1_f'+str(ngraph)+'/'
 
 print "figpath",figpath
 #---------------------------------------------------------------------------#
@@ -169,7 +169,7 @@ procUnitConfObj1.addParameter(name='pairsList', value='(0,1)', format='pairsList
 procUnitConfObj1.addParameter(name='noiseMode', value=2, format='int')
 
 #opObj12 = procUnitConfObj1.addOperation(name='removeInterference')
-opObj12 = procUnitConfObj1.addOperation(name='removeDC')
+#opObj12 = procUnitConfObj1.addOperation(name='removeDC')
 
 
 procUnitConfObj2 = controllerObj.addProcUnit(datatype='ParametersProc', inputId=procUnitConfObj1.getId())
@@ -177,15 +177,16 @@ opObj20 = procUnitConfObj2.addOperation(name='GetMoments')
 opObj20 = procUnitConfObj2.addOperation(name='GetCrossData')#Change Doit for HF
 #opObj20 = procUnitConfObj2.addOperation(name='GetRGBData')#Change Doit for HF
 
-opObj25 = procUnitConfObj2.addOperation(name='HDF5Writer', optype='other')
-opObj25.addParameter(name='path', value=figpath+'/param')
-opObj25.addParameter(name='blocksPerFile', value='10', format='int')
-#opObj25.addParameter(name='metadataList',value='type,inputUnit,heightList',format='list')
-opObj25.addParameter(name='metadataList',value='type,inputUnit,heightList,frequency',format='list')#,RxInfo,TxInfo /*RxInfo = lat,long,alt,type double or simple, etc...
-#opObj25.addParameter(name='dataList',value='data_param,data_SNR,utctime',format='list')CrossData
-opObj25.addParameter(name='dataList',value='data_param,data_SNR,data_RGB,CrossData,utctime',format='list')#AvgCohModuledata_DC,data_Coherence
-opObj25.addParameter(name='mode',value='0',format='int')#call channels
 
+# opObj25 = procUnitConfObj2.addOperation(name='HDF5Writer', optype='other')
+# opObj25.addParameter(name='path', value=figpath+'/param')
+# opObj25.addParameter(name='blocksPerFile', value='10', format='int')
+# #opObj25.addParameter(name='metadataList',value='type,inputUnit,heightList',format='list')
+# opObj25.addParameter(name='metadataList',value='type,inputUnit,heightList,frequency',format='list')#,RxInfo,TxInfo /*RxInfo = lat,long,alt,type double or simple, etc...
+# #opObj25.addParameter(name='dataList',value='data_param,data_SNR,utctime',format='list')CrossData
+# opObj25.addParameter(name='dataList',value='data_param,data_SNR,data_RGB,CrossData,utctime',format='list')#AvgCohModuledata_DC,data_Coherence
+# opObj25.addParameter(name='mode',value='0',format='int')#call channels
+#
 
 
 
@@ -197,15 +198,17 @@ opObj31.addParameter(name='save', value='1', format='bool')
 opObj31.addParameter(name='figpath', value=figpath, format='str')
 opObj31.addParameter(name='zmin', value='-140', format='float')
 opObj31.addParameter(name='zmax', value='-100', format='float')
-opObj31.addParameter(name='xmin', value='-80', format='float')
-opObj31.addParameter(name='xmax', value='80', format='float')
-opObj31.addParameter(name='ymin', value='150', format='float')
-opObj31.addParameter(name='ymax', value='450', format='float')
+opObj31.addParameter(name='xmin', value='-50', format='float')
+opObj31.addParameter(name='xmax', value='50', format='float')
+opObj31.addParameter(name='ymin', value='309', format='float')
+opObj31.addParameter(name='ymax', value='314', format='float')
+opObj31.addParameter(name='showMeanDoppler', value='1', format='bool')
+#opObj31.addParameter(name='showSpectralWidth', value='1', format='bool')
 opObj31.addParameter(name='show', value='0', format='bool')
 
-print "Escribiendo el archivo XML"
+# print "Escribiendo el archivo XML"
 #controllerObj.writeXml(filename)
-print "Leyendo el archivo XML"
+# print "Leyendo el archivo XML"
 #controllerObj.readXml(filename)
 
 controllerObj.createObjects()

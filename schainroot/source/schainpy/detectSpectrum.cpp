@@ -1,5 +1,4 @@
 #include <Python.h>
-// #include <numpy/arrayobject.h>
 #include <vector>
 #include <algorithm>
 #include <cmath>
@@ -8,13 +7,15 @@
 using namespace std;
 
 
-static int GetMaxIndex(double* array, int size){
-	double max = *array;
+static int GetMaxIndex(PyObject* array, int size){
+	double max = PyFloat_AsDouble(PyList_GetItem(array, 0));
 	int ind = 0;
 
+	double value;
 	for (int i=0;i< size; i++){
-		if (array[i]>max){
-			max=array[i];
+		value = PyFloat_AsDouble(PyList_GetItem(array, i));
+		if (value>max){
+			max=value;
 			ind = i;
 		}
 	}
@@ -22,27 +23,26 @@ static int GetMaxIndex(double* array, int size){
 }
 
 
-static void GetFirstLesserInRange(double* array, int start, int end, double threshold,
+static void GetFirstLesserInRange(PyObject* array, int start, int end, double threshold,
 	vector<int> &result){
 
 	for (int i=start; i< end; i++){
-		if (array[i] < threshold) {
+		if (PyFloat_AsDouble(PyList_GetItem(array, i)) < threshold) {
 			result.push_back(i);
 		}
 	}
 }
 
-static double GetSumInRange(double *array, int start, int end){
+static double GetSumInRange(PyObject *array, int start, int end){
 	double result=0;
 	for(int i=start; i<end; i++){
-		result = result + array[i];
+		result = result + PyFloat_AsDouble(PyList_GetItem(array, i));
 	}
 	return result;
 }
 static PyObject *DetectSpectrumInSpectrogram(PyObject *self, PyObject *args){
 	// The first three parameters should be PyObjects only because we wanted to modified them
-	PyObject *vec_max_obj, *vec_ss1_obj, *vec_bb0_obj, *spec2_obj, *spec2_tmp;
-	double *spec2;
+	PyObject *vec_max_obj = NULL, *vec_ss1_obj = NULL, *vec_bb0_obj = NULL, *spec2_obj = NULL;
 	double n0;
 	int ind;
 	int m, bb0, ss1;
@@ -53,12 +53,6 @@ static PyObject *DetectSpectrumInSpectrogram(PyObject *self, PyObject *args){
 		return NULL;
 	}
 
-	// if (ind==0) cout <<"yes"<<endl;
-	// cout <<"nooo"<<endl;
-	//
-	//
-	// Py_INCREF(Py_None);
-	// return Py_None;
 
 	//Parsing the type of inputs
 	if (!PyList_Check(vec_max_obj)) return NULL;
@@ -71,37 +65,31 @@ static PyObject *DetectSpectrumInSpectrogram(PyObject *self, PyObject *args){
 	Py_INCREF(vec_max_obj);Py_INCREF(vec_ss1_obj);Py_INCREF(vec_bb0_obj);
 	Py_INCREF(spec2_obj);
 
-	spec2 = (double*)spec2_obj;
-	// change the requirement argument if you want to filter the spectre here
-	// spec2_tmp = PyArray_FROM_OTF(spec2_obj, NPY_FLOAT64, NPY_ARRAY_IN_ARRAY); //Return a new reference o new object
-	// if (spec2_tmp == NULL){
-	// 	Py_DECREF(vec_max_obj);Py_DECREF(vec_ss1_obj);Py_DECREF(vec_bb0_obj);
-	// 	Py_DECREF(spec2_obj);
-	//
-	// 	return NULL;
-	// }
-
-	//spec2 =(double*)PyArray_DATA(spec2_tmp); // borrowed reference from spec2_tmp, so it is not necessary to create a new one
-	Py_INCREF(spec2);
 	//Here starts the real implementation of the algorithm
 
 	vector< vector<int> > possible_signal;
 	bool cond = true, cond2 = true;
 	vector<int> bb, ss;
 
-	int max_previous_height = (int)PyInt_AsLong(PyList_GetItem(vec_max_obj, ind-1));//borrowed reference
+	int max_previous_height = 0;
+	if (ind>0){
+		max_previous_height = (int)PyInt_AsLong(PyList_GetItem(vec_max_obj, ind-1));//borrowed reference
+	}
 
 	int k=0;
+	int spec2_size= (int)PyList_Size(spec2_obj);
+
+	double *spec2_tmp = (double*)malloc(sizeof(double)*spec2_size);
+
+	for(int i=0;i<spec2_size;i++){
+		spec2_tmp[i] = PyFloat_AsDouble(PyList_GetItem(spec2_obj, i));
+	}
 	while(true){
 		k++;
 		// cout <<ind <<' '<<k++<<endl;
-		int spec2_size= (int)PyList_Size(spec2_obj);
+		m = GetMaxIndex(spec2_obj, spec2_size);//borrowed reference
 
-		m = GetMaxIndex(spec2, spec2_size);//borrowed reference
-		//cout<<m<<' '<<spec2_size<<endl;
-
-
-		GetFirstLesserInRange(spec2, m, spec2_size, n0, bb);//borrowed reference
+		GetFirstLesserInRange(spec2_obj, m, spec2_size, n0, bb);//borrowed reference
 		if (bb.size() == 0){
 			bb0 = spec2_size - 1;
 		}
@@ -112,60 +100,54 @@ static PyObject *DetectSpectrumInSpectrogram(PyObject *self, PyObject *args){
 			bb0 = max(bb0, m);
 		}
 
-		GetFirstLesserInRange(spec2, 0, m+1, n0, ss);//borrowed reference
+		GetFirstLesserInRange(spec2_obj, 0, m+1, n0, ss);//borrowed reference
 		if (ss.size()==0){
 			ss1=0;
 		}
 		else{
-			ss1 = ss.back()+1; //*max_element(ss.begin(), ss.end())+1 ;
+			ss1 = ss.back()+1;
 		}
 		ss1 = min(ss1,m);
 
-
-		// if (k==1) cout <<"el problema "<< ss1 <<' '<< bb0<<endl;
+		if ((ind < 209)&&(ind>205)){
+			cout << (ind*1.5) << ' ' <<(-278.2708520260 + ss1*5.5103139) << ' '<<(-278.2708520260 + bb0*5.5103139)<<endl;
+		}
 		if (ind != 0){
-			cond = (m > (1.05 * max_previous_height)) or (m < (0.95*max_previous_height));
-			cond2 = spec2[m] <= n0;
+			//cond = (m > (1.5 * max_previous_height)) or (m < (0.5*max_previous_height)); Corregir para que funcione, recordar que max=0 no es freq 0
+			cond2 = PyFloat_AsDouble(PyList_GetItem(spec2_obj, m)) <= n0;
 			if (!cond2){
 				vector<int> item;
 				item.push_back(m); item.push_back(ss1); item.push_back(bb0);
 				possible_signal.push_back(item);
 			}
 			for (int i=ss1; i<=bb0; i++){
-				spec2[i] = 0.0;
+				PyList_SetItem(spec2_obj, i, Py_BuildValue("d", 0.0));
 			}
 		}
-		// if ((ind==203) &&(k==601)){
-		// 	cout <<n0<<' '<< ss1 <<' '<< bb0<<endl;
-		// 	for (int j=0;j<spec2_size;j++){
-		// 		cout<<'g'<<spec2[j]<<'g'<<' ';
-		// 	}
-		// }
 
-		if ((ind==0)||(!cond)||cond2) break;
+
+		if ((ind==0)||cond2) break;
 	}
-
 	if (!(ind==0)){
 		int max_index=-200;
 		double max_heuristic = -1.0;
 		bool continuar_linea = true;
-
+		double dist, heuristic;
 		for(int i=0; i<possible_signal.size();i++){
 			m = possible_signal[i][0];
 			ss1 = possible_signal[i][1];
 			bb0 = possible_signal[i][2];
 
-			double area = abs(GetSumInRange(spec2, ss1, bb0+1)-(spec2[ss1]+spec2[bb0])/2.0);
+			double area = abs(GetSumInRange(spec2_obj, ss1, bb0+1)-(PyFloat_AsDouble(PyList_GetItem(spec2_obj, ss1))+\
+			PyFloat_AsDouble(PyList_GetItem(spec2_obj, bb0)))/2.0);
 
 			double area_noise = abs((bb0-ss1)*n0);
 
 
-			if (area < 15 * area_noise)	area = 1e-15;
-			else continuar_linea = false;
+			if (area >= 15 * area_noise) continuar_linea = false;
 
 
-			double dist = abs(m - max_previous_height);
-			double heuristic;
+			dist = abs(m - max_previous_height);
 
 			if (dist==0){
 				heuristic = DBL_MAX;
@@ -181,44 +163,55 @@ static PyObject *DetectSpectrumInSpectrogram(PyObject *self, PyObject *args){
 		}
 
 
-		if (continuar_linea){
-			double diff = 1000;
 
-			for(int i=0; i<possible_signal.size();i++){
-				m = possible_signal[i][0];
-				if(abs(m-max_previous_height)<diff){
-					max_index = i;
-					diff = abs(m-max_previous_height);
-				}
-			}
-		}
-
+		///// hasta aca esta bien
 		if (possible_signal.size() == 0){
 			m = (int)PyInt_AsLong(PyList_GetItem(vec_max_obj, ind-1));
 			ss1 = (int)PyInt_AsLong(PyList_GetItem(vec_ss1_obj, ind-1));
 			bb0 = (int)PyInt_AsLong(PyList_GetItem(vec_bb0_obj, ind-1));
 		}
 		else{
+			if (continuar_linea){
+				double diff = 1000;
+
+				for(int i=0; i<possible_signal.size();i++){
+					m = possible_signal[i][0];
+					if(abs(m-max_previous_height)<diff){
+						max_index = i;
+						diff = abs(m-max_previous_height);
+					}
+				}
+			}
+
 			m = possible_signal[max_index][0];
 			ss1 = possible_signal[max_index][1];
 			bb0 = possible_signal[max_index][2];
 		}
 	}
 	//printf ("%d %d %d", m, bb0, ss1);
-	PyList_Append(vec_max_obj, Py_BuildValue("i", m));
-	PyList_Append(vec_bb0_obj, Py_BuildValue("i", bb0));
-	PyList_Append(vec_ss1_obj, Py_BuildValue("i", ss1));
+	PyObject* item = Py_BuildValue("i", m);
+	PyList_Append(vec_max_obj, item);
+	Py_DECREF(item);
+	item = NULL;
 
+	item = Py_BuildValue("i", bb0);
+	PyList_Append(vec_bb0_obj, item);
+	Py_DECREF(item);
+	item = NULL;
 
+	item = Py_BuildValue("i", ss1);
+	PyList_Append(vec_ss1_obj, item);
+	Py_DECREF(item);
+	item = NULL;
 
 
 	//Decreasing all references counters used in the function
 	Py_DECREF(vec_max_obj);Py_DECREF(vec_ss1_obj);Py_DECREF(vec_bb0_obj);
 	Py_DECREF(spec2_obj);
 
-	//Py_DECREF(spec2_tmp);
+	vec_max_obj = NULL;	vec_ss1_obj = NULL;	vec_bb0_obj = NULL;	spec2_obj = NULL;
 
-	Py_DECREF(spec2);
+
 	Py_INCREF(Py_None);
 	return Py_None;
 }
@@ -231,5 +224,4 @@ static PyMethodDef DetectMethods[]={
 
 PyMODINIT_FUNC initcDetectSpectrum(void){
 	Py_InitModule("cDetectSpectrum", DetectMethods);
-	//import_array();
 }

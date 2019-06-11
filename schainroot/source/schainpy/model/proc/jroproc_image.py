@@ -56,7 +56,7 @@ class ImageProc(ProcessingUnit):
 		self.dataOut.nIncohInt= self.dataIn.nIncohInt
 		self.dataOut.frequency = self.dataIn.frequency
 		self.dataOut.realtime = self.dataIn.realtime
-
+		self.dataOut.flagNoData = self.dataIn.flagNoData
 
 	def __getImageRGB(self):
 		if hasattr(self.dataOut, "data_RGB"):
@@ -90,7 +90,7 @@ class ImageProc(ProcessingUnit):
 		for i in range(r2):
 			for j in range(npy):
 				snr[j]=(image[i,j]-noise[j])/noise[j]
-				if (snr[j]>3):
+				if (snr[j]> 0.01):
 					snr[j]=(10.0*math.log10(snr[j])-sn1)/(sn2-sn1)
 				else:
 					snr[j]=0.0

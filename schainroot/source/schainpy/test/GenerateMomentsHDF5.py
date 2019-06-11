@@ -50,7 +50,7 @@ parser.add_argument('-lo',action='store',dest='lo_seleccionado',type=int,help='P
 												21: HYO-N45O, 22: HYO-N45E', default=11)
 ########################## GRAPHICS - RESULTS  ###################################################################################################
 parser.add_argument('-graphics_folder',action='store',dest='graphics_folder',help='Directorio de Resultados \
-					.Por defecto, se esta ingresando entre comillas /home/igp-114/Pictures/', default='/home/igp-114/Pictures/')
+					.Por defecto, se esta ingresando entre comillas /home/igp-114/Pictures/', default='/home/ci-81/Pictures/')
 
 
 #Parsing the options of the script
@@ -75,8 +75,8 @@ if campaign == 1:
 else:
 	nProfiles = 100
 	nFFT	  = 100
-	if code == 1:
-		time_start = "00:01:50" # This is done to synchronize the pulsed Sicaya Transmitter with its processing
+	#if code == 1:
+	#	time_start = "00:01:50" # This is done to synchronize the pulsed Sicaya Transmitter with its processing
 
 # Setting the online time
 if online == 1:
