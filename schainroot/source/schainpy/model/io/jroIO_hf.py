@@ -2,6 +2,7 @@
 Created on Jul 3, 2014
 
 @author: roj-com0419
+Modified by Alejandro, a lot of methods and attributes were redefined or rewriten
 '''
 
 import os,sys
@@ -31,6 +32,7 @@ def isNumber(str):
 	except:
 		return False
 
+
 def isFileinThisTime(filename,startDate,endDate,startTime,endTime,timezone):
 	startDateTime_Reader = datetime.datetime.combine(startDate,startTime)
 	endDateTime_Reader = datetime.datetime.combine(endDate,endTime)
@@ -53,12 +55,13 @@ def isFileinThisTime(filename,startDate,endDate,startTime,endTime,timezone):
 
 	return this_time
 
+
 def verifyFile(filename,size):
 	sizeoffile=os.path.getsize(filename)
 	if not (sizeoffile==size):
 		return None
-
 	return sizeoffile
+
 
 def isDoyFolder(folder):
 	try:
@@ -173,6 +176,7 @@ def getlastFileFromPath(path, ext):
 		return validFilelist[-1]
 	return None
 
+
 class HFReader(ProcessingUnit):
 	walk	 = None
 	def __init__(self):
@@ -244,7 +248,6 @@ class HFReader(ProcessingUnit):
 		hipoc=fp['t'].value
 		hipoc=hipoc+timezone
 		date_time=datetime.datetime.utcfromtimestamp(hipoc)
-		#print date_time
 		fp.close()
 
 		this_time=date_time
@@ -500,7 +503,6 @@ class HFReader(ProcessingUnit):
 		while(thisDate <= self.endDate):
 				year = thisDate.timetuple().tm_year
 				doy = thisDate.timetuple().tm_yday
-				#Why not glob.glob
 				matchlist = fnmatch.filter(dirList, '?' + '%4.4d%3.3d' % (year,doy) + '*')
 				if len(matchlist) == 0:
 					thisDate += datetime.timedelta(1)
@@ -541,18 +543,19 @@ class HFReader(ProcessingUnit):
 
 			##################### NEW - PART - OFF LINE ##############
 			last_filename=os.path.join(path,fileList[-1])
-			self.sizeofHF_File=os.path.getsize(last_filename)
+			#self.sizeofHF_File=os.path.getsize(last_filename)
 			##################################################
 			for file in fileList:
 				filename = os.path.join(path,file)
 
-				sizeoffile= verifyFile(filename,size=self.sizeofHF_File)#9650368 en 600
+				#sizeoffile= verifyFile(filename,size=self.sizeofHF_File)#9650368 en 600
 				#*************************************************************
-				#if not (sizeoffile):
-				#	continue
 
 				#TODO by Jm: Verificar de otro modo si el archivo esta bien.
 				# Porque puede ser un archivo de menos files.
+				#Alejandro: Not veryfing if file is ok and skipping the file if not
+				#because it could shade some errors if the file is
+				#ignored when it's broken.
 				#**************************************************************
 
 				thisDatetime = self.isFileInTimeRange(filename, self.startDate,self.endDate,self.startTime, self.endTime,self.timezone)
@@ -575,6 +578,7 @@ class HFReader(ProcessingUnit):
 		self.filenameList = filenameList
 		self.datetimeList = datetimeList
 
+
 	def searchFilesOffline(self,
 							path,
 							frequency,
@@ -589,8 +593,8 @@ class HFReader(ProcessingUnit):
 		self.__findDataForDates()
 		self.dataOut.last_block = len(self.filenameList)
 
-	def __setNextFileOffline(self):
 
+	def __setNextFileOffline(self):
 		if (self.fileIndex == (len(self.filenameList)-1) ):
 			self.flagLastFile = True
 
@@ -619,6 +623,7 @@ class HFReader(ProcessingUnit):
 		print "Setting the file: %s for reading"%self.filename
 		return 1
 
+
 	def __setNextFile(self,online=False):
 		if not(online):
 			newFile = self.__setNextFileOffline()
@@ -628,6 +633,7 @@ class HFReader(ProcessingUnit):
 		if not(newFile):
 			return 0
 		return 1
+
 
 	def setup(self,
 				path = None,
@@ -691,6 +697,7 @@ class HFReader(ProcessingUnit):
 
 		self.__setNextFile(online)
 		self.setHeaderDO()
+
 
 	def setHeaderDO(self):
 		#No eliminar asi como asi
@@ -782,8 +789,12 @@ class HFReader(ProcessingUnit):
 
 		self.dataOut.last_block = len(self.filenameList)
 
+		self.dataOut.startTime = self.startTime
+
+
 	def __hasNotDataInBuffer(self):
 		return self.profileIndex >= self.nProfiles
+
 
 	def readNextBlock(self):
 		if not(self.flagIsNewFile or (self.profileIndex < self.nProfiles)):
@@ -793,6 +804,7 @@ class HFReader(ProcessingUnit):
 			return False
 
 		return True
+
 
 	def readBlock(self):
 		try:
@@ -841,6 +853,7 @@ class HFReader(ProcessingUnit):
 
 		return 1
 
+
 	def getData(self):
 
 		if self.flagNoMoreFiles:
@@ -862,11 +875,12 @@ class HFReader(ProcessingUnit):
 		self.dataOut.data = self.datablock[:,:,self.profileIndex]
 		self.dataOut.data_cspec = self.datacspec[self.profileIndex,:]
 		self.dataOut.utctime = self.__t0 + self.dataOut.ippSeconds*self.profileIndex
-		#print self.dataOut.utctime, self.__t0
+
 		self.dataOut.Image = self.dataImage
 		self.dataOut.profileIndex= self.profileIndex
 		self.profileIndex +=1
 		return self.dataOut.data
+
 
 	def run(self, **kwargs):
 		'''
@@ -879,7 +893,7 @@ class HFReader(ProcessingUnit):
 
 
 class HFParamReader(HFReader):
-	#Los datos compaJRODataReader,rtidos pueden tener efectos inesperados que involucren objetos mutables como ser listas y diccionarios.
+	#Unk: Los datos compaJRODataReader,rtidos pueden tener efectos inesperados que involucren objetos mutables como ser listas y diccionarios.
 	def __init__(self):
 		HFReader.__init__(self)
 		self.optchar = "D"
@@ -897,6 +911,7 @@ class HFParamReader(HFReader):
 		self.number_of_files = None
 		self.blocks_in_File = None #It will contain the number of block that the current file contains
 		self.fileIndex = 0
+
 
 	def isFileInTimeRange(self,filename, startDate, endDate, startTime, endTime, timezone):
 		"""
@@ -930,8 +945,7 @@ class HFParamReader(HFReader):
 		thisUtcTime_final = thisUtcTime[-1]
 
 		fp.close()
-		# if timezone == 'lt':
-		# 	thisUtcTime -= 5*3600
+
 		firstdatetime = datetime.datetime.utcfromtimestamp(thisUtcTime_inicial+timezone)
 		finaldatetime = datetime.datetime.utcfromtimestamp(thisUtcTime_final+timezone)
 
@@ -946,11 +960,8 @@ class HFParamReader(HFReader):
 			return None
 		return firstdatetime
 
-	def __setNextFileOffline(self):
-		# if not(self.fileIndex < len(self.filenameList)):
-		# 	print("No more Files!")
-		# 	return 0
 
+	def __setNextFileOffline(self):
 		filename = self.filenameList[self.fileIndex]
 		filePointer = h5py.File(filename,'r+')
 		self.filename = filename
@@ -964,6 +975,7 @@ class HFParamReader(HFReader):
 		self.fileIndex += 1
 
 		return 1
+
 
 	def __setBlockList(self):
 		'''
@@ -979,6 +991,7 @@ class HFParamReader(HFReader):
 		# List of blocks that are actually inside the time range, is an additional checking of time inside range of experiment
 		self.blockList =  numpy.where(numpy.logical_and(thisUtcTime >= startUtcTime, thisUtcTime < endUtcTime))[0]
 		self.blocks_in_File = len(self.blockList)
+
 
 	def __readMetadata(self):
 		splitted_filename = self.filenameList[0].split('/')
@@ -1006,6 +1019,7 @@ class HFParamReader(HFReader):
 
 		fp.close()
 
+
 	def __readData(self):
 		grp = self.fp['Data']
 		dictData = {}
@@ -1015,6 +1029,7 @@ class HFParamReader(HFReader):
 			dictData[name] = array
 
 		self.dictData = dictData
+
 
 	def __setDataArray(self, dataset, shapes, name):
 		nDims = shapes[0]
@@ -1050,6 +1065,7 @@ class HFParamReader(HFReader):
 
 		return arrayData
 
+
 	def __setDataOut(self):
 		for metaname, metadata in self.dictMetadata.items():
 			setattr(self.dataOut, metaname, metadata)
@@ -1057,12 +1073,14 @@ class HFParamReader(HFReader):
 		for name, data in self.dictData.items():
 			setattr(self.dataOut, name, data[self.blockIndex])
 
+
 	def __setHeaderDO(self):
 		super(HFParamReader,self).setHeaderDO()
 		del self.dataOut.flagLastFile
 		self.dataOut.type = "Parameters"
 		self.dataOut.startTime = self.startTime
 		self.dataOut.endTime = self.endTime
+
 
 	def setup(self,
 				path = None,
@@ -1141,6 +1159,7 @@ class HFParamReader(HFReader):
 		self.number_of_files = len(self.filenameList)
 		self.__setNextFileOffline()
 		self.__setHeaderDO()
+
 
 	def getData(self):
 		if self.blockIndex==self.blocksPerFile:

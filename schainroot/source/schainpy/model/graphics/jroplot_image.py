@@ -38,6 +38,7 @@ class RTDIPlot(Operation):
 		##########PLOTEO####################
 		self.spc_db=numpy.empty((1000,1440,3))
 
+
 	def getFilename(self, name, ext='.png'):
 		path = '%s%03d' %(self.PREFIX, self.id)
 		filename = '%s_%s%s' %(self.PREFIX, name, ext)
@@ -103,38 +104,14 @@ class RTDIPlot(Operation):
 
 		plt.clf()
 		plt.rcParams['figure.dpi'] = 100
-		#print plt.rcParams['figure.dpi']
 
 		lim1 = max(1, xmin*60)
 		lim2 = min(self.spc_db.shape[1]-1,xmax*60-2 )
 		aux = numpy.zeros((int(ymax/1.5)-1-int(ymin/1.5),xmax*60-1 -  xmin*60, 3))
 
 
-		# for i in range((int(ymin/1.5)), int(ymax/1.5)-1):
-		# 	for j in range(lim1,lim2):
-		# 		#print i, j, self.spc_db[i,j]
-		# 		if self.spc_db[i][j][1] < 170 and self.spc_db[i][j][0]<70:
-		# 			self.spc_db[i][j]= (self.spc_db[i][j-1]+self.spc_db[i][j+1])/2
-		# 			#aux[i-int(ymin/1.5)][j-lim1] = self.LookForNearestPoint(i, j)
-		#
-		#
-		# for i in range((int(ymin/1.5)), int(ymax/1.5)-1):
-		# 	for j in range(lim1,lim2):
-		# 		#print i, j, self.spc_db[i,j]
-		# 		if (self.spc_db[i][j][0]+self.spc_db[i][j][1]+self.spc_db[i][j][2]) < 20:
-		# 			self.spc_db[i][j]= (0,0,0)
-
-
-		# for k in range(2):
-		# 	for i in range((int(ymin/1.5)), int(ymax/1.5)-1):
-		# 		for j in range(lim1,lim2):
-		# 			#print i, j, self.spc_db[i,j]
-		# 			self.spc_db[i][j]= (self.spc_db[i][j-1]+self.spc_db[i][j+1])/2
-
-
 		plt.imshow(self.spc_db[int(ymin/1.5):int(ymax/1.5)-1, xmin*60: xmax*60-1,:].astype(numpy.uint8),origin='lower',
 		aspect='auto',extent=[t_start, t_end, ymin,ymax])#')
-		#plt.imshow(aux.astype(numpy.uint8),origin='lower', aspect='auto',extent=[t_start, t_end, ymin,ymax])#')
 
 		plt.gca().xaxis.set_major_formatter(mticker.FuncFormatter(fmtsec))
 		plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(int(xticksSperation)))
@@ -167,6 +144,7 @@ class RTDIPlot(Operation):
 					plt.savefig("%s/%s%s"%(figpath, figfile, ext))
 				else:
 					plt.savefig("%s/%s%s"%(figpath,thisDatetime.date(),ext))
+
 
 	def LookForNearestPoint(self, x, y):
 		for i in range(x,x-2, -1):

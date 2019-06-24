@@ -1,3 +1,7 @@
+'''
+@author: Unknown
+Modified by Alejandro, some methods and attributes were redefined or rewriten
+'''
 import numpy
 import time
 import os
@@ -564,6 +568,7 @@ class HDF5Writer(Operation):
 		self.firsttime = True
 		self.dataOut = None
 
+
 	def setup(self, dataOut, **kwargs):
 		self.path = kwargs['path']
 		if kwargs.has_key('ext'):
@@ -616,11 +621,12 @@ class HDF5Writer(Operation):
 		self.tableDim = numpy.array(tableList, dtype = self.dtype)# The same as arrayDim but it has the name of the parameter added
 		self.blockIndex = 0
 
-	def putMetadata(self):
 
+	def putMetadata(self):
 		fp = self.createMetadataFile()
 		self.writeMetadata(fp)
 		fp.close()
+
 
 	def createMetadataFile(self):
 		#TODO by Jm : Aqui agregar todos los atributos de la estacion por ejemplo:
@@ -644,6 +650,7 @@ class HDF5Writer(Operation):
 
 		return fp
 
+
 	def writeMetadata(self, fp):
 		grp = fp.create_group("Metadata")
 		grp.create_dataset('array dimensions', data = self.tableDim, dtype = self.dtype, compression="gzip")
@@ -656,6 +663,7 @@ class HDF5Writer(Operation):
 			else:
 				grp.create_dataset(self.metadataList[i], data=data)
 
+
 	def setNextFileName(self):
 		if self.fp != None:
 			self.fp.close()
@@ -665,9 +673,9 @@ class HDF5Writer(Operation):
 		fullpath = os.path.join(self.path, subfolder )
 		if not( os.path.exists(fullpath) ):
 			os.mkdir(fullpath)
-		# Se elimino el uso de setFile flag porque no es util el ver los archivos y luego crear nuevos existentes en la carpeta destino
-		# Y luego crear nuevos dado que esto hace que el correr dos veces el mismo programa genere mas y mas archivos de data repetidos
 
+		# Alejandro: I have erased the use of setfile flag because is better to
+		#use the epoch as name for the new HDF5 files
 		file = '%s%012d%s' % (self.optchar, round(self.dataOut.utctime),
 										self.ext )
 
@@ -675,33 +683,15 @@ class HDF5Writer(Operation):
 
 		#Setting HDF5 File
 		try:
-			fp = h5py.File(filename,'a')#Se cambio de w a a para que asi el ultimo set next file cuando se termina antes de 23:59:59 no elimine la data del prox archivo
+			#Tries to open the file for modification
+			fp = h5py.File(filename,'a')
 		except IOError:
+			#If fails, truncate it
 			fp = h5py.File(filename,'w')
 		self.fp = fp
 
+
 	def setNextFile(self):
-		# if self.fp != None:
-		# 	self.fp.close()
-		# timeTuple = time.localtime(self.dataOut.utctime)
-		# subfolder = 'd%4.4d%3.3d' % (timeTuple.tm_year,timeTuple.tm_yday)
-		#
-		# fullpath = os.path.join(self.path, subfolder )
-		# if not( os.path.exists(fullpath) ):
-		# 	os.mkdir(fullpath)
-		# # Se elimino el uso de setFile flag porque no es util el ver los archivos y luego crear nuevos existentes en la carpeta destino
-		# # Y luego crear nuevos dado que esto hace que el correr dos veces el mismo programa genere mas y mas archivos de data repetidos
-		#
-		# file = '%s%012d%s' % (self.optchar, round(self.dataOut.utctime),
-		# 								self.ext )
-		#
-		# filename = os.path.join(self.path, subfolder, file )
-		#
-		# #Setting HDF5 File
-		# try:
-		# 	fp = h5py.File(filename,'a')#Se cambio de w a a para que asi el ultimo set next file cuando se termina antes de 23:59:59 no elimine la data del prox archivo
-		# except IOError:
-		# 	fp = h5py.File(filename,'w')
 		data = []
 
 		nDatas = numpy.zeros(len(self.dataList))
@@ -733,6 +723,7 @@ class HDF5Writer(Operation):
 		self.firsttime = True
 		self.blockIndex = 0
 
+
 	def putData(self):
 		if self.blockIndex == 0: # was incremented by 1 by the self.writeBlock method
 			self.setNextFileName()
@@ -740,16 +731,14 @@ class HDF5Writer(Operation):
 		self.setBlock()
 		self.writeBlock()
 		#If file is the last file  writeBlockF!
-		#Viene de jroproc_parameters, deberia ser true
+		#Unk:iene de jroproc_parameters, deberia ser true
 
 
 		if self.dataOut.flagLastFile: #This case occurs when the files are no NumberBlocks multipler.
-			#self.setNextFile()# added 06/06/19
 			self.writeBlockF()
 			self.fp.close()
 
 		elif self.blockIndex == self.blocksPerFile:
-			#self.setNextFile()# added 06/06/19
 			self.writeBlockF() # this function is the only one that write data in hdf5 files
 			self.setNextFile()# it was here uncommented 06/06/19
 
@@ -794,6 +783,7 @@ class HDF5Writer(Operation):
 
 		self.data = data
 
+
 	def writeBlock(self):
 		'''
 		Saves the block in the HDF5 file
@@ -801,12 +791,11 @@ class HDF5Writer(Operation):
 		self.blockIndex += 1
 		self.firsttime = False
 
+
 	def writeBlockF(self):
 		'''
 		Saves the block in the HDF5 file
 		'''
-		#print self.dataOut.data_SNR[:,0], self.dataOut.data_param[:,:,0]
-
 		nDims = self.arrayDim[:,0]
 		k=0
 		if "Data" in self.fp.keys():#Means the file exists, so its data should be erased
@@ -854,6 +843,7 @@ class HDF5Writer(Operation):
 		if self.identifier != None:
 			self.fp['identifier']= self.identifier
 		print 'Writing the file: %s'%self.fp.filename
+
 
 	def run(self, dataOut, **kwargs):#dataOut debe ser dataIn ya que es entrada de esta operacion aunque venga de un proc
 		if not(self.isConfig):

@@ -1,3 +1,7 @@
+'''
+author:Unknown
+Modified by Alejandro in 2019, a lot of methods and attributes were redefined or rewritten
+'''
 import numpy
 import math
 import types
@@ -13,7 +17,7 @@ class SpectraProc(ProcessingUnit):
 
 		self.buffer = None
 		self.buffercspec= None
-		#TODO 2018 incluir en un futuro solo para las librerias de HF
+		#TODO Jm: 2018 incluir en un futuro solo para las librerias de HF
 		self.bufferImage = None
 
 		self.firstdatatime = None
@@ -34,23 +38,16 @@ class SpectraProc(ProcessingUnit):
 		self.dataOut.systemHeaderObj = self.dataIn.systemHeaderObj.copy()
 
 		self.dataOut.dtype = numpy.dtype([('real','<f4'),('imag','<f4')])
-		#self.dataOut.nHeights = self.dataIn.nHeights
-		#self.dataOut.nChannels = self.dataIn.nChannels
 		self.dataOut.nProfiles = self.dataOut.nFFTPoints
-		#self.dataOut.channelIndexList = self.dataIn.channelIndexList
 		self.dataOut.utctime = self.firstdatatime
-		#self.dataOut.flagShiftFFT = self.dataIn.flagShiftFFT
 		self.dataOut.nIncohInt = 1 # 6 para un minuto y 1 para 10 segundos(campana).
-		#self.dataOut.ippSeconds = self.dataIn.ippSeconds
 		self.dataOut.windowOfFilter = self.dataIn.windowOfFilter
-
-		#self.dataOut.timeInterval = self.dataIn.timeInterval*self.dataOut.nFFTPoints*self.dataOut.nIncohInt
 
 		self.dataOut.beam.codeList = self.dataIn.beam.codeList
 		self.dataOut.beam.azimuthList = self.dataIn.beam.azimuthList
 		self.dataOut.beam.zenithList = self.dataIn.beam.zenithList
 
-	def __getPapu(self):
+	def __getSpectra(self):
 		fft_volt = self.buffer
 		cspc = numpy.zeros((self.dataOut.nFFTPoints, self.dataOut.nHeights), dtype='complex')
 		cspc[:,:]=self.buffercspec
@@ -77,6 +74,7 @@ class SpectraProc(ProcessingUnit):
 		self.dataOut.blockSize = blocksize
 		self.dataOut.flagShiftFFT = False
 		self.dataOut.Image = self.bufferImage
+		self.dataOut.startTime = self.dataIn.startTime
 
 	def __getFft(self):
 		"""
@@ -107,7 +105,7 @@ class SpectraProc(ProcessingUnit):
 		cspc = None
 		pairIndex = 0
 		if self.dataOut.pairsList != None:
-			#calculo de cross-spectra
+			#Calculation of cross-spectra
 			cspc = numpy.zeros((self.dataOut.nPairs, self.dataOut.nFFTPoints, self.dataOut.nHeights), dtype='complex')
 			for pair in self.dataOut.pairsList:
 				cspc[pairIndex,:,:] = fft_volt[pair[0],:,:] * numpy.conjugate(fft_volt[pair[1],:,:])
@@ -125,8 +123,6 @@ class SpectraProc(ProcessingUnit):
 		self.dataOut.noiseMode = noiseMode
 		if self.dataIn.type == "Spectra":
 			self.dataOut.copy(self.dataIn)
-			#22/02/19 Falto para modo Spectra
-			#self.dataOut.noiseMode = noiseMode
 			return True
 
 		if self.dataIn.type == "Voltage":
@@ -139,8 +135,7 @@ class SpectraProc(ProcessingUnit):
 			self.dataOut.ippFactor = ippFactor
 			self.dataOut.nFFTPoints = nFFTPoints
 			self.dataOut.pairsList = pairsList
-			#22/02/19 tbm declarar como argumento
-			#self.dataOut.noiseMode = noiseMode
+
 			if type(self.buffer) == types.NoneType:
 				self.buffer = numpy.zeros((self.dataIn.nChannels,
 											nProfiles,
@@ -161,9 +156,7 @@ class SpectraProc(ProcessingUnit):
 				self.id_min = 0
 				self.id_max = self.dataIn.data.shape[1]
 
-			#print self.buffer.shape, self.buffercspec.shape, self.bufferImage.shape, self.id_max
 			if len(self.dataIn.data.shape) == 2:
-				#print self.profIndex,"data", self.dataIn.data.copy(), self.buffer
 				self.buffer[:,self.profIndex,:] = self.dataIn.data.copy()
 				self.buffercspec[self.profIndex,:]= self.dataIn.data_cspec.copy()
 				self.bufferImage = self.dataIn.Image.copy() #this data comes from dataout.Image
@@ -193,7 +186,7 @@ class SpectraProc(ProcessingUnit):
 				self.nspectrogram += 1
 				print "Fin de analisis de espectrograma N %s" % self.nspectrogram
 				self.__updateObjFromInput()
-				self.__getPapu()
+				self.__getSpectra()
 
 				self.dataOut.flagNoData = False
 
@@ -427,177 +420,6 @@ class SpectraProc(ProcessingUnit):
 
 		return 1
 
-	# def removeInterference(self,  interf = 2,hei_interf = None, nhei_interf = None, offhei_interf = None):
-	# 	#Alejandro May 2019: No funciona por el momento porque se cambio el formato de cspec
-	#
-	# 	jspectra = self.dataOut.data_spc
-	# 	jcspectra = self.dataOut.data_cspc
-	# 	jnoise = self.dataOut.getNoise(1)
-	# 	num_incoh = self.dataOut.nIncohInt
-	#
-	# 	num_channel  = jspectra.shape[0]
-	# 	num_prof  = jspectra.shape[1]
-	# 	num_hei   = jspectra.shape[2]
-	#
-	# 	#hei_interf
-	# 	if hei_interf == None:
-	# 		count_hei = num_hei/2   #Como es entero no importa
-	# 		hei_interf = numpy.asmatrix(range(count_hei)) + num_hei - count_hei
-	# 		hei_interf = numpy.asarray(hei_interf)[0]
-	#
-	# 	#nhei_interf
-	# 	if (nhei_interf == None):
-	# 		nhei_interf = 5
-	# 	if (nhei_interf < 1):
-	# 		nhei_interf = 1
-	# 	if (nhei_interf > count_hei):
-	# 		nhei_interf = count_hei
-	# 	if (offhei_interf == None):
-	# 		offhei_interf = 0
-	#
-	# 	ind_hei = range(num_hei)
-	# 	#mask_prof = numpy.asarray(range(num_prof - 2)) + 1
-	# 	#mask_prof[range(num_prof/2 - 1,len(mask_prof))] += 1
-	# 	mask_prof = numpy.asarray(range(num_prof))
-	# 	num_mask_prof = mask_prof.size
-	# 	comp_mask_prof = [0, num_prof/2]
-	#
-	#
-	# 	#noise_exist:	Determina si la variable jnoise ha sido definida y contiene la informacion del ruido de cada canal
-	# 	if (jnoise.shape[0] < num_channel or numpy.isnan(jnoise).any()):
-	# 		jnoise = numpy.nan
-	# 		noise_exist = False
-	# 	else:
-	# 		noise_exist = True
-	#
-	# 	#Subrutina de Remocion de la Interferencia
-	# 	for ich in range(num_channel):
-	# 		#Se ordena los espectros segun su potencia (menor a mayor)
-	# 		power = jspectra[ich,mask_prof,:]
-	# 		power = power[:,hei_interf]
-	# 		power = power.sum(axis = 0)
-	# 		psort = power.ravel().argsort()
-	#
-	# 		#Se estima la interferencia promedio en los Espectros de Potencia empleando
-	# 		aux = hei_interf[psort[range(offhei_interf, nhei_interf + offhei_interf)]]
-	# 		junkspc_interf = jspectra[ich,:,aux]
-	# 		#print "here", junkspc_interf
-	#
-	# 		if noise_exist:
-	# 		#	tmp_noise = jnoise[ich] / num_prof
-	# 			tmp_noise = jnoise[ich]#[aux].sum(axis=0)
-	# 		#print numpy.repeat(tmp_noise,num_prof).reshape(len(aux), num_prof)
-	# 		junkspc_interf = junkspc_interf - tmp_noise #numpy.repeat(tmp_noise,num_prof).reshape(len(aux), num_prof)
-	# 		#junkspc_interf[:,comp_mask_prof] = 0
-	# 		jspc_interf = junkspc_interf.sum(axis = 0) / nhei_interf
-	# 		jspc_interf = jspc_interf.transpose()
-	# 		#Calculando el espectro de interferencia promedio
-	# 		noiseid =  numpy.where(jspc_interf <= tmp_noise/ math.sqrt(num_incoh))
-	# 		noiseid = noiseid[0]
-	# 		cnoiseid = noiseid.size
-	# 		interfid = numpy.where(jspc_interf > tmp_noise/ math.sqrt(num_incoh))
-	# 		interfid = interfid[0]
-	# 		cinterfid = interfid.size
-	#
-	# 		if (cnoiseid > 0):   jspc_interf[noiseid] = 0
-	#
-	# 		#Expandiendo los perfiles a limpiar
-	# 		if (cinterfid > 0):
-	# 			new_interfid = (numpy.r_[interfid - 1, interfid, interfid + 1] + num_prof)%num_prof
-	# 			new_interfid = numpy.asarray(new_interfid)
-	# 			new_interfid = {x for x in new_interfid}
-	# 			new_interfid = numpy.array(list(new_interfid))
-	# 			new_cinterfid = new_interfid.size
-	# 		else: new_cinterfid = 0
-	#
-	# 		for ip in range(new_cinterfid):
-	# 			ind = junkspc_interf[:,new_interfid[ip]].ravel().argsort()
-	# 			jspc_interf[new_interfid[ip]] = junkspc_interf[ind[nhei_interf/2],new_interfid[ip]]
-	#
-	#
-	# 		jspectra[ich,:,ind_hei] = jspectra[ich,:,ind_hei] - jspc_interf #Corregir indices
-	#
-	# 		#Removiendo la interferencia del punto de mayor interferencia
-	# 		ListAux = jspc_interf[mask_prof].tolist()
-	# 		maxid = ListAux.index(max(ListAux))
-	#
-	#
-	# 		if cinterfid > 0:
-	# 			for ip in range(cinterfid*(interf == 2) - 1):
-	# 				ind = (jspectra[ich,interfid[ip],:] < tmp_noise*(1 + 1/math.sqrt(num_incoh))).nonzero()
-	# 				cind = len(ind)
-	#
-	# 				if (cind > 0):
-	# 					jspectra[ich,interfid[ip],ind] = tmp_noise*(1 + (numpy.random.uniform(cind) - 0.5)/math.sqrt(num_incoh))
-	#
-	# 			ind = numpy.array([-2,-1,1,2])
-	# 			xx = numpy.zeros([4,4])
-	#
-	# 			for id1 in range(4):
-	# 				xx[:,id1] = ind[id1]**numpy.asarray(range(4))
-	#
-	# 			xx_inv = numpy.linalg.inv(xx)
-	# 			xx = xx_inv[:,0]
-	# 			ind = (ind + maxid + num_mask_prof)%num_mask_prof
-	# 			yy = jspectra[ich,mask_prof[ind],:]
-	# 			jspectra[ich,mask_prof[maxid],:] = numpy.dot(yy.transpose(),xx)
-	#
-	#
-	# 		indAux = (jspectra[ich,:,:] < tmp_noise*(1-1/math.sqrt(num_incoh))).nonzero()
-	# 		jspectra[ich,indAux[0],indAux[1]] = tmp_noise * (1 - 1/math.sqrt(num_incoh))
-	#
-	# 	#Remocion de Interferencia en el Cross Spectra
-	# 	if (jcspectra == None).any: return jspectra, jcspectra
-	#
-	# 	for ip in range(num_pairs):
-	#
-	# 	#-------------------------------------------
-	# 	#jcspectra(profiles, heights)
-	#
-	# 		cspower = numpy.abs(jcspectra[ip,mask_prof,:])
-	# 		cspower = cspower[:,hei_interf]
-	# 		cspower = cspower.sum(axis = 0)
-	#
-	# 		cspsort = cspower.ravel().argsort()
-	# 		junkcspc_interf = jcspectra[ip,:,hei_interf[cspsort[range(offhei_interf, nhei_interf + offhei_interf)]]]
-	# 		junkcspc_interf = junkcspc_interf.transpose()
-	# 		jcspc_interf = junkcspc_interf.sum(axis = 1)/nhei_interf
-	#
-	# 		ind = numpy.abs(jcspc_interf[mask_prof]).ravel().argsort()
-	#
-	# 		median_real = numpy.median(numpy.real(junkcspc_interf[mask_prof[ind[range(3*num_prof/4)]],:]))
-	# 		median_imag = numpy.median(numpy.imag(junkcspc_interf[mask_prof[ind[range(3*num_prof/4)]],:]))
-	# 		junkcspc_interf[comp_mask_prof,:] = numpy.complex(median_real, median_imag)
-	#
-	# 		for iprof in range(num_prof):
-	# 			ind = numpy.abs(junkcspc_interf[iprof,:]).ravel().argsort()
-	# 			jcspc_interf[iprof] = junkcspc_interf[iprof, ind[nhei_interf/2]]
-	#
-	# 		#Removiendo la Interferencia
-	# 		jcspectra[ip,:,ind_hei] = jcspectra[ip,:,ind_hei] - jcspc_interf
-	#
-	# 		ListAux = numpy.abs(jcspc_interf[mask_prof]).tolist()
-	# 		maxid = ListAux.index(max(ListAux))
-	#
-	# 		ind = numpy.array([-2,-1,1,2])
-	# 		xx = numpy.zeros([4,4])
-	#
-	# 		for id1 in range(4):
-	# 			xx[:,id1] = ind[id1]**numpy.asarray(range(4))
-	#
-	# 		xx_inv = numpy.linalg.inv(xx)
-	# 		xx = xx_inv[:,0]
-	#
-	# 		ind = (ind + maxid + num_mask_prof)%num_mask_prof
-	# 		yy = jcspectra[ip,mask_prof[ind],:]
-	# 		jcspectra[ip,mask_prof[maxid],:] = numpy.dot(yy.transpose(),xx)
-	#
-	# 	#Guardar Resultados
-	# 	self.dataOut.data_spc = jspectra
-	# 	self.dataOut.data_cspc = jcspectra
-	#
-	# 	return 1
-	#
 
 	def removeInterference(self,  noiseMode = 2,interf = 2,hei_interf = None, nhei_interf = None, offhei_interf = None):
 		jspectra = self.dataOut.data_spc
@@ -768,7 +590,6 @@ class SpectraProc(ProcessingUnit):
 		self.dataOut.data_cspc = jcspectra
 		#print "cross spectra",jcspectra[:10]
 		return 1
-
 
 
 	def setRadarFrequency(self, frequency=None):

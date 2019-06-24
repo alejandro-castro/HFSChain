@@ -1,9 +1,9 @@
+'''
+author:Unknown
+Modified by Alejandro in 2019, a lot of methods and attributes were redefined or rewritten
+'''
 import numpy
 import math
-#from scipy import optimize
-#from scipy import interpolate
-#from scipy import signal
-#from scipy import stats
 import re
 import datetime
 import copy
@@ -19,11 +19,11 @@ import cDetectSpectrum
 class ParametersProc(ProcessingUnit):
 	def __init__(self):
 		ProcessingUnit.__init__(self)
-		#self.objectDict = {}
 		self.buffer = None
 		self.firstdatatime = None
 		self.profIndex = 0
 		self.dataOut = Parameters()
+
 
 	def __updateObjFromInput(self):
 		attributes = ["timeZone", "dstFlag", "errorCount", "useLocalTime", "channelList", "heightList", "nBaud",
@@ -34,25 +34,17 @@ class ParametersProc(ProcessingUnit):
 			setattr(self.dataOut, attribute, getattr(self.dataIn, attribute))
 
 		self.dataOut.inputUnit = self.dataIn.type
-
 		self.dataOut.radarControllerHeaderObj = self.dataIn.radarControllerHeaderObj.copy()
 		self.dataOut.systemHeaderObj = self.dataIn.systemHeaderObj.copy()
-
 		self.dataOut.dtype = numpy.dtype([('real','<f4'),('imag','<f4')])
-		#self.dataOut.nHeights = self.dataIn.nHeights
-		#self.dataOut.nChannels = self.dataIn.nChannels
-		#self.dataOut.nProfiles = self.dataOut.nFFTPoints
 		self.dataOut.utctime = self.firstdatatime
-		#self.dataOut.nCohInt = self.dataIn.nCohInt
-		#self.dataOut.nIncohInt = 1
-		#self.dataOut.windowOfFilter = self.dataIn.windowOfFilter
 		self.dataOut.heightList = self.dataIn.getHeiRange()
-		#Jm: TODO merge : This changes has been done for HF proccesing
+
+		#Jm: TODO merge : This changes has been done for HF proccesing Al:Don't know what he was refering to
 		self.dataOut.data_RGB = self.dataIn.Image
-		self.dataOut.CrossData = numpy.zeros((2, self.dataIn.nHeights),
-												dtype='f')
-		#print 'comes from jroProcSpectra flagLastFile'
+		self.dataOut.CrossData = numpy.zeros((2, self.dataIn.nHeights), dtype='f')
 		self.dataOut.flagLastFile = self.dataIn.flagLastFile
+
 
 	def run(self, nSeconds = None, nProfiles = None , ippFactor = 1, pairsList = None):
 		if self.firstdatatime == None:
@@ -90,10 +82,8 @@ class ParametersProc(ProcessingUnit):
 
 		if self.dataIn.type == "Spectra":
 			self.dataOut.data_pre = self.dataIn.data_spc.copy()
-			#self.dataOut.abscissaList = self.dataIn.getVelRange(0)
 			self.dataOut.abscissaList = self.dataIn.getVelRange(1)
-		#print "CALCULO DEL RUIDO"
-			#self.dataOut.noise = self.dataIn.getNoise()
+
 			self.dataOut.noiseMode = self.dataIn.noiseMode
 			self.dataOut.noise = self.dataIn.getNoise(mode = self.dataIn.noiseMode)
 			self.dataOut.normFactor = self.dataIn.normFactor
@@ -103,7 +93,11 @@ class ParametersProc(ProcessingUnit):
 			#hardcoded by Alejandro
 			self.dataOut.ippFactor = ippFactor
 			self.dataOut.nFFTPoints = self.dataIn.nProfiles
-			self.dataOut.pairsList = self.dataIn.pairsList
+			self.dataOut.nProfiles = self.dataIn.nProfiles
+			self.dataOut.nFFTPoints = self.dataIn.nProfiles
+			self.dataOut.nCohInt = self.dataIn.nCohInt
+			self.dataOut.nIncohInt = self.dataIn.nIncohInt
+			self.dataOut.startTime = self.dataIn.startTime
 
 		#----------------------	Correlation Data	---------------------------
 		if self.dataIn.type == "Correlation":
@@ -122,7 +116,6 @@ class ParametersProc(ProcessingUnit):
 
 		if self.dataIn.type == "Parameters":
 			self.dataOut.copy(self.dataIn)
-			#la flagLastFile deberia venir en el datain
 
 			#Just for HF - its hardcoded
 			self.dataOut.outputInterval = 60
@@ -134,12 +127,14 @@ class ParametersProc(ProcessingUnit):
 			self.dataOut.pairsList = pairsList
 
 			self.dataOut.abscissaList = self.dataOut.getVelRange(1)
+
 			return True
 
 		self.__updateObjFromInput()
 		self.firstdatatime = None
 		self.dataOut.utctimeInit = self.dataIn.utctime
 		self.dataOut.outputInterval = self.dataIn.timeInterval
+
 
 	def GetCrossData(self):
 		#Jm: TODO merge : This changes has been done for HF proccesing
@@ -149,44 +144,40 @@ class ParametersProc(ProcessingUnit):
 		powb = numpy.average(self.dataIn.data_spc[1,:,:],axis=0)
 		avgcoherenceComplex = ccf/numpy.sqrt(powa*powb)
 
-		# En ambos canales se repitia la fase y la coherencia, por eso se elimino una dimension y se quedo en lo actual
+		# Alejandro: In both channels of CrossData there was the same data(phase and coherence),
+		# therefore one dimension was eliminated becoming the actual vector used.
 		self.dataOut.CrossData[0,:] = numpy.abs(avgcoherenceComplex)
-		self.dataOut.CrossData[1,:] = numpy.arctan2(avgcoherenceComplex.imag, avgcoherenceComplex.real)/numpy.pi
-		#self.dataOut.CrossData[:,1,:] = numpy.arctan2(avgcoherenceComplex.imag, avgcoherenceComplex.real)*180/numpy.pi
-		#print "averages", ccf[:10], powa[:10], powb[:10]
+		self.dataOut.CrossData[1,:] = numpy.arctan2(avgcoherenceComplex.imag, avgcoherenceComplex.real)*180/numpy.pi
 
-		#***********TOOLs
-		#self.dataOut.AvgCoh[0,:] = numpy.abs(avgcoherenceComplex)
-		#self.dataOut.AvgCoh[1,:] = numpy.arctan2(avgcoherenceComplex.imag, avgcoherenceComplex.real)*180/numpy.pi
-		#print 'self.dataOut.AvgCohModule.shape:',(numpy.abs(avgcoherenceComplex)).shape
-		#print 'self.dataOut.AvgCohPhase.shape:',(self.dataOut.AvgCohPhase).shape
-		#coherenceComplex = self.dataIn.data_cspc[pairsIndexList[i],:,:]/numpy.sqrt(self.dataIn.data_spc[0,:,:]*self.dataIn.data_spc[1,:,:])
-		#self.dataOut.CohModule = numpy.abs(coherenceComplex)
-		#phase = numpy.arctan(-1*coherenceComplex.imag/coherenceComplex.real)*180/numpy.pi
-		#self.dataOut.CohPhase = numpy.arctan2(coherenceComplex.imag, coherenceComplex.real)*180/numpy.pi
-		#***********+
-	#Defini los argumentos de entrara para que sean posibles parametros de entrada.
 
-	def GetRGBData(self):
-		#TODO > any future operation do here
-		#self.dataOut.data_RGB = self.dataIn.Image
-		print "Getting RGB Data from Image dataset..."
+	def GetRGBData(self, threshv=0.1):
+		#This method if called overwrites the data image read from the HDF5
+		nChannels = self.dataIn.data_spc.shape[0]
+		for i in range(nChannels):
+			s=self.dataIn.data_spc[i]
+
+			L= s.shape[0] # Number of profiles
+			N= s.shape[1] # Number of heights
+			im=int(math.floor(L/2)) #50
+			i0l=im - int(math.floor(L*threshv)) #10
+			i0h=im + int(math.floor(L*threshv)) #90
+
+			for ri in numpy.arange(N):
+				self.dataOut.data_RGB[i, 0, ri]= numpy.sum(s[0:i0l,ri])
+				self.dataOut.data_RGB[i, 1, ri]= numpy.sum(s[i0l:i0h,ri])
+				self.dataOut.data_RGB[i, 2, ri]= numpy.sum(s[i0h:L,ri])
 
 
 	def GetVelData(self,nFFTPoints=None,nProfiles=None,ippFactor=None,pairsList=""):
-		#TODO > any future operation do here
-		#self.dataOut.data_RGB = self.dataIn.Image
-		#raw_input("Calculando Velocidades.")
-
 		if nFFTPoints == None:
 			print "Ingresar numero de FFT"
 
 		self.dataOut.ippFactor = 1
 		self.dataOut.nFFTPoints = nFFTPoints
-		#print 'self.dataOut.nFFTPoints:',self.dataOut.nFFTPoints
 		self.dataOut.pairsList = pairsList
 		self.dataOut.nCohInt = 6
 		self.dataOut.abscissaList = self.dataOut.getVelRange(1)
+
 	#-------------------	Get Moments	----------------------------------
 	def GetMoments(self, noiseMode = None , channelList = None):
 		'''
@@ -221,139 +212,58 @@ class ParametersProc(ProcessingUnit):
 		self.dataOut.data_param = data_param[:,1:,:]#drop first colm
 		self.dataOut.data_SNR = data_param[:,0,:]
 
-	def __calculateMoments(self, oldspec, oldfreq, n0, smooth = None, fwindow = None):
-		#TODO : Hacer un spetral whitenning para suavizar los espectros y sacar la velocidad radial de la potencia maxima.
-		# En vez del calculo  Doppler-Radial.
-		# Mejorar el calculo de velocidad radial con direccionamiento y apunte.
-		# Enviar los datos a un servidor para que este lo modele en tiempo real. pronostique de donde viene la Spread F y la antena cambie el apunte.
-		#print "oldspec", oldspec.shape, oldspec,"oldfreq","noise", n0.shape,n0
-		#print "El tiempo es", self.dataOut.utctime
-		if (smooth == None): smooth = 0
-		elif (self.smooth < 3): smooth = 0
+
+	def __calculateMoments(self, oldspec, oldfreq, n0, smooth = 0, fwindow = None):
+		#TODO : Do an spectral whitenning to smooth spectrums and get the radial velocity
+		# from the maximum power instead from the Doppler-Radial calculation.
+		# Enhance the estimation of radial velocity with the direction and beam.
+		# Send the data to a server so it can be modeled in real time and thus
+		# predict where the Spread F is coming from and make the antenna change its beam accordingly.
 
 		if (fwindow == None): fwindow = numpy.ones(oldfreq.size)
 
-
 		freq = oldfreq # Doppler velocity values
-		vec_power = numpy.zeros(oldspec.shape[1])
-		vec_fd = numpy.zeros(oldspec.shape[1])
-		vec_w = numpy.zeros(oldspec.shape[1])
-		vec_snr = numpy.zeros(oldspec.shape[1])
-
-		vec_max = [] #This array is going to store the information of the previous spectrum so the next one can follow it
-		vec_ss1 = []
-		vec_bb0 = []
+		vec_power = []
+		vec_fd = []
+		vec_w = []
+		vec_snr = []
 
 		if self.dataOut.noiseMode != 1 and self.dataOut.noiseMode != 2:
 			raise ValueError, "Noise Mode %s not supported"%(self.dataOut.noiseMode)
 
+
+		slice_noise_f = None #Function that gets the noise taking in account the noiseMode
 		if self.dataOut.noiseMode == 1:
 			if (n0 < 1.e-20):   n0 = 1.e-20
+			slice_noise_f = lambda n0,ind: n0
 
-			for ind in range(oldspec.shape[1]):
-				#TODO : hacer un noise special para el slice metodo privado de ParametersProc
-				spec = oldspec[:,ind]
-				aux = spec*fwindow[len(spec)]# #Jm:hardcoded to match with lenghts
 
-				#Smooth
-				#TODO : probar el whitenning smooth que dio Juha
-				if (smooth == 0):   spec2 = aux
-				else:   spec2 = scipy.ndimage.filters.uniform_filter1d(aux,size=smooth)
-
-				cDetectSpectrum.DetectInSpectrogram(vec_max, vec_ss1, vec_bb0, spec2.copy(), n0, ind)
-				ss1 = vec_ss1[-1]
-				bb0 = vec_bb0[-1]
-				m = vec_max[-1]
-				#Cambio para que no calcule todos los momentos en caso SNR sea demasiado baja
-				snr = (spec2.mean()-n0)/n0
-				#TODO Put threshold in parameterName
-				#if 10.0*numpy.log10(snr)>-3.0:
-				valid = numpy.asarray(range(ss1, bb0 + 1)) # it had a +m factor, Alejandro
-
-				power = ((spec2[valid] - n0)*fwindow[valid]).sum() # m_0 = first moments
-				#TODO probar la estimacion de fd con el calculo de ruido por perfil.
-				fd = ((spec2[valid]- n0)*freq[valid]*fwindow[valid]).sum()/power # m_1=radial velocity = frequecy doppler?
-				w = math.sqrt((  (spec2[valid] - n0)*fwindow[valid]  *(freq[valid]- fd)**2   ).sum()/power)
-				# else :
-				#	 valid=[0,0]
-				#	 power = 0.0
-				#	 fd = 0.0
-				#	 w = 0.0
-
-				if (snr < 1.e-20) :
-					snr = 1.e-20
-
-				vec_power[ind] = power
-				vec_fd[ind] = fd
-				vec_w[ind] = w
-				vec_snr[ind] = snr
-
-				#else : vec_power[ind] = un numero x, fd , w y snr igual.
 		elif self.dataOut.noiseMode == 2 :
-
 			for ind in range(len(n0)):
 				if (n0[ind] < 1.e-20):   n0[ind] = 1.e-20
-			for ind in range(oldspec.shape[1]):
-				#TODO : hacer un noise special para el slice metodo privado de ParametersProc
-				spec = oldspec[:,ind]
-				aux = spec*fwindow[len(spec)]# #Jm:hardcoded to match with lenghts
+			slice_noise_f = lambda n0,ind: n0[ind]
 
-				#Smooth
-				#TODO : probar el whitenning smooth que dio Juha
-				if (smooth == 0):   spec2 = aux
-				else:   spec2 = scipy.ndimage.filters.uniform_filter1d(aux,size=smooth)
+		#Calling the module function that calculate moments
+		for ind in range(oldspec.shape[1]):
+			#TODO : hacer un noise special para el slice metodo privado de ParametersProc
+			spec = oldspec[:,ind]
+			aux = spec*fwindow[len(spec)]# #Jm:hardcoded to match with lenghts
 
-				aux =spec2.tolist()[:]
-
-				# The copy is necessary because this method change the values of spec2 to perform well, and all the parameters need the original spectrum
-				cDetectSpectrum.DetectInSpectrogram(vec_max, vec_ss1, vec_bb0, aux, n0[ind], ind)
-				# #self.DetectSpectrumInSpectrogram(vec_max, vec_ss1, vec_bb0, spec2.copy(), n0[ind], ind)
-
-				ss1 = vec_ss1[-1]
-				bb0 = vec_bb0[-1]
-				m = vec_max[-1]
-				if (ind >205) and (ind < 209):
-					print "Chosen values", (-278.2708520260 + ss1*5.5103139), (-278.2708520260 + bb0*5.5103139)
-				valid = numpy.asarray(range(ss1, bb0 + 1)) # it had a +m factor, Alejandro
-
-				tmp = spec2[valid]
-				for k in range(tmp.size):
-					tmp[k] = max(min(1e-20, tmp[k]), tmp[k]-n0[ind])
+			#Smooth
+			#TODO : probar el whitenning smooth que dio Juha
+			if (smooth == 0):   spec2 = aux
+			else:   spec2 = scipy.ndimage.filters.uniform_filter1d(aux,size=smooth)
 
 
-				#Cambio para que no calcule todos los momentos en caso SNR sea demasiado baja
+			cDetectSpectrum.DetectInSpectrogram(vec_power, vec_fd, vec_w, vec_snr, freq.tolist(),
+			spec2, slice_noise_f(n0, ind), ind)
+			#TODO Test the estimation of fd with the noise estimation by profile.
 
-				snr = (spec2.mean()-n0[ind])/n0[ind]
-
-
-
-				#TODO Put threshold in parameterName
-				#if 10.0*numpy.log10(snr)>-3.0:
-
-				power = ((tmp)*fwindow[valid]).sum() # m_0 = first moments
-
-				#TODO probar la estimacion de fd con el calculo de ruido por perfil.
-				fd = (tmp*freq[valid]*fwindow[valid]).sum()/power # m_1=radial velocity = frequecy doppler?
-				w = math.sqrt((  tmp*fwindow[valid]  *(freq[valid]- fd)**2   ).sum()/power)
-
-				# else :
-				#	 valid=[0,0]
-				#	 power = 0.0
-				#	 fd = 0.0
-				#	 w = 0.0
-
-				if (snr < 1.e-20) :
-					snr = 1.e-20
-
-				vec_power[ind] = power
-				vec_fd[ind] = fd
-				vec_w[ind] = w
-				vec_snr[ind] = snr
-				#else : vec_power[ind] = un numero x, fd , w y snr igual.
 
 		moments = numpy.vstack((vec_snr, vec_power, vec_fd, vec_w))
 		return moments
 
+	# Old function to calculate momments
 	# def __calculateMoments(self, oldspec, oldfreq, n0, nicoh = None, graph = None, smooth = None, type1 = None, fwindow = None, snrth = None, dc = None, aliasing = None, oldfd = None, wwauto = None):
 	# 	#TODO : Hacer un spetral whitenning para suavizar los espectros y sacar la velocidad radial de la potencia maxima.
 	# 	# En vez del calculo  Doppler-Radial.
@@ -518,7 +428,7 @@ class ParametersProc(ProcessingUnit):
 	#
 	#
 	# 	return moments
-
+	#
 
 	def DetectSpectrumInSpectrogram(self, vec_max, vec_ss1, vec_bb0, spec2, n0, ind):
 		possible_signal = []
@@ -538,7 +448,7 @@ class ParametersProc(ProcessingUnit):
 			ss = ss[0]
 
 			if (bb.size == 0):
-				bb0 = spec2.size - 1 #was spec2.size - 1 - m, Alejandro
+				bb0 = spec2.size - 1
 			else:
 				bb0 = bb[0] - 1
 				if (bb0 < 0):
@@ -562,14 +472,7 @@ class ParametersProc(ProcessingUnit):
 			if ind == 0 or not cond or cond2:
 				break
 
-		#Decision depending on what happened
-		#
-		#if ind == 0:
-		#	pass
-		#elif cond2:
-		#	m, ss1, bb0 = possible_signal[0]
-		#elif not cond:
-		#	m, ss1, bb0 = possible_signal[-1]
+
 		if ind == 0:
 			pass
 		else:
@@ -581,7 +484,6 @@ class ParametersProc(ProcessingUnit):
 				area = abs(spec2[range(ss1, bb0+1)].sum()-(spec2[ss1]+spec2[bb0])/2)
 
 				area_noise = abs((bb0-ss1)*n0)
-				#print("Las areas son:", area, area_noise)
 				if area < 15*area_noise:
 					area = 1e-15
 				else:
@@ -591,8 +493,7 @@ class ParametersProc(ProcessingUnit):
 				if dist == 0 :
 					heuristic = numpy.inf
 				else:
-					#print (area/dist, 5e-11/dist)
-					heuristic  = area/dist# + 1e-12/dist
+					heuristic  = area/dist
 
 				if heuristic > max_heuristic:
 					max_heuristic = heuristic
@@ -619,7 +520,6 @@ class ParametersProc(ProcessingUnit):
 		vec_max.append(m)
 		vec_bb0.append(bb0)
 		vec_ss1.append(ss1)
-
 
 	#------------------	Get SA Parameters	--------------------------
 	def GetSAParameters(self):
@@ -665,15 +565,15 @@ class ParametersProc(ProcessingUnit):
 		self.dataOut.data_param[:-1,:] = self.__calculateTaus(dataNorm, pairsCrossCorr, pairsAutoCorr, absc)
 		self.dataOut.data_param[-1,:] = self.__calculateLag1Phase(data, pairsAutoCorr, absc)
 
-	def __getPairsAutoCorr(self, pairsList, nChannels):
 
+	def __getPairsAutoCorr(self, pairsList, nChannels):
 		pairsAutoCorr = numpy.zeros(nChannels, dtype = 'int')*numpy.nan
 
 		for l in range(len(pairsList)):
 			firstChannel = pairsList[l][0]
 			secondChannel = pairsList[l][1]
 
-			#Obteniendo pares de Autocorrelacion
+			#Getting pairs of Autocorrelation
 			if firstChannel == secondChannel:
 				pairsAutoCorr[firstChannel] = int(l)
 
@@ -684,8 +584,8 @@ class ParametersProc(ProcessingUnit):
 
 		return pairsAutoCorr, pairsCrossCorr
 
-	def __calculateTaus(self, data, pairsCrossCorr, pairsAutoCorr, lagTRange):
 
+	def __calculateTaus(self, data, pairsCrossCorr, pairsAutoCorr, lagTRange):
 		Pt0 = data.shape[1]/2
 		#Funcion de Autocorrelacion
 		dataAutoCorr = stats.nanmean(data[pairsAutoCorr,:,:], axis = 0)

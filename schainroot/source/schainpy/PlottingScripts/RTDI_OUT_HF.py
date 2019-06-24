@@ -1,3 +1,12 @@
+'''
+@Author: Alejandro Castro
+Created in June, 2019
+
+
+example:
+python RTDI_OUT_HF.py  -path '/home/igp-114/Pictures' -f 2.72 -C 0 -ii 6 -ch 0 -online 0 -code 0 -lo 11 -date "2018/01/25" -startTime "00:00:00" -endTime "23:59:59"
+'''
+import argparse
 import os, sys
 import time
 import datetime
@@ -5,29 +14,18 @@ import datetime
 path = os.path.split(os.getcwd())[0]
 sys.path.append(path)
 from controller import *
-desc = "HF_EXAMPLE"
-filename = "hf_test.xml"
-controllerObj = Project()
-controllerObj.setup(id = '191', name='test01', description=desc)
-######################CONFIGURACION DE OUT##########################333
-####default 1424 y por test de operacion continua 10 segundos 1440*6 =8640
-blocksPerFile='1440'
-#----------------------------------------------NEW----------------------------------------------------#
-'''
-example:
-python RTDI_OUT_HF.py  -path '/home/hfuser1204/HFA' -f 2.72 -C 0 -ii 6 -ch 0 -online 0 -code 0 -lo 11 -date "2018/01/25" -startTime "00:00:00" -endTime "23:59:59"
-
-python RTDI_OUT_HF.py -path '/home/hfuser1204/HFA' -f 2.72 -code 0 -lo 11 -ch 0
 
 
-python RTDI_OUT_HF.py -path '/home/hfuser1204/HFA' -f 2.72 -code 0 -lo 11 -ch 0 -date "2018/02/15"
-'''
 print "REVISAR LA LINEA DE EJEMPLO EN EL ARCHIVO EN CASO PROBLEMAS DE EJECUCION"
-import argparse
+
+yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
+daybefore= yesterday.strftime("%Y/%m/%d")
+today = datetime.datetime.now().strftime("%Y/%m/%d")
+
 parser = argparse.ArgumentParser()
 ########################## PATH- DATA  ###################################################################################################
 parser.add_argument('-path',action='store',dest='path_lectura',help='Directorio de Datos \
-					.Por defecto, se esta ingresando entre comillas /home/hfuser1204/HFA/',default='/home/hfuser/HFA/')
+					.Por defecto, se esta ingresando entre comillas /home/igp-114/PROCDATA/',default='/home/igp-114/Pictures/')
 ########################## FRECUENCIA ####################################################################################################
 parser.add_argument('-f',action='store',dest='f_freq',type=float,help='Frecuencia en Mhz 2.72 y 3.64. Por defecto, se esta ingresando 2.72 ',default=2.72)
 ########################## CAMPAIGN ### 600 o 100 perfiles ###############################################################################
@@ -42,9 +40,6 @@ parser.add_argument('-online',action='store',dest='online',type=int,help='Operac
 parser.add_argument('-code',action='store',dest='code_seleccionado',type=int,help='Code de Tx para generar en estacion \
 											de Rx Spectro 0,1,2. Por defecto, se esta ingresando 0(Ancon)',default=0)
 ########################## DAY- SELECCION ################################################################################################
-yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
-daybefore= yesterday.strftime("%Y/%m/%d")
-today = datetime.datetime.now().strftime("%Y/%m/%d")
 parser.add_argument('-date',action='store',dest='date_seleccionado',help='Seleccionar fecha si es OFFLINE se ingresa \
 							la fecha con el dia deseado. Por defecto, considera el dia anterior',default=daybefore)
 ######################### TIME- SELECCION ################################################################################################
@@ -76,25 +71,20 @@ lo			= results.lo_seleccionado
 channel	 = results.ch_seleccionado
 
 
-nProfiles = 100
-nFFT		= 100
-set		 = 0
-
 if campaign == 1:
 	nProfiles = 600
 	nFFT = 600
 	inc_int = 0
+else:
+	nProfiles = 100
+	nFFT		= 100
+
+
 if online == 1:
 	date = today
 	time_start= "00:00:00"
 	time_end  = "23:59:59"
-	set = None
 
-ngraph= 1
-if channel==0:
-	c_web = 6
-else:
-	c_web=8
 
 if freq <3:
 	ngraph= 0
@@ -102,6 +92,12 @@ if freq <3:
 		c_web=5
 	else:
 		c_web=7
+else:
+	ngraph = 1
+	if channel==0:
+		c_web = 6
+	else:
+		c_web=8
 
 if lo%10==1:
 	status_figpath= True
@@ -110,18 +106,13 @@ else:
 
 setupF	= freq
 setradarF= freq*10**6
-numberF  = int(freq*10**3)
 c_freq	= int(freq*10**2)
-number	= str(numberF)
-lo_n=lo/10
-lo_0=lo_n*10+1
-lo_1=lo_0+1
+
 
 print "Path",path
 print "Frecuencia en Mhz",freq
 print "Freq_setup",freq
 print "Freq_setradar",setradarF
-print "Freq_number", numberF
 print "c_freq", c_freq
 print "Mode Campaign" ,campaign
 print "nProfiles",nProfiles
@@ -133,29 +124,37 @@ print "Date",date
 print "Time_start", time_start
 print "Time_end"  , time_end
 print "ngraph",ngraph
-print "set",set
 print "Location&orientation",lo
 print "Channel",channel
 print "REVISAR LA LINEA DE EJEMPLO EN EL ARCHIVO EN CASO PROBLEMAS DE EJECUCION"
 
 time.sleep(1)
 
-#-----------------------------------------------------------------------------------------------------#
-#-------------------------PATH-PDATA-------------------------------------
-#path='/media/igp-114/PROCDATA/'
-#-----------------------------PATH-graficos-----------------------------------#
+#-----------------------------PATH - graficos-----------------------------------#
 if status_figpath== True:
-	figpath='/home/hfuser/RTDI/graphics_schain/sp'+str(code)+'1_f'+str(ngraph)+'/'
+	figpath='/home/igp-114/RTDI_A/graphics_schain/' + identifier + '/'
 else:
-	figpath='/home/hfuser/RTDI_B/graphics_schain/sp'+str(code)+'1_f'+str(ngraph)+'/'
+	figpath='/home/igp-114/RTDI_B/graphics_schain/' + identifier + '/'
 
-figpath = path + "/Figures/graphics_schain/sp"+str(code)+'1_f'+str(ngraph)+'/'
 print "figpath******************",figpath
 
-#parampath = '/home/ci-81/Documents/JRO_CAMPAIGN_ALEJANDRO/Refactor/sp'+str(code)+'1_f'+str(ngraph)+'/param/'
-parampath = '/home/ci-81/Pictures/GRAPHICS_SCHAIN_JRO_A/sp'+str(code)+'1_f'+str(ngraph)+'/MomentData/'
+
+#-----------------------------PATH - MOMENTS DATA-----------------------------------#
+
+location_dict = {11:"JRO_A", 12: "JRO_B", 21:"HYO_A", 22:"HYO_B", 31:"MALA",
+				41:"MERCED", 51:"BARRANCA", 61:"OROYA"}
+identifier = 'sp'+str(code)+'1_f'+str(ngraph)
+parampath = path + '/GRAPHICS_SCHAIN_%s/'%(location_dict[lo]) + identifier + '/MomentData/'
+
+
+######################CONFIGURACION DE OUT###############################
+####default 1424 y por test de operacion continua 10 segundos 1440*6 =8640
+blocksPerFile='1440'
 
 #---------------------------------------------------------------------------#
+controllerObj = Project()
+controllerObj.setup(id = '300', name='plotRTDI', description="Plotting RTDI")
+
 readUnitConfObj = controllerObj.addReadUnit(datatype = 'HFParamReader',
 														path	  = parampath,
 														startDate= date,	#'2017/12/31',# 2017/11/14 date
@@ -183,41 +182,35 @@ procUnitConfObj2.addParameter(name='channel', value=str(channel), format='int')
 procUnitConfObj2.addParameter(name='threshv', value='0.1', format='float')
 #procUnitConfObj2.addParameter(name='E_Region', value='1', format='bool')
 
-opObj11= procUnitConfObj2.addOperation(name='ImageWriter',optype='other')
-opObj11.addParameter(name='blocksPerFile', value=blocksPerFile, format='int') ####default 1424 y por test de operacion continua 10 segundos 1440*6 =8640
-opObj11.addParameter(name='standard', value='1', format='bool')
-opObj11.addParameter(name='c_station_o', value=str(lo), format='str')
-opObj11.addParameter(name='c_freq', value=str(c_freq), format='str')
-opObj11.addParameter(name='c_cod_Tx', value=str(code), format='str')
-opObj11.addParameter(name='c_ch', value=str(channel), format='str')
-opObj11.addParameter(name='path',value=figpath,format='str')
+opObj21= procUnitConfObj2.addOperation(name='ImageWriter',optype='other')
+opObj21.addParameter(name='blocksPerFile', value=blocksPerFile, format='int') ####default 1424 y por test de operacion continua 10 segundos 1440*6 =8640
+opObj21.addParameter(name='standard', value='1', format='bool')
+opObj21.addParameter(name='c_station_o', value=str(lo), format='str')
+opObj21.addParameter(name='c_freq', value=str(c_freq), format='str')
+opObj21.addParameter(name='c_cod_Tx', value=str(code), format='str')
+opObj21.addParameter(name='c_ch', value=str(channel), format='str')
+opObj21.addParameter(name='path',value=figpath,format='str')
 
-opObj11 = procUnitConfObj2.addOperation(name='RTDIPlot', optype='other')
-opObj11.addParameter(name='id', value='402', format='int')
-opObj11.addParameter(name='xmin', value='17', format='int')
-opObj11.addParameter(name='xmax', value='22', format='int')
-# opObj11.addParameter(name='ymin', value='500', format='int')
-# opObj11.addParameter(name='ymax', value='1000', format='int')
-#opObj11.addParameter(name='figfile', value="Test", format='str') # Tiene menos importancia que standard, si standard es True, este argumento se ignora
-#opObj11.addParameter(name='show', value='1', format='bool')
-opObj11.addParameter(name='save', value='1', format='bool')
-opObj11.addParameter(name='figpath', value=figpath, format='str')
-opObj11.addParameter(name='ext', value='.png', format='str')
-opObj11.addParameter(name='standard', value='1', format='bool')
-opObj11.addParameter(name='c_station_o', value=str(lo), format='str')
-opObj11.addParameter(name='c_web', value=str(c_web), format='str')
-opObj11.addParameter(name='c_freq', value=str(c_freq), format='str')
-opObj11.addParameter(name='c_cod_Tx', value=str(code), format='str')
-opObj11.addParameter(name='c_ch', value=str(channel), format='str')
+opObj31 = procUnitConfObj2.addOperation(name='RTDIPlot', optype='other')
+opObj31.addParameter(name='id', value='402', format='int')
+opObj31.addParameter(name='xmin', value='0', format='int')
+opObj31.addParameter(name='xmax', value='24', format='int')
+#opOb31.addParameter(name='ymin', value='500', format='int')
+#opObj31.addParameter(name='ymax', value='1000', format='int')
+#opObj31.addParameter(name='figfile', value="Test", format='str') # Tiene menos importancia que standard, si standard es True, este argumento se ignora
+#opObj31.addParameter(name='show', value='1', format='bool')
+opObj31.addParameter(name='save', value='1', format='bool')
+opObj31.addParameter(name='figpath', value=figpath, format='str')
+opObj31.addParameter(name='ext', value='.png', format='str')
+opObj31.addParameter(name='standard', value='1', format='bool')
+opObj31.addParameter(name='c_station_o', value=str(lo), format='str')
+opObj31.addParameter(name='c_web', value=str(c_web), format='str')
+opObj31.addParameter(name='c_freq', value=str(c_freq), format='str')
+opObj31.addParameter(name='c_cod_Tx', value=str(code), format='str')
+opObj31.addParameter(name='c_ch', value=str(channel), format='str')
 
-# print "Escribiendo el archivo XML"
-# controllerObj.writeXml(filename)
-# print "Leyendo el archivo XML"
-# controllerObj.readXml(filename)
 
 controllerObj.createObjects()
 controllerObj.connectObjects()
-
-#timeit.timeit('controllerObj.run()', number=2)
 
 controllerObj.run()

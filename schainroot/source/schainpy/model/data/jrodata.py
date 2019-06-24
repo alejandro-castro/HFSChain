@@ -2,6 +2,7 @@
 
 $Author: murco $
 $Id: JROData.py 173 2012-11-20 15:06:21Z murco $
+Modified by Alejandro, some methods and attributes were redefined or rewriten
 '''
 
 import copy

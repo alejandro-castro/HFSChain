@@ -1,6 +1,7 @@
 '''
 Created on September , 2012
-@author:
+@author:Unknown
+Modified by Alejandro, some methods and attributes were refactored and a bug were erased
 '''
 from xml.etree.ElementTree import Element, SubElement, ElementTree
 from xml.etree import ElementTree as ET

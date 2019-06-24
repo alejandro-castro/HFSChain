@@ -1,4 +1,3 @@
-#----------------------------------------------NEW----------------------------------------------------#
 #example:
 #python GenerateMomentsHDF5.py  -path '/media/igp-114/PROCDATA' -f 2.72 -C 0 -ii 6 -online 0 -code 0 -date "2018/01/25" -startTime "00:00:00" -endTime "23:59:59" -lo 31
 
@@ -50,7 +49,7 @@ parser.add_argument('-lo',action='store',dest='lo_seleccionado',type=int,help='P
 												21: HYO-N45O, 22: HYO-N45E', default=11)
 ########################## GRAPHICS - RESULTS  ###################################################################################################
 parser.add_argument('-graphics_folder',action='store',dest='graphics_folder',help='Directorio de Resultados \
-					.Por defecto, se esta ingresando entre comillas /home/igp-114/Pictures/', default='/home/ci-81/Pictures/')
+					.Por defecto, se esta ingresando entre comillas /home/igp-114/Pictures/', default='/home/igp-114/Pictures/')
 
 
 #Parsing the options of the script
@@ -69,14 +68,13 @@ graphics_folder = results.graphics_folder
 
 # Setting the number of profiles, FFTs and incoherent integrations
 if campaign == 1:
+	path= path +"/CAMPAIGN/"
 	nProfiles=600
 	nFFT	 =600
 	inc_int= 0
 else:
 	nProfiles = 100
 	nFFT	  = 100
-	#if code == 1:
-	#	time_start = "00:01:50" # This is done to synchronize the pulsed Sicaya Transmitter with its processing
 
 # Setting the online time
 if online == 1:
@@ -113,10 +111,10 @@ print "Location&orientation",lo
 
 time.sleep(0.1)
 
-location_dict = {11:"JRO_A", 12: "JRO_B", 21:"HYO_A", 22:"HYO_B", 31:"MALA_A", 32:"MALA_B",
-				41:"MERCED_A", 42:"MERCED_B", 51:"BARRANCA_A", 52:"BARRANCA_B"}
+#It's not considered the B station in the single stations, because it uses a single PC.
+location_dict = {11:"JRO_A", 12: "JRO_B", 21:"HYO_A", 22:"HYO_B", 31:"MALA",
+	41:"MERCED", 51:"BARRANCA", 61:"OROYA"}
 #-----------------------------PATH-graficos-----------------------------------#
-#Typical folder /home/hfuser/Pictures/
 identifier = 'sp%s1_f%s'%(code, ngraph)
 figpath = graphics_folder+'/GRAPHICS_SCHAIN_%s/'%(location_dict[lo]) + identifier +'/'
 
@@ -125,7 +123,7 @@ print "Directorio de graficos y resultados", figpath
 #---------------------------------------------------------------------------#
 
 controllerObj = Project()
-controllerObj.setup(id = '191', name='test01', description="Generate HDF5s with Moments Data")
+controllerObj.setup(id = '100', name='GenerationMomentsData', description="Generate HDF5s with Moments Data")
 
 readUnitConfObj = controllerObj.addReadUnit(datatype = 'HFReader',
 											path	 = path,
@@ -146,8 +144,8 @@ readUnitConfObj = controllerObj.addReadUnit(datatype = 'HFReader',
 
 procUnitConfObj0 = controllerObj.addProcUnit(datatype='VoltageProc', inputId=readUnitConfObj.getId())
 
-opObj12 = procUnitConfObj0.addOperation(name='setRadarFrequency')
-opObj12.addParameter(name='frequency', value=setradarF, format='float')
+opObj01 = procUnitConfObj0.addOperation(name='setRadarFrequency')
+opObj01.addParameter(name='frequency', value=setradarF, format='float')
 
 procUnitConfObj1 = controllerObj.addProcUnit(datatype='SpectraProc', inputId=procUnitConfObj0.getId())
 procUnitConfObj1.addParameter(name='nFFTPoints', value=nFFT, format='int')
@@ -155,22 +153,24 @@ procUnitConfObj1.addParameter(name='nProfiles', value=nProfiles, format='int')
 procUnitConfObj1.addParameter(name='pairsList', value='(0,1)', format='pairsList')
 procUnitConfObj1.addParameter(name='noiseMode', value=2, format='int')
 
-opObj12 = procUnitConfObj1.addOperation(name='removeInterference') #It should be analyzed its use because it can remove part of the signal
-#opObj12 = procUnitConfObj1.addOperation(name='removeDC')
+#It should be analyzed its use because it can remove part of the signal
+#opObj11 = procUnitConfObj1.addOperation(name='removeInterference')
+#opObj11 = procUnitConfObj1.addOperation(name='removeDC')
 
 
 procUnitConfObj2 = controllerObj.addProcUnit(datatype='ParametersProc', inputId=procUnitConfObj1.getId())
-opObj20 = procUnitConfObj2.addOperation(name='GetMoments')
-opObj20 = procUnitConfObj2.addOperation(name='GetCrossData')
-#opObj20 = procUnitConfObj2.addOperation(name='GetRGBData') # Not used because the RGB data is obtained directly from the HF Reader.
+opObj21 = procUnitConfObj2.addOperation(name='GetMoments')
+opObj21 = procUnitConfObj2.addOperation(name='GetCrossData')
+#Not used because the RGB data is obtained directly from the HF Reader.
+#opObj21 = procUnitConfObj2.addOperation(name='GetRGBData')
 
-opObj25 = procUnitConfObj2.addOperation(name='HDF5Writer', optype='other')
-opObj25.addParameter(name='path', value=figpath+'/MomentData')
-opObj25.addParameter(name='location',value=lo,format='int')
-opObj25.addParameter(name='identifier',value=identifier,format='str')
-opObj25.addParameter(name='blocksPerFile', value='10', format='int')
-opObj25.addParameter(name='metadataList',value='type,inputUnit,heightList,frequency',format='list')#,RxInfo,TxInfo /*RxInfo = lat,long,alt,type double or simple, etc...
-opObj25.addParameter(name='dataList',value='data_param,data_SNR,data_RGB,CrossData,utctime,location,identifier',format='list')#AvgCohModuledata_DC,data_Coherence
+opObj21 = procUnitConfObj2.addOperation(name='HDF5Writer', optype='other')
+opObj21.addParameter(name='path', value=figpath+'/MomentData')
+opObj21.addParameter(name='location',value=lo,format='int')
+opObj21.addParameter(name='identifier',value=identifier,format='str')
+opObj21.addParameter(name='blocksPerFile', value='10', format='int')
+opObj21.addParameter(name='metadataList',value='type,inputUnit,heightList,frequency',format='list')#,RxInfo,TxInfo /*RxInfo = lat,long,alt,type double or simple, etc...
+opObj21.addParameter(name='dataList',value='data_param,data_SNR,data_RGB,CrossData,utctime,location,identifier',format='list')#AvgCohModuledata_DC,data_Coherence
 #The identifier of data is in the form sp01_f0 and it is save so the user can know where does each HDF5 file came from
 
 controllerObj.createObjects()

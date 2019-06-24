@@ -1,3 +1,7 @@
+'''
+@author: Unknown
+Modified by Alejandro, some methods and attributes were redefined or rewriten
+'''
 import numpy
 import math
 import time,datetime

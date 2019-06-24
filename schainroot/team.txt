@@ -1,2 +1,10 @@
+Former developers of HF project:
 daniel suarez
 Luis Condori
+
+Alexander Valdez
+JoseMaria Gomez Socola
+
+
+Actual developers:
+Alejandro Castro

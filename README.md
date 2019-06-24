@@ -1,47 +1,42 @@
 Project Summary
-Información General
-Nombre: Radar HF (Multi estatico) 
-Area: Operaciones
-Preparado por: Marco Milla, Ramiro Yanque, Karim Kuyeng, Josemaria Gomez, Alexander Valdez.
+General Information
+Name: Radar HF (Multi static)
+Area: Radar Operations
 
-Equipo
-Nombre Rol
-Alexander Valdez Responsable
-Josemaría Gomez Responsable (Hasta Dic 2017, regreso en Agosto 2018 :)
-Luis Vilcatoma Responsable
-Ramiro Yanque Asesor
-Karim Kuyeng Supervisora (Desde Marzo 2018)
-Marco Milla Usuario
+Former Team: Marco Milla, Ramiro Yanque, Karim Kuyeng, Josemaria Gomez, Alexander Valdez, Luis Vilcatoma.
 
-Objetivos General
-El proyecto consiste en construir un radar multiestatico de monitoreo de la Ionosfera en dos frecuencias (2.72 MHz y 3.64 MHz) HF. Este sistema tendrá 2 estaciones de transmisión y 6 estaciones de recepción. Actualmente se cuenta con una estación transmisora ubicada en Ancón con transmisor de 5 W y dos estaciones receptoras IGP-JRO, IGP Sede Huancayo.
-Versión 1.1 Mayo 2017
-El proyecto consiste en construir un radar multiestatico de monitoreo de la Ionosfera en dos frecuencias (2.72 MHz y 3.64 MHz) HF. Este sistema tendrá 3 estaciones de transmisión y 7 estaciones de recepción. Actualmente se cuenta con una estación transmisora ubicada en Ancón con transmisor de 5 W y dos estaciones receptoras IGP-JRO, IGP Sede Huancayo.
+Name					 Role
+Alexander Valdez 		Person in charge of the project
+Josemaría Gomez 		Person in charge of the project (Until Dic 2017, he came back in August 2018 :)
+Luis Vilcatoma 			Technician
+Ramiro Yanque 			Adviser
+Karim Kuyeng 			Supervisor (Since March 2018)
+Marco Milla				User
 
-Objetivos Específicos
-Para la segunda etapa se contempla los siguientes objetivos:
-- Tener 2 estaciones de transmisión
-- Tener 4 estaciones de recepción
-- Tener datos por el menos el 90% de cada mes por cada estación.
-- Tener los datos de Jicamarca con un retraso menor a 4 días. 
-- Tener los datos de las otras estaciones con un retraso menor a 14 días
-- Almacenar los resultados en una pagina web
-http://jro-app.igp.gob.pe/hfdatabase/webhf/web_signalchain/rawdata_test_new/#
-Versión 1.1 Mayo 2017
 
-- Tener 3 estaciones de transmisión
-- Tener 7 estaciones de recepción
-- Tener datos por el menos el 90% de cada mes por cada estación.
-- Tener los datos de Jicamarca con un retraso menor a 3 días. 
-- Tener los datos de las otras estaciones con un retraso menor a 10 días
-- Almacenar los resultados en una pagina web
+Actual Team: Marco Milla, Karim Kuyeng, Alejandro Castro, Luis Vilcatoma.
+
+Name					 Role
+Alejandro  Castro 		Person in charge of the project since February 2019
+Luis Vilcatoma 			Technician
+Karim Kuyeng 			Supervisor (Since March 2018)
+Marco Milla				User
+
+
+General Objectives:
+This project is about the building of a multi static radar for monitoring the Ionosphere using two frequencies
+(2.72 MHz and 3.64 MHz) HF. This system have 3 transmission stations and 6 receiver stations. The transmission stations are located in Ancon, Ica and Sicaya and the reception stations are located in Jicamarca, Barranca, Huancayo, La Oroya, La Merced and Mala.
+
+
+Specific Objectives:
+- Having data of 90% of each month in each station at least.
+- Having the Jicamarca's data with a delay less than 3 days.
+- Having the other stations' data with a delay less than 10 days.
+- Send the results to a webpage:
 http://jro-app.igp.gob.pe/hfdatabase/webhf/web_signalchain/rawdata_test_new/#
 
-Presupuesto: IGP Donaciones Radar HF
-Fecha de Inicio: 01/04/2017
-Fecha de Fin: 16/10/2017
 
-Versión 1.1 Mayo 2017
-Fecha de Inicio: 01/04/2017
-Fecha de Fin: 09/08/2021
-Fecha de Presentación Final: 04/10/2021
+Budget: IGP Donations Radar HF
+Starting Date: 01/04/2017
+Ending Date: 09/08/2021
+Date of Final Presentation: 04/10/2021

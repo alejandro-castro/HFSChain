@@ -1,3 +1,7 @@
+'''
+author:Unknown
+Modified by Alejandro in 2019, a lot of methods and attributes were redefined or rewritten
+'''
 import numpy
 
 from jroproc_base import ProcessingUnit, Operation
@@ -5,10 +9,8 @@ from model.data.jrodata import Voltage
 
 
 class VoltageProc(ProcessingUnit):
-
 	def __init__(self):
 		ProcessingUnit.__init__(self)
-		#self.objectDict = {}
 		self.dataOut = Voltage()
 		self.flip = 1
 
@@ -19,10 +21,7 @@ class VoltageProc(ProcessingUnit):
 		if self.dataIn.type == 'Voltage':
 			self.dataOut.copy(self.dataIn)
 
-		#self.dataOut.copy(self.dataIn)
-
 	def __updateObjFromAmisrInput(self):
-
 		self.dataOut.timeZone = self.dataIn.timeZone
 		self.dataOut.dstFlag = self.dataIn.dstFlag
 		self.dataOut.errorCount = self.dataIn.errorCount
@@ -46,22 +45,8 @@ class VoltageProc(ProcessingUnit):
 		self.dataOut.beam.codeList = self.dataIn.beam.codeList
 		self.dataOut.beam.azimuthList = self.dataIn.beam.azimuthList
 		self.dataOut.beam.zenithList = self.dataIn.beam.zenithList
-#
-#		pass#
-#
-#	def init(self):
-#
-#
-#		if self.dataIn.type == 'AMISR':
-#			self.__updateObjFromAmisrInput()
-#
-#		if self.dataIn.type == 'Voltage':
-#			self.dataOut.copy(self.dataIn)
-#		# No necesita copiar en cada init() los atributos de dataIn
-#		# la copia deberia hacerse por cada nuevo bloque de datos
 
 	def selectChannels(self, channelList):
-
 		channelIndexList = []
 
 		for channel in channelList:
@@ -94,7 +79,7 @@ class VoltageProc(ProcessingUnit):
 				print channelIndexList
 				raise ValueError, "The value %d in channelIndexList is not valid" %channelIndex
 
-#		 nChannels = len(channelIndexList)
+		#nChannels = len(channelIndexList)
 		if self.dataOut.flagDataAsBlock:
 			"""
 			Si la data es obtenida por bloques, dimension = [nChannels, nProfiles, nHeis]
@@ -105,7 +90,7 @@ class VoltageProc(ProcessingUnit):
 
 		self.dataOut.data = data
 		self.dataOut.channelList = [self.dataOut.channelList[i] for i in channelIndexList]
-#		self.dataOut.nChannels = nChannels
+		#self.dataOut.nChannels = nChannels
 
 		return 1
 
@@ -137,7 +122,7 @@ class VoltageProc(ProcessingUnit):
 
 		if (maxHei > self.dataOut.heightList[-1]):
 			maxHei = self.dataOut.heightList[-1]
-#			raise ValueError, "some value in (%d,%d) is not valid" % (minHei, maxHei)
+			#raise ValueError, "some value in (%d,%d) is not valid" % (minHei, maxHei)
 
 		minIndex = 0
 		maxIndex = 0
@@ -183,9 +168,9 @@ class VoltageProc(ProcessingUnit):
 
 		if (maxIndex >= self.dataOut.nHeights):
 			maxIndex = self.dataOut.nHeights
-#			raise ValueError, "some value in (%d,%d) is not valid" % (minIndex, maxIndex)
+			#raise ValueError, "some value in (%d,%d) is not valid" % (minIndex, maxIndex)
 
-#		 nHeights = maxIndex - minIndex + 1
+		#nHeights = maxIndex - minIndex + 1
 
 		#voltage
 		if self.dataOut.flagDataAsBlock:
@@ -196,7 +181,7 @@ class VoltageProc(ProcessingUnit):
 		else:
 			data = self.dataOut.data[:,minIndex:maxIndex]
 
-#		 firstHeight = self.dataOut.heightList[minIndex]
+		#firstHeight = self.dataOut.heightList[minIndex]
 
 		self.dataOut.data = data
 		self.dataOut.heightList = self.dataOut.heightList[minIndex:maxIndex]
@@ -292,10 +277,9 @@ class CohInt(Operation):
 
 
 	def __init__(self):
-
 		Operation.__init__(self)
 
-#		 self.isConfig = False
+		#self.isConfig = False
 
 	def setup(self, n=None, timeInterval=None, overlapping=False, byblock=False):
 		"""
@@ -334,6 +318,7 @@ class CohInt(Operation):
 			self.__buffer = 0
 
 		self.__profIndex = 0
+
 
 	def putData(self, data):
 
@@ -399,7 +384,7 @@ class CohInt(Operation):
 
 		self.__dataReady = False
 		avgdata = None
-#		 n = None
+		#n = None
 
 		self.putData(data)
 
@@ -485,15 +470,15 @@ class CohInt(Operation):
 		else:
 			avgdata, avgdatatime = self.integrate(dataOut.data, dataOut.utctime)
 
-#		dataOut.timeInterval *= n
 		dataOut.flagNoData = True
 
 		if self.__dataReady:
 			dataOut.data = avgdata
 			dataOut.nCohInt *= self.n
 			dataOut.utctime = avgdatatime
-#			 dataOut.timeInterval = dataOut.ippSeconds * dataOut.nCohInt
+			#dataOut.timeInterval = dataOut.ippSeconds * dataOut.nCohInt
 			dataOut.flagNoData = False
+
 
 class Decoder(Operation):
 
@@ -512,7 +497,7 @@ class Decoder(Operation):
 
 		self.times = None
 		self.osamp = None
-#		 self.__setValues = False
+		#self.__setValues = False
 		self.isConfig = False
 
 	def setup(self, code, osamp, dataOut):
@@ -650,7 +635,6 @@ class Decoder(Operation):
 		self.__profIndex += 1
 
 		return 1
-#		dataOut.flagDeflipData = True #asumo q la data no esta sin flip
 
 
 class ProfileConcat(Operation):
@@ -703,6 +687,7 @@ class ProfileConcat(Operation):
 				xf = dataOut.heightList[0] + dataOut.nHeights * deltaHeight * m
 				dataOut.heightList = numpy.arange(dataOut.heightList[0], xf, deltaHeight)
 				dataOut.ippSeconds *= m
+
 
 class ProfileSelector(Operation):
 
@@ -826,7 +811,7 @@ class ProfileSelector(Operation):
 
 					if self.isThisProfileInRange(dataOut.profileIndex, minIndex, maxIndex):
 
-#						 print "profileIndex = ", dataOut.profileIndex
+						#print "profileIndex = ", dataOut.profileIndex
 
 						dataOut.flagNoData = False
 						dataOut.profileIndex = self.profileIndex
@@ -847,7 +832,6 @@ class ProfileSelector(Operation):
 		raise ValueError, "ProfileSelector needs profileList or profileRangeList"
 
 		return 0
-
 
 
 class Reshaper(Operation):

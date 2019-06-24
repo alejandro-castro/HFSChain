@@ -1,3 +1,7 @@
+'''
+@author: Unknown
+Modified by Alejandro, some methods and attributes were redefined or rewriten
+'''
 import os
 import datetime
 import numpy
@@ -18,11 +22,12 @@ class MomentsPlot(Figure):
 
 		self.PLOT_CODE = 1
 
+
 	def getSubplots(self):
 		ncol = int(numpy.sqrt(self.nplots)+0.9)
 		nrow = int(self.nplots*1./ncol + 0.9)
-
 		return nrow, ncol
+
 
 	def setup(self, id, nplots, wintitle, showprofile=True, show=True):
 		self.__showprofile = showprofile
@@ -56,6 +61,7 @@ class MomentsPlot(Figure):
 					self.addAxes(nrow, ncol*ncolspan, y, x*ncolspan+colspan, 1, 1)
 
 				counter += 1
+
 
 	def run(self, dataOut, id, wintitle="", channelList=None, showprofile=True,
 			xmin=None, xmax=None, ymin=None, ymax=None, zmin=None, zmax=None,
@@ -149,7 +155,6 @@ class MomentsPlot(Figure):
 						grid='x')
 
 				noiseline = numpy.repeat(numpy.mean(noisedB[i]), len(y))
-				# print len(y), noiseline.shape, noisedB.shape
 				axes.addpline(noiseline, y, idline=1, color="black", linestyle="solid", lw=2)
 				if dataOut.noiseMode == 2:
 
@@ -960,10 +965,12 @@ class ParametersPlot(Figure):
 
 		self.figfile = None
 
+
 	def getSubplots(self,factor=1):
 		ncol = 1
 		nrow = int(self.nplots*factor)
 		return nrow, ncol
+
 
 	def setup(self, id, nplots, wintitle, showprofile=True, show=True,COH=True,PHASE=True):
 
@@ -1044,7 +1051,6 @@ class ParametersPlot(Figure):
 			SNRarray = dataOut.data_SNR[channelIndexList,:] # This line extract snr from diferent channels
 
 			SNRdB = 10*numpy.log10(SNRarray)
-			#print SNRarray
 			ind = numpy.where(SNRarray < SNRthresh)
 			z[ind] = numpy.nan
 
