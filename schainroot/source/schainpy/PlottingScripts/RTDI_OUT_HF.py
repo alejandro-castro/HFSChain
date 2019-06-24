@@ -132,9 +132,9 @@ time.sleep(1)
 
 #-----------------------------PATH - graficos-----------------------------------#
 if status_figpath== True:
-	figpath='/home/igp-114/RTDI_A/graphics_schain/' + identifier + '/'
+	figpath='/home/ci-81/RTDI_A/graphics_schain/' + identifier + '/'
 else:
-	figpath='/home/igp-114/RTDI_B/graphics_schain/' + identifier + '/'
+	figpath='/home/ci-81/RTDI_B/graphics_schain/' + identifier + '/'
 
 print "figpath******************",figpath
 
