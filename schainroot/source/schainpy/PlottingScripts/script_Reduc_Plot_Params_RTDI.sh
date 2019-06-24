@@ -5,7 +5,7 @@ source $HOME/TestReduccionDatos_Implementado/bin/activate
 
 #El primer parametro del GenerateMoments is the pathin and the second is the location of the station
 echo "Starting Reduction of Data of JRO A station"
-screen -S "REDUCTION_HFA" -d -m ./GenerateMoments.sh "/media/igp-114/PROCDATA/" 11
+screen -S "REDUCTION_HFA" -d -m ./GenerateMoments.sh "/home/ci-81/Documents/JRO_CAMPAIGN_ALEJANDRO" 11
 sleep 1
 
 
