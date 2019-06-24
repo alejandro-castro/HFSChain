@@ -44,9 +44,15 @@ def sendBySCP(Incommand): #"%04d/%02d/%02d 00:00:00"%(tnow.year,tnow.month,tnow.
 parser = argparse.ArgumentParser()
 parser.add_argument('-code',action='store',dest='code_seleccionado',help='Code para generar Spectro off-line 0,1,2')
 parser.add_argument('-lo',action='store',dest='localstation',default =11 ,help='Codigo de estacion 11 JRO A, 12 JRO B, 21 HYO A, 22 HYO B, etc..')
+parser.add_argument('-path',action='store',dest='path',default= "/home/igp-114/Pictures/", help='Directorio principal donde estan los resultados a enviar')
+parser.add_argument('-type',action='store',dest='type',default ="params" ,help='Determines the type of data to be sent')
+
+
 results= parser.parse_args()
 code= int(results.code_seleccionado)
 rxcode= int(results.localstation)
+PATH = str(results.path)
+datatype = str(results.type)
 
 ###########################################################################################################################
 tdstr = datetime.date.today()
@@ -54,20 +60,14 @@ str1 = tdstr + datetime.timedelta(days=-1)
 yesterday = str1.strftime("%Y%j")
 
 dlist = []
-
 dlist.append(yesterday)
 
 
-# EL PATH CORRESPONDE A LA ESTACION HFA
-
-PATH='/home/hfuser1204/RTDI/graphics_schain/'
 graph_freq0=PATH+'sp'+str(code)+'1_f0'
 graph_freq1=PATH+'sp'+str(code)+'1_f1'
 
 
-
 for file in dlist:
-
 	doy = 'd'+file
 	jpg_files = glob.glob("%s/%s/*.jpeg"%(graph_freq1, doy))
 	jpg_files.sort()
