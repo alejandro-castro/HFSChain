@@ -6,31 +6,31 @@ import time
 debugg = True
 
 def sendBySCP(Incommand): #"%04d/%02d/%02d 00:00:00"%(tnow.year,tnow.month,tnow.day)
-    username = "wmaster"
-    password = "mst2010vhf"#"123456"
-    #port = "-p6633"
-    host = "jro-app.igp.gob.pe"#"25.59.69.206"
-    #hostdirectory = "/home/wmaster/web2/web_signalchain/data/%s/%s/%s/figures"%(place,rxname,day)
-    #command = "sshfs %s %s@%s:%s %s -o nonempty "%(port,username,host,hostdirectory,mountpoint)
-    command = Incommand
-    if debugg:
-        print command
-    try:
-        #pexpect.spawn doesn't interpret shell meta characters,
-        #console = pexpect.spawn(command)
-        #Para reconocerlos se debe usar la siguiente linea >
-        console = pexpect.spawn('/bin/bash', ['-c',command])
-        console.expect(username + "@" + host + "'s password:")
-        time.sleep(3)
-        #usual response > wmaster@jro-app.igp.gob.pe's password:
-        console.sendline(password)
-        time.sleep(7)
-        console.expect(pexpect.EOF)
-        return True
-    except Exception, e:
-        if debugg:
-            print str(e)
-        return False
+	username = "wmaster"
+	password = "mst2010vhf"#"123456"
+	#port = "-p6633"
+	host = "jro-app.igp.gob.pe"#"25.59.69.206"
+	#hostdirectory = "/home/wmaster/web2/web_signalchain/data/%s/%s/%s/figures"%(place,rxname,day)
+	#command = "sshfs %s %s@%s:%s %s -o nonempty "%(port,username,host,hostdirectory,mountpoint)
+	command = Incommand
+	if debugg:
+		print command
+	try:
+		#pexpect.spawn doesn't interpret shell meta characters,
+		#console = pexpect.spawn(command)
+		#Para reconocerlos se debe usar la siguiente linea >
+		console = pexpect.spawn('/bin/bash', ['-c',command])
+		console.expect(username + "@" + host + "'s password:")
+		time.sleep(3)
+		#usual response > wmaster@jro-app.igp.gob.pe's password:
+		console.sendline(password)
+		time.sleep(7)
+		console.expect(pexpect.EOF)
+		return True
+	except Exception, e:
+		if debugg:
+			print str(e)
+		return False
 
 ###################################INGRESANDO CODIGO 0 o 2##############################################################
 parser = argparse.ArgumentParser()
@@ -47,4 +47,4 @@ rxcode= int(results.localstation)
 remote_folder="/home/wmaster/web2/web_signalchain/data/BARRANCA/"
 temp_command = "scp -r -P 6633 /media/igp-114/PROCDATA/*.txt wmaster@jro-app.igp.gob.pe:%s"%(remote_folder)
 if sendBySCP(temp_command):
-    print ' - Envio de data log Terminado '
+	print ' - Envio de data log Terminado '
