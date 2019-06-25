@@ -414,7 +414,7 @@ class SpectraPlot(Figure):
 				name = self.getNameToFtp(thisDatetime, self.FTP_WEI, self.EXP_CODE, self.SUB_EXP_CODE, self.PLOT_CODE, self.PLOT_POS,ext=ext)
 				ftp_filename = os.path.join(figpath, name)
 		if save_ftp:
-					self.saveFigure(figpath, ftp_filename)
+				self.saveFigure(figpath, ftp_filename)
 				self.counter_imagwr = 0
 		if self.ftp:
 			remote_folder='/home/wmaster/web2/web_signalchain/data/JRO/HF/'

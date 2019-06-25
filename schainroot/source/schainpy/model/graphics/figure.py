@@ -47,7 +47,7 @@ class Figure:
 
 	def getFilename(self, name, ext='.png'):
 		path = '%s%03d' %(self.PREFIX, self.id)
-		filename = '%s_%s%s' %(self.PREFIX, name, ext)
+		filename = '%s%s' %(name, ext)
 		return os.path.join(path, filename)
 
 	def getAxesObjList(self):
