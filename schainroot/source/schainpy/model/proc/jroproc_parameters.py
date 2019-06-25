@@ -256,7 +256,7 @@ class ParametersProc(ProcessingUnit):
 
 
 			cDetectSpectrum.DetectInSpectrogram(vec_power, vec_fd, vec_w, vec_snr, freq.tolist(),
-			spec2, slice_noise_f(n0, ind), ind)
+			spec2.tolist(), slice_noise_f(n0, ind), ind)
 			#TODO Test the estimation of fd with the noise estimation by profile.
 
 

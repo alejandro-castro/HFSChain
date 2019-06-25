@@ -130,8 +130,9 @@ print "REVISAR LA LINEA DE EJEMPLO EN EL ARCHIVO EN CASO PROBLEMAS DE EJECUCION"
 
 time.sleep(1)
 
+identifier = 'sp'+str(code)+'1_f'+str(ngraph)
 #-----------------------------PATH - graficos-----------------------------------#
-if status_figpath== True:
+if status_figpath:
 	figpath='/home/ci-81/RTDI_A/graphics_schain/' + identifier + '/'
 else:
 	figpath='/home/ci-81/RTDI_B/graphics_schain/' + identifier + '/'
@@ -143,7 +144,6 @@ print "figpath******************",figpath
 
 location_dict = {11:"JRO_A", 12: "JRO_B", 21:"HYO_A", 22:"HYO_B", 31:"MALA",
 				41:"MERCED", 51:"BARRANCA", 61:"OROYA"}
-identifier = 'sp'+str(code)+'1_f'+str(ngraph)
 parampath = path + '/GRAPHICS_SCHAIN_%s/'%(location_dict[lo]) + identifier + '/MomentData/'
 
 
@@ -201,7 +201,7 @@ opObj31.addParameter(name='xmax', value='24', format='int')
 #opObj31.addParameter(name='show', value='1', format='bool')
 opObj31.addParameter(name='save', value='1', format='bool')
 opObj31.addParameter(name='figpath', value=figpath, format='str')
-opObj31.addParameter(name='ext', value='.png', format='str')
+opObj31.addParameter(name='ext', value='.jpeg', format='str')
 opObj31.addParameter(name='standard', value='1', format='bool')
 opObj31.addParameter(name='c_station_o', value=str(lo), format='str')
 opObj31.addParameter(name='c_web', value=str(c_web), format='str')

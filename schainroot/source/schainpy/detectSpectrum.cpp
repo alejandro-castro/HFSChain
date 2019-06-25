@@ -109,7 +109,6 @@ static PyObject *DetectSpectrumInSpectrogram(PyObject *self, PyObject *args){
 		return NULL;
 	}
 
-
 	//Parsing the type of inputs
 	if (!PyList_Check(vec_power_obj)) return NULL;
 	if (!PyList_Check(vec_fd_obj)) return NULL;
@@ -142,6 +141,7 @@ static PyObject *DetectSpectrumInSpectrogram(PyObject *self, PyObject *args){
 	for(int i=0;i<spec2_size;i++){
 		spec2_tmp[i] = PyFloat_AsDouble(PyList_GetItem(spec2_obj, i));
 	}
+
 	while(true){
 		k++;
 		// cout <<ind <<' '<<k++<<endl;
@@ -190,8 +190,8 @@ static PyObject *DetectSpectrumInSpectrogram(PyObject *self, PyObject *args){
 
 		if ((ind==0)||cond2) break;
 	}
-	free(spec2_tmp);
 
+	free(spec2_tmp);
 	if (!(ind==0)){
 		int max_index=-200;
 		double max_heuristic = -1.0;
