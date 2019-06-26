@@ -154,7 +154,7 @@ procUnitConfObj1.addParameter(name='pairsList', value='(0,1)', format='pairsList
 procUnitConfObj1.addParameter(name='noiseMode', value=2, format='int')
 
 #It should be analyzed its use because it can remove part of the signal
-if lo in [11, 12, 21, 22]:_
+if lo in [11, 12, 21, 22]:
 	opObj11 = procUnitConfObj1.addOperation(name='removeInterference')
 #opObj11 = procUnitConfObj1.addOperation(name='removeDC')
 

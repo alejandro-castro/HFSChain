@@ -31,7 +31,7 @@ class CoherenceMap(Figure):
 		self.xmin = None
 		self.xmax = None
 		self.figfile= None
-
+		self.PLOT_CODE = "03"
 
 	def getSubplots(self,factor=1):
 		ncol = 1
@@ -75,7 +75,7 @@ class CoherenceMap(Figure):
 			xmin=None, xmax=None, ymin=None, ymax=None, zmin=None, zmax=None,
 			timerange=None,COH=True,PHASE=True, save=False, figpath='', figfile=None,
 			coherence_cmap='jet', phase_cmap='RdBu_r', show=True, folder=None,
-			ext='.png',data_time_save=False):
+			ext='.png',data_time_save=False, location=None, cod_param=None, f_number=None):
 
 		if pairsList == None:
 			pairsIndexList = dataOut.pairsIndexList
@@ -192,16 +192,14 @@ class CoherenceMap(Figure):
 		self.draw()
 
 		if self.figfile == None:
-			str_datetime = thisDatetime.strftime("%Y%m%d_%H%M%S")
+			str_datetime = thisDatetime.strftime("%Y%J")+location+cod_param+f_number+self.PLOT_CODE+"01"
 			self.figfile = self.getFilename(name = str_datetime,ext=ext)
 
 		if figpath != '':
-
 			# store png plot to local folder
 			if self.data_time_save:
 				str_doy=thisDatetime.strftime("%Y%j")
 				figpath=figpath+"/d%s"%str_doy
-
 			if save:
 				self.saveFigure(figpath, self.figfile)
 

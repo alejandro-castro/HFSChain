@@ -133,9 +133,9 @@ time.sleep(1)
 identifier = 'sp'+str(code)+'1_f'+str(ngraph)
 #-----------------------------PATH - graficos-----------------------------------#
 if status_figpath:
-	figpath='/home/ci-81/RTDI_A/graphics_schain/' + identifier + '/'
+	figpath='/home/igp-114/RTDI_A/graphics_schain/' + identifier + '/'
 else:
-	figpath='/home/ci-81/RTDI_B/graphics_schain/' + identifier + '/'
+	figpath='/home/igp-114/RTDI_B/graphics_schain/' + identifier + '/'
 
 print "figpath******************",figpath
 

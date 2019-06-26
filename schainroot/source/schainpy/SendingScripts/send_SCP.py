@@ -13,7 +13,7 @@ import time
 
 debug = True
 
-def sendBySCP(Incommand): #"%04d/%02d/%02d 00:00:00"%(tnow.year,tnow.month,tnow.day)
+def sendBySCP(Incommand, location): #"%04d/%02d/%02d 00:00:00"%(tnow.year,tnow.month,tnow.day)
 	username = "wmaster"
 	password = "mst2010vhf"#"123456"
 	#port = "-p6633"
@@ -28,12 +28,14 @@ def sendBySCP(Incommand): #"%04d/%02d/%02d 00:00:00"%(tnow.year,tnow.month,tnow.
 		#console = pexpect.spawn(command)
 		#Para reconocerlos se debe usar la siguiente linea >
 		console = pexpect.spawn('/bin/bash', ['-c',command])
-		console.expect(username + "@" + host + "'s password:")
-		time.sleep(3)
-		#usual response > wmaster@jro-app.igp.gob.pe's password:
-		console.sendline(password)
-		time.sleep(7)
-		console.expect(pexpect.EOF)
+
+		if not (location == 11 or location == 12):
+			console.expect(username + "@" + host + "'s password:")
+			time.sleep(3)
+			#usual response > wmaster@jro-app.igp.gob.pe's password:
+			console.sendline(password)
+			time.sleep(7)
+			console.expect(pexpect.EOF)
 		return True
 	except Exception, e:
 		if debug:
@@ -59,27 +61,40 @@ tdstr = datetime.date.today()
 str1 = tdstr + datetime.timedelta(days=-1)
 yesterday = str1.strftime("%Y%j")
 
-dlist = []
-dlist.append(yesterday)
+with open("Doys_not_sent","r") as f:
+	dlist = [line[:-1] for line in f.readlines()]
 
 
-graph_freq0=PATH+'sp'+str(code)+'1_f0'
-graph_freq1=PATH+'sp'+str(code)+'1_f1'
+if yesterday not in dlist:
+	dlist.append(yesterday)
+
+location_dict = {11:"JRO_A", 12: "JRO_B", 21:"HYO_A", 22:"HYO_B", 31:"MALA",
+	41:"MERCED", 51:"BARRANCA", 61:"OROYA"}
+
+graph_freq0=PATH+"GRAPHICS_SCHAIN_%s/"%location_dict[rxcode]+'sp'+str(code)+'1_f0'
+graph_freq1=PATH+"GRAPHICS_SCHAIN_%s/"%location_dict[rxcode]+'sp'+str(code)+'1_f1'
 str_datatype = "*/" if datatype == "params" else ""
 
 web_type = "web_signalchain" if datatype == "params" else "web_rtdi"
 offset = 1 if datatype == "out" else 0 # This removes the H
 extension = "out" if datatype == "out" else "jpeg"
 out_or_figures = "out" if datatype == "out" else "figures"
-for file in dlist:
+
+for file in dlist[:]: # Se usa una copia porque dlist puede ser modificado dentro del bucle
+	data_written = True #Flag that represents data_written
 	doy = 'd'+file
 	jpg_files = glob.glob("%s/%s/%s*.jpeg"%(graph_freq1, doy,str_datatype))
 	jpg_files.sort()
-	print "%s/%s/*/*.jpeg"%(graph_freq1, doy)
+	print "%s/%s/%s*.jpeg"%(graph_freq1, doy,str_datatype)
 	if len(jpg_files) is 0:
 		print 'No hay RESULTADOS en la carpeta!!!'
 		continue
-	file_1=os.path.basename(jpg_files[0])[offset:]
+	#file_1=os.path.basename(jpg_files[0])[offset:]
+	if datatype == "params":
+		file_1 = jpg_files[0][:-1].split("/")[-3]
+	else:
+		file_1 = jpg_files[0][:-1].split("/")[-2]
+	file_1 = file_1[1:]
 
 	YEAR=int (file_1[0:4])
 	DAYOFYEAR= int(file_1[4:7])
@@ -126,19 +141,34 @@ for file in dlist:
 	#Primer Comando, generar carpeta de destino.
 
 	command_1="ssh wmaster@jro-app.igp.gob.pe -p 6633 mkdir -p %s"%(remote_folder)
-	if sendBySCP(command_1):
+	if sendBySCP(command_1, rxcode):
 		print 'Carpeta Creada'
+
 
 	#os.system("ssh wmaster@jro-app.igp.gob.pe -p 6633 %s "%(command_1))
 
 	#Segundo comando, pasar las imagenes necesarias para la freq 0
 	print "(3) Enviando resultados frecuencia 0"
-	temp_command = "scp -r -P 6633 %s/%s/%s%s%s%s*.%s wmaster@jro-app.igp.gob.pe:%s"%(graph_freq0,doy,str_datatype,YEAR,DAYOFYEAR_str,rxcode, extension, remote_folder)
-	if sendBySCP(temp_command):
+	temp_command = "scp -r -P 6633 %s/%s/%s%s*.%s wmaster@jro-app.igp.gob.pe:%s"%(graph_freq0,doy,str_datatype,YEAR, extension, remote_folder)
+	if sendBySCP(temp_command, rxcode):
 		print ' -- Datos Enviados F0'
+	else:
+		data_written=False
+
 	#Segundo comando, pasar las imagenes necesarias para la freq 1					AQUI
 	#temp_command = "scp -r -P 6633 %s/%s/*.jpeg wmaster@jro-app.igp.gob.pe:%s"%(graph_freq1,doy,remote_folder)
-	print "(4) Enviando resultados frencuencia 1"
-	temp_command = "scp -r -P 6633 %s/%s/%s%s%s%s*.%s wmaster@jro-app.igp.gob.pe:%s"%(graph_freq1,doy,str_datatype,YEAR,DAYOFYEAR_str,rxcode, extension, remote_folder)
-	if sendBySCP(temp_command):
+	print "(4) Enviando resultados frencuencia 1" #DAYOFYEAR_str
+	temp_command = "scp -r -P 6633 %s/%s/%s%s*.%s wmaster@jro-app.igp.gob.pe:%s"%(graph_freq1,doy,str_datatype,YEAR, extension, remote_folder)
+	if sendBySCP(temp_command, rxcode):
 		print ' -- Datos enviados F1 '
+	else:
+		data_written = False
+
+	##Checks if all data where sent, if not save the doy in the file what contains all doy not sent yet.
+	if data_written:
+		dlist.remove(file)
+
+os.remove("Doys_not_sent")
+with open("Doys_not_sent","w") as f:
+	for doy in dlist:
+		f.write(doy+"\n") #File contains date in 2019200 format yeardoy

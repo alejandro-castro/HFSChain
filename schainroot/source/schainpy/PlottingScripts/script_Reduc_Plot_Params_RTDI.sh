@@ -7,7 +7,7 @@
 cd $HOME/TestReduccionDatos_Implementado/hfschain/schainroot/source/schainpy/PlottingScripts
 
 source $HOME/TestReduccionDatos_Implementado/bin/activate
-
+export DISPLAY=":0.0"
 #El primer parametro de todos los scripts llamados es la ubicacion de la data y el segundo es la locacion de la estacion
 #El tercero es un flag de campaña,1 campaña, 0 modo normal
 #Se puede usar un cuarto parametro para la fecha, si se le puso fecha al script general Reduc_PLot_...
@@ -18,7 +18,7 @@ date_to_process=${3:-$(date -d "yesterday" +"%Y/%m/%d")} #Comentar si se desea p
 ###################Generating Parameters Data#################################################3
 
 echo "Starting Reduction of Data of JRO A station"
-screen -S "REDUCTION_HFA" -d -m ./GenerateMoments.sh "/media/igp-114/PROCDATA" $1 $2 $date_to_process
+screen -S "REDUCTION_HF" -d -m ./GenerateMoments.sh "/media/igp-114/PROCDATA" $1 $2 $date_to_process
 sleep 1
 
 

@@ -80,8 +80,11 @@ if online == 1:
 	date      = today
 	time_start= "00:00:00"
 	time_end  = "23:59:59"
-
-
+#Setting B station if there is only PC in the current station
+if lo in [31, 41, 51, 61]:
+	lo_B = lo + 1
+else:
+	lo_B = lo
 #Setting flag for frequency used to store the results of experiment in the respective folder
 if freq <3:
 	ngraph= 0
@@ -92,6 +95,7 @@ else:
 #Setting the frequency radar for both voltage proc and HF reader
 setupF   = freq
 setradarF= freq*10**6
+f_number = str(int(freq * 10**3))
 
 #Setting the exact folder from where the moment data will be read
 location_dict = {11:"JRO_A", 12: "JRO_B", 21:"HYO_A", 22:"HYO_B", 31:"MALA",
@@ -170,6 +174,9 @@ opObj21.addParameter(name='xmax', value=24, format='float')
 opObj21.addParameter(name='save', value='1', format='bool')
 opObj21.addParameter(name='figpath', value=figpath, format='str')
 opObj21.addParameter(name='data_time_save',value='1',format='bool')
+opObj21.addParameter(name='location',value=lo,format='str')
+opObj21.addParameter(name='cod_param',value="555",format='str')
+opObj21.addParameter(name='f_number',value=f_number,format='str')
 opObj21.addParameter(name='ext', value='.jpeg', format='str')
 ############
 opObj21 = procUnitConfObj1.addOperation(name='ParametersPlot', optype='other')
@@ -188,8 +195,10 @@ opObj21.addParameter(name='xmax', value=24, format='float')
 opObj21.addParameter(name='save', value='1', format='bool')
 opObj21.addParameter(name='figpath', value=figpath, format='str')
 opObj21.addParameter(name='data_time_save',value='1',format='bool')
+opObj21.addParameter(name='location',value=lo_B,format='str')
+opObj21.addParameter(name='cod_param',value="666",format='str')
+opObj21.addParameter(name='f_number',value=f_number,format='str')
 opObj21.addParameter(name='ext', value='.jpeg', format='str')
-
 
 
 #########################PLOTEO - Doppler#######################################
@@ -210,58 +219,73 @@ opObj21.addParameter(name='zmax', value=50, format='float')
 opObj21.addParameter(name='save', value='1', format='bool')
 opObj21.addParameter(name='figpath', value=figpath, format='str')
 opObj21.addParameter(name='data_time_save',value='1',format='bool')
-opObj21.addParameter(name='ext', value='.jpeg', format='str')
-############
-opObj21 = procUnitConfObj1.addOperation(name='ParametersPlot', optype='other')
-opObj21.addParameter(name='id', value='4005', format='int')
-opObj21.addParameter(name='wintitle', value='Doppler-Radial Velocity Plot1', format='str')
-opObj21.addParameter(name='show', value='0', format='bool')
-opObj21.addParameter(name='channelList', value='1', format='intlist')
-opObj21.addParameter(name='SNR', value='0', format='bool')
-#opObj21.addParameter(name='SNRmin', value='-50', format='int')
-#opObj21.addParameter(name='SNRmax', value='50', format='int')
-#opObj21.addParameter(name='SNRthresh', value='1', format='float')
-opObj21.addParameter(name='xmin', value=0, format='float')
-opObj21.addParameter(name='xmax', value=24, format='float')
-opObj21.addParameter(name='zmin', value=-50, format='float')
-opObj21.addParameter(name='zmax', value=50, format='float')
-#opObj21.addParameter(name='parameterIndex', value=, format='int')
-opObj21.addParameter(name='save', value='1', format='bool')
-opObj21.addParameter(name='figpath', value=figpath, format='str')
-opObj21.addParameter(name='data_time_save',value='1',format='bool')
+opObj21.addParameter(name='location',value=lo,format='str')
+opObj21.addParameter(name='cod_param',value="777",format='str')
+opObj21.addParameter(name='f_number',value=f_number,format='str')
 opObj21.addParameter(name='ext', value='.jpeg', format='str')
 
 
-######################PLOTEO - COHERENCIA#############################
-opObj11 = procUnitConfObj1.addOperation(name='CoherenceMap', optype='other')
-opObj11.addParameter(name='id', value='3002', format='int')
-opObj11.addParameter(name='wintitle', value='AmpMapCoherence', format='str')
-opObj11.addParameter(name='show', value='0', format='bool')
-opObj11.addParameter(name='COH', value='1', format='bool')
-opObj11.addParameter(name='PHASE', value='0', format='bool')
-opObj11.addParameter(name='xmin', value='0', format='float')
-opObj11.addParameter(name='xmax', value='24', format='float')
-opObj11.addParameter(name='save', value='1', format='bool')
-opObj11.addParameter(name='pairsList', value='(0,1)', format='pairsList')
-####opObj11.addParameter(name='figfile', value="Coherencia_2.72Mhz.jpg", format='str')
-opObj11.addParameter(name='figpath', value=figpath, format='str')
-opObj11.addParameter(name='data_time_save',value='1',format='bool')
-opObj11.addParameter(name='ext', value='.jpeg', format='str')
+################################
+if lo in [31, 41, 51, 61]: #Means single station then both doppler plots are needed
+	opObj21 = procUnitConfObj1.addOperation(name='ParametersPlot', optype='other')
+	opObj21.addParameter(name='id', value='4005', format='int')
+	opObj21.addParameter(name='wintitle', value='Doppler-Radial Velocity Plot1', format='str')
+	opObj21.addParameter(name='show', value='0', format='bool')
+	opObj21.addParameter(name='channelList', value='1', format='intlist')
+	opObj21.addParameter(name='SNR', value='0', format='bool')
+	#opObj21.addParameter(name='SNRmin', value='-50', format='int')
+	#opObj21.addParameter(name='SNRmax', value='50', format='int')
+	#opObj21.addParameter(name='SNRthresh', value='1', format='float')
+	opObj21.addParameter(name='xmin', value=0, format='float')
+	opObj21.addParameter(name='xmax', value=24, format='float')
+	opObj21.addParameter(name='zmin', value=-50, format='float')
+	opObj21.addParameter(name='zmax', value=50, format='float')
+	#opObj21.addParameter(name='parameterIndex', value=, format='int')
+	opObj21.addParameter(name='save', value='1', format='bool')
+	opObj21.addParameter(name='figpath', value=figpath, format='str')
+	opObj21.addParameter(name='data_time_save',value='1',format='bool')
+	opObj21.addParameter(name='location',value=lo_B,format='str')
+	opObj21.addParameter(name='cod_param',value="777",format='str')
+	opObj21.addParameter(name='f_number',value=f_number,format='str')
+	opObj21.addParameter(name='ext', value='.jpeg', format='str')
 
-opObj11 = procUnitConfObj1.addOperation(name='CoherenceMap', optype='other')
-opObj11.addParameter(name='id', value='3000', format='int')
-opObj11.addParameter(name='wintitle', value='PhaseMapCoherence', format='str')
-opObj11.addParameter(name='COH', value='0', format='bool')
-opObj11.addParameter(name='PHASE', value='1', format='bool')
-opObj11.addParameter(name='show', value='1', format='bool')
-opObj11.addParameter(name='xmin', value='0', format='float')
-opObj11.addParameter(name='xmax', value='24', format='float')
-opObj11.addParameter(name='save', value='1', format='bool')
-opObj11.addParameter(name='pairsList', value='(0,1)', format='pairsList')
-# # opObj11.addParameter(name='figfile', value="Phase_2.72Mhz.jpg", format='str')
-opObj11.addParameter(name='figpath', value=figpath, format='str')
-opObj11.addParameter(name='data_time_save',value='1',format='bool')
-opObj11.addParameter(name='ext', value='.jpeg', format='str')
+else:
+	######################PLOTEO - COHERENCIA#############################
+	opObj11 = procUnitConfObj1.addOperation(name='CoherenceMap', optype='other')
+	opObj11.addParameter(name='id', value='3002', format='int')
+	opObj11.addParameter(name='wintitle', value='AmpMapCoherence', format='str')
+	opObj11.addParameter(name='show', value='0', format='bool')
+	opObj11.addParameter(name='COH', value='1', format='bool')
+	opObj11.addParameter(name='PHASE', value='0', format='bool')
+	opObj11.addParameter(name='xmin', value='0', format='float')
+	opObj11.addParameter(name='xmax', value='24', format='float')
+	opObj11.addParameter(name='save', value='1', format='bool')
+	opObj11.addParameter(name='pairsList', value='(0,1)', format='pairsList')
+	####opObj11.addParameter(name='figfile', value="Coherencia_2.72Mhz.jpg", format='str')
+	opObj11.addParameter(name='figpath', value=figpath, format='str')
+	opObj11.addParameter(name='data_time_save',value='1',format='bool')
+	opObj21.addParameter(name='location',value=lo,format='str')
+	opObj21.addParameter(name='cod_param',value="999",format='str')
+	opObj21.addParameter(name='f_number',value=f_number,format='str')
+	opObj11.addParameter(name='ext', value='.jpeg', format='str')
+
+	opObj11 = procUnitConfObj1.addOperation(name='CoherenceMap', optype='other')
+	opObj11.addParameter(name='id', value='3000', format='int')
+	opObj11.addParameter(name='wintitle', value='PhaseMapCoherence', format='str')
+	opObj11.addParameter(name='COH', value='0', format='bool')
+	opObj11.addParameter(name='PHASE', value='1', format='bool')
+	opObj11.addParameter(name='show', value='1', format='bool')
+	opObj11.addParameter(name='xmin', value='0', format='float')
+	opObj11.addParameter(name='xmax', value='24', format='float')
+	opObj11.addParameter(name='save', value='1', format='bool')
+	opObj11.addParameter(name='pairsList', value='(0,1)', format='pairsList')
+	# # opObj11.addParameter(name='figfile', value="Phase_2.72Mhz.jpg", format='str')
+	opObj11.addParameter(name='figpath', value=figpath, format='str')
+	opObj11.addParameter(name='data_time_save',value='1',format='bool')
+	opObj21.addParameter(name='location',value=lo,format='str')
+	opObj21.addParameter(name='cod_param',value="888",format='str')
+	opObj21.addParameter(name='f_number',value=f_number,format='str')
+	opObj11.addParameter(name='ext', value='.jpeg', format='str')
 
 
 controllerObj.createObjects()

@@ -964,7 +964,7 @@ class ParametersPlot(Figure):
 		self.xmax = None
 
 		self.figfile = None
-
+		self.PLOT_CODE = "00"
 
 	def getSubplots(self,factor=1):
 		ncol = 1
@@ -1011,7 +1011,8 @@ class ParametersPlot(Figure):
 			xmin=None, xmax=None, ymin=None, ymax=None, zmin=None, zmax=None,timerange=None,
 			parameterIndex = None, onlyPositive = False, SNRthresh = -numpy.inf, DOP=True,
 			SNR = True, SNRdBmin = None, SNRdBmax = None, zlabel = "",save=False, figpath='',
-			figfile=None, show=True, folder=None, ext='.png',data_time_save=False, pairsList=""):
+			figfile=None, show=True, folder=None, ext='.png',data_time_save=False, pairsList="",
+			location=None, cod_param=None, f_number=None):
 
 
 		# Reading the data to be plotted
@@ -1141,7 +1142,7 @@ class ParametersPlot(Figure):
 		self.draw()
 
 		if self.figfile == None:
-			str_datetime = thisDatetime.strftime("%Y%m%d_%H%M%S")
+			str_datetime = thisDatetime.strftime("%Y%J")+location+cod_param+f_number+self.PLOT_CODE+"01"
 			self.figfile = self.getFilename(name = str_datetime,ext=ext)
 
 		if figpath != '':
