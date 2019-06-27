@@ -1278,7 +1278,7 @@ class JRODataWriter(JRODataIO):
 				else:
 					self.setFile = -1
 			if self.standard:
-				setFile = -1
+				self.setFile = -1 #Falta arreglar
 			else:
 				self.setFile = -1 #inicializo mi contador de seteo
 

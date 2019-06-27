@@ -23,7 +23,7 @@ sleep 1
 
 
 #Espera a que los nuevos archivos de momentos hayan terminado de generarse
-COUNT=$(screen -list | grep -c "REDUCTION")
+COUNT=$(screen -list | grep -c "REDUCTION_HF")
 while [  $COUNT != "0" ]
 do
 	sleep 3
@@ -48,6 +48,19 @@ done
 ###################Plotting RTDI#################################################3
 
 echo "Plotting the new RTDI from moments"
-screen -S "PLOT_RTDI_A_FROM_REDUCED" -d -m ./PLOT_RTDI.sh $HOME/Pictures/ $1 $2 $date_to_process
+screen -S "PLOT_RTDI_FROM_REDUCED" -d -m ./PLOT_RTDI.sh $HOME/Pictures/ $1 $2 $date_to_process
 
 sleep 1
+
+
+COUNT=$(screen -list | grep -c "PLOT_RTDI_FROM_REDUCED")
+while [  $COUNT != "0" ]
+do
+	sleep 3
+	echo "Waiting for RTDI Plots to finish"
+	COUNT=$(screen -list | grep -c "PLOT_RTDI_FROM_REDUCED")
+done
+
+
+cd $HOME/TestReduccionDatos_Implementado/hfschain/schainroot/source/schainpy/SendingScripts
+./sending_script.sh $1

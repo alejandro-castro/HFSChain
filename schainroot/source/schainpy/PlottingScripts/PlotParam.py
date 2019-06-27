@@ -264,9 +264,9 @@ else:
 	####opObj11.addParameter(name='figfile', value="Coherencia_2.72Mhz.jpg", format='str')
 	opObj11.addParameter(name='figpath', value=figpath, format='str')
 	opObj11.addParameter(name='data_time_save',value='1',format='bool')
-	opObj21.addParameter(name='location',value=lo,format='str')
-	opObj21.addParameter(name='cod_param',value="999",format='str')
-	opObj21.addParameter(name='f_number',value=f_number,format='str')
+	opObj11.addParameter(name='location',value=lo,format='str')
+	opObj11.addParameter(name='cod_param',value="999",format='str')
+	opObj11.addParameter(name='f_number',value=f_number,format='str')
 	opObj11.addParameter(name='ext', value='.jpeg', format='str')
 
 	opObj11 = procUnitConfObj1.addOperation(name='CoherenceMap', optype='other')
@@ -282,9 +282,9 @@ else:
 	# # opObj11.addParameter(name='figfile', value="Phase_2.72Mhz.jpg", format='str')
 	opObj11.addParameter(name='figpath', value=figpath, format='str')
 	opObj11.addParameter(name='data_time_save',value='1',format='bool')
-	opObj21.addParameter(name='location',value=lo,format='str')
-	opObj21.addParameter(name='cod_param',value="888",format='str')
-	opObj21.addParameter(name='f_number',value=f_number,format='str')
+	opObj11.addParameter(name='location',value=lo,format='str')
+	opObj11.addParameter(name='cod_param',value="888",format='str')
+	opObj11.addParameter(name='f_number',value=f_number,format='str')
 	opObj11.addParameter(name='ext', value='.jpeg', format='str')
 
 

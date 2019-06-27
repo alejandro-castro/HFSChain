@@ -34,8 +34,8 @@ def sendBySCP(Incommand, location): #"%04d/%02d/%02d 00:00:00"%(tnow.year,tnow.m
 			time.sleep(3)
 			#usual response > wmaster@jro-app.igp.gob.pe's password:
 			console.sendline(password)
-			time.sleep(7)
-			console.expect(pexpect.EOF)
+		time.sleep(7)
+		console.expect(pexpect.EOF)
 		return True
 	except Exception, e:
 		if debug:
@@ -71,12 +71,19 @@ if yesterday not in dlist:
 location_dict = {11:"JRO_A", 12: "JRO_B", 21:"HYO_A", 22:"HYO_B", 31:"MALA",
 	41:"MERCED", 51:"BARRANCA", 61:"OROYA"}
 
-graph_freq0=PATH+"GRAPHICS_SCHAIN_%s/"%location_dict[rxcode]+'sp'+str(code)+'1_f0'
-graph_freq1=PATH+"GRAPHICS_SCHAIN_%s/"%location_dict[rxcode]+'sp'+str(code)+'1_f1'
+station_orientation = "A" if rxcode % 10 == 1 else "B"
+if datatype == "params":
+	graph_freq0=PATH+"GRAPHICS_SCHAIN_%s/"%location_dict[rxcode]+'sp'+str(code)+'1_f0'
+	graph_freq1=PATH+"GRAPHICS_SCHAIN_%s/"%location_dict[rxcode]+'sp'+str(code)+'1_f1'
+else:
+	graph_freq0 = PATH+"/RTDI_%s/graphics_schain/"%station_orientation + 'sp'+str(code)+'1_f0'
+	graph_freq1 = PATH+"/RTDI_%s/graphics_schain/"%station_orientation + 'sp'+str(code)+'1_f1'
+
+
 str_datatype = "*/" if datatype == "params" else ""
 
 web_type = "web_signalchain" if datatype == "params" else "web_rtdi"
-offset = 1 if datatype == "out" else 0 # This removes the H
+letter = "H" if datatype == "out" else "" # This adds the H.
 extension = "out" if datatype == "out" else "jpeg"
 out_or_figures = "out" if datatype == "out" else "figures"
 
@@ -149,7 +156,7 @@ for file in dlist[:]: # Se usa una copia porque dlist puede ser modificado dentr
 
 	#Segundo comando, pasar las imagenes necesarias para la freq 0
 	print "(3) Enviando resultados frecuencia 0"
-	temp_command = "scp -r -P 6633 %s/%s/%s%s*.%s wmaster@jro-app.igp.gob.pe:%s"%(graph_freq0,doy,str_datatype,YEAR, extension, remote_folder)
+	temp_command = "scp -r -P 6633 %s/%s/%s%s%s*.%s wmaster@jro-app.igp.gob.pe:%s"%(graph_freq0,doy,str_datatype,letter,YEAR, extension, remote_folder)
 	if sendBySCP(temp_command, rxcode):
 		print ' -- Datos Enviados F0'
 	else:
@@ -158,7 +165,7 @@ for file in dlist[:]: # Se usa una copia porque dlist puede ser modificado dentr
 	#Segundo comando, pasar las imagenes necesarias para la freq 1					AQUI
 	#temp_command = "scp -r -P 6633 %s/%s/*.jpeg wmaster@jro-app.igp.gob.pe:%s"%(graph_freq1,doy,remote_folder)
 	print "(4) Enviando resultados frencuencia 1" #DAYOFYEAR_str
-	temp_command = "scp -r -P 6633 %s/%s/%s%s*.%s wmaster@jro-app.igp.gob.pe:%s"%(graph_freq1,doy,str_datatype,YEAR, extension, remote_folder)
+	temp_command = "scp -r -P 6633 %s/%s/%s%s%s*.%s wmaster@jro-app.igp.gob.pe:%s"%(graph_freq1,doy,str_datatype,letter,YEAR, extension, remote_folder)
 	if sendBySCP(temp_command, rxcode):
 		print ' -- Datos enviados F1 '
 	else:

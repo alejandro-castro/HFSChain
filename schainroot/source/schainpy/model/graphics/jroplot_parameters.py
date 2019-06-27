@@ -1142,7 +1142,7 @@ class ParametersPlot(Figure):
 		self.draw()
 
 		if self.figfile == None:
-			str_datetime = thisDatetime.strftime("%Y%J")+location+cod_param+f_number+self.PLOT_CODE+"01"
+			str_datetime = thisDatetime.strftime("%Y%j")+location+cod_param+f_number+self.PLOT_CODE+"01"
 			self.figfile = self.getFilename(name = str_datetime,ext=ext)
 
 		if figpath != '':

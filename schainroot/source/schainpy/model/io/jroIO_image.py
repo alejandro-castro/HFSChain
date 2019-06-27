@@ -141,7 +141,7 @@ class ImageWriter(JRODataWriter, Operation):
 				region = "E Region"
 			else:
 				raise ValueError,"The data dopler, genaro and time genaro have wrong format"
-			self.fp.write("%f %f  %f\t%s\n" %(data_timege,data_genaro,data_doppler,region))
+			self.fp.write("%f %f  %f\t\t%s\n" %(data_timege,data_genaro,data_doppler,region))
 
 
 		self.flagIsNewFile = 0
