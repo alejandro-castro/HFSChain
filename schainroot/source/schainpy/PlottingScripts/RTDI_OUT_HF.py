@@ -71,6 +71,7 @@ lo			= results.lo_seleccionado
 channel	 = results.ch_seleccionado
 
 
+
 if campaign == 1:
 	nProfiles = 600
 	nFFT = 600
@@ -99,10 +100,7 @@ else:
 	else:
 		c_web=8
 
-if lo%10==1:
-	status_figpath= True
-else:
-	status_figpath= False
+
 
 setupF	= freq
 setradarF= freq*10**6
@@ -132,10 +130,8 @@ time.sleep(1)
 
 identifier = 'sp'+str(code)+'1_f'+str(ngraph)
 #-----------------------------PATH - graficos-----------------------------------#
-if status_figpath:
-	figpath='/home/igp-114/RTDI_A/graphics_schain/' + identifier + '/'
-else:
-	figpath='/home/igp-114/RTDI_B/graphics_schain/' + identifier + '/'
+figpath='/home/igp-114/RTDI_A/graphics_schain/' + identifier + '/'
+
 
 print "figpath******************",figpath
 
@@ -154,6 +150,11 @@ blocksPerFile='1440'
 #---------------------------------------------------------------------------#
 controllerObj = Project()
 controllerObj.setup(id = '300', name='plotRTDI', description="Plotting RTDI")
+
+
+if channel == 1:
+	if lo in [31, 41, 51, 61]:
+		lo = lo + 1
 
 readUnitConfObj = controllerObj.addReadUnit(datatype = 'HFParamReader',
 														path	  = parampath,

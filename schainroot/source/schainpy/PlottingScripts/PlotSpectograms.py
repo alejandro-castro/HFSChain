@@ -64,7 +64,7 @@ date	   = results.date_seleccionado
 time_start = results.time_start
 time_end   = results.time_end
 lo		 = results.lo_seleccionado
-
+graphics_folder = results.graphics_folder
 
 if campaign == 1:
 	path += "/CAMPAIGN/"
@@ -123,7 +123,7 @@ print "figpath",figpath
 
 controllerObj = Project()
 controllerObj.setup(id = '400', name='momentsplot', description="Ploteo de los distintos espectrogramas\
- con la ubicación de la frecuencia Doppler promedio y su ancho espectral")
+ con la ubicacion de la frecuencia Doppler promedio y su ancho espectral")
 
 readUnitConfObj = controllerObj.addReadUnit(datatype = 'HFReader',
 											path	 = path,

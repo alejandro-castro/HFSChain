@@ -61,23 +61,40 @@ tdstr = datetime.date.today()
 str1 = tdstr + datetime.timedelta(days=-1)
 yesterday = str1.strftime("%Y%j")
 
-with open("Doys_not_sent","r") as f:
-	dlist = [line[:-1] for line in f.readlines()]
+dlist = []
+file_lines = []
+station_type = "A" if rxcode % 10 == 1 else "B"
+with open("Doys_not_sent_%s_%s"%(datatype,station_type),"r") as f:
+	# The Doys_not_sent file have data about the doys that hasn't been sent, each line represents a doys
+	# And each line has the same doy or None for each code, None represents that the data hasn't
+	# been sent yet for that code.
+	for line in f.readlines():
+		file_lines.append(line[:-1].split(","))
 
+		doy_or_none = file_lines[-1][code]
+		if doy_or_none != "None":
+			dlist.append(doy_or_none)
 
-if yesterday not in dlist:
+if yesterday not in [doy for line in file_lines for doy in line]:
 	dlist.append(yesterday)
+	file_lines.append([yesterday]*3)
+
 
 location_dict = {11:"JRO_A", 12: "JRO_B", 21:"HYO_A", 22:"HYO_B", 31:"MALA",
 	41:"MERCED", 51:"BARRANCA", 61:"OROYA"}
 
-station_orientation = "A" if rxcode % 10 == 1 else "B"
-if datatype == "params":
-	graph_freq0=PATH+"GRAPHICS_SCHAIN_%s/"%location_dict[rxcode]+'sp'+str(code)+'1_f0'
-	graph_freq1=PATH+"GRAPHICS_SCHAIN_%s/"%location_dict[rxcode]+'sp'+str(code)+'1_f1'
+if rxcode in [11, 12, 21, 22]:
+	lo = rxcode
 else:
-	graph_freq0 = PATH+"/RTDI_%s/graphics_schain/"%station_orientation + 'sp'+str(code)+'1_f0'
-	graph_freq1 = PATH+"/RTDI_%s/graphics_schain/"%station_orientation + 'sp'+str(code)+'1_f1'
+	lo = int(rxcode/10)*10+1
+
+
+if datatype == "params":
+	graph_freq0=PATH+"GRAPHICS_SCHAIN_%s/"%location_dict[lo]+'sp'+str(code)+'1_f0'
+	graph_freq1=PATH+"GRAPHICS_SCHAIN_%s/"%location_dict[lo]+'sp'+str(code)+'1_f1'
+else:
+	graph_freq0 = PATH+"/RTDI_A/graphics_schain/" + 'sp'+str(code)+'1_f0'
+	graph_freq1 = PATH+"/RTDI_A/graphics_schain/" + 'sp'+str(code)+'1_f1'
 
 
 str_datatype = "*/" if datatype == "params" else ""
@@ -156,7 +173,9 @@ for file in dlist[:]: # Se usa una copia porque dlist puede ser modificado dentr
 
 	#Segundo comando, pasar las imagenes necesarias para la freq 0
 	print "(3) Enviando resultados frecuencia 0"
-	temp_command = "scp -r -P 6633 %s/%s/%s%s%s*.%s wmaster@jro-app.igp.gob.pe:%s"%(graph_freq0,doy,str_datatype,letter,YEAR, extension, remote_folder)
+	temp_command = "scp -r -P 6633 %s/%s/%s%s%s%s%s*.%s wmaster@jro-app.igp.gob.pe:%s"%(graph_freq0,doy,str_datatype,
+	letter,YEAR, DAYOFYEAR_str, rxcode, extension, remote_folder)
+
 	if sendBySCP(temp_command, rxcode):
 		print ' -- Datos Enviados F0'
 	else:
@@ -165,7 +184,9 @@ for file in dlist[:]: # Se usa una copia porque dlist puede ser modificado dentr
 	#Segundo comando, pasar las imagenes necesarias para la freq 1					AQUI
 	#temp_command = "scp -r -P 6633 %s/%s/*.jpeg wmaster@jro-app.igp.gob.pe:%s"%(graph_freq1,doy,remote_folder)
 	print "(4) Enviando resultados frencuencia 1" #DAYOFYEAR_str
-	temp_command = "scp -r -P 6633 %s/%s/%s%s%s*.%s wmaster@jro-app.igp.gob.pe:%s"%(graph_freq1,doy,str_datatype,letter,YEAR, extension, remote_folder)
+	temp_command = "scp -r -P 6633 %s/%s/%s%s%s%s%s*.%s wmaster@jro-app.igp.gob.pe:%s"%(graph_freq1,doy,str_datatype,
+	letter,YEAR, DAYOFYEAR_str, rxcode, extension, remote_folder)
+
 	if sendBySCP(temp_command, rxcode):
 		print ' -- Datos enviados F1 '
 	else:
@@ -173,9 +194,14 @@ for file in dlist[:]: # Se usa una copia porque dlist puede ser modificado dentr
 
 	##Checks if all data where sent, if not save the doy in the file what contains all doy not sent yet.
 	if data_written:
-		dlist.remove(file)
+		#dlist.remove(file)
+		index = [file_lines[i][code] for i in range(len(file_lines))].index(file)
+		file_lines[index][code] = "None"
+		if file_lines[index].count("None") == 3:
+			file_lines.pop(index)
 
-os.remove("Doys_not_sent")
-with open("Doys_not_sent","w") as f:
-	for doy in dlist:
-		f.write(doy+"\n") #File contains date in 2019200 format yeardoy
+print "\n\n\n"
+os.remove("Doys_not_sent_%s_%s"%(datatype,station_type))
+with open("Doys_not_sent_%s_%s"%(datatype,station_type), "w") as f:
+	for line in file_lines:
+		f.write(line[0]+','+line[1]+','+line[2]+"\n") #File contains date in 2019200 format yeardoy
